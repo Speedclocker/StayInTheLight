@@ -1,20 +1,27 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
+#include "Character.h"
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");
         sf::Texture texture_link;
         texture_link.loadFromFile("link.png");
-        sf::Sprite personnage(texture_link, sf::IntRect(0,0,30, 30));
-        int speed = 2;
+        
+        
+        Character personnage(&texture_link, sf::IntRect(0,0,30,30));
+        personnage.setSpeed(3);
 
         window.setFramerateLimit(60);
 
-        personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getTextureRect().width/2, window.getSize().y/2-personnage.getTextureRect().height/2));
+        personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	
+        
 	while(window.isOpen())
 	{
+                window.clear();
+                
+                
 		sf::Event event;
 		while(window.pollEvent(event))
 		{
@@ -27,7 +34,7 @@ int main()
 		
 		// Déplacement du personnage
 		
-		
+		int speed = personnage.getSpeed();
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D))
                     personnage.move(sf::Vector2f(+sqrt(speed), -sqrt(speed)));
                 
@@ -57,8 +64,8 @@ int main()
                 
                 
                 
-		window.clear();
-		window.draw(personnage);
+		
+		personnage.getDrawn(&window);
 		window.display();
 	}
 	return 0;

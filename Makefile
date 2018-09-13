@@ -1,10 +1,14 @@
 all : main
 
-main: main.o
-	g++ -g -o main main.o -lsfml-graphics -lsfml-window -lsfml-system -lm
+main: main.o Character.o
+	g++ -g -o main main.o Character.o -lsfml-graphics -lsfml-window -lsfml-system -lm
 	
-main.o: main.cpp
-	g++ -c main.cpp -I /usr/lib/x86_64-linux-gnu/
+	
+main.o: main.cpp Character.h
+	g++ -c main.cpp -I /usr/lib/x86_64-linux-gnu/ 
+	
+Character.o: Character.cpp Character.h
+	g++ -c Character.cpp -I /usr/lib/x86_64-linux-gnu/ 
 	
 clean:
 	rm -f *.o

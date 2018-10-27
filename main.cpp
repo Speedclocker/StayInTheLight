@@ -1,25 +1,54 @@
 #include <SFML/Graphics.hpp>
-#include <math.h>
+#include "Interactions.h"
 #include "Character.h"
+#include "collision.h"
+
 
 int main()
 {
+        
+	//Création de la fenêtre et paramétrage de framerate
 	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");
-        sf::Texture texture_link;
-        texture_link.loadFromFile("link.png");
-        
-        
-        Character personnage(&texture_link, sf::IntRect(0,0,30,30));
-        personnage.setSpeed(3);
-
         window.setFramerateLimit(60);
 
-        personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
-	
+	//Création et chargement de texture
+        sf::Texture texture_link;
+        texture_link.loadFromFile("link.png");
+    
         
+        //Création du personnage
+        Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
+        personnage.setSpeed(2);
+        personnage.setHitbox(sf::IntRect(0,0, personnage.getSize().x, personnage.getSize().y));
+        personnage.setHealth(10);
+        personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
+
+        
+	//Création du mob
+        Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue);
+	mob.setHealth(10);
+        mob.setHitbox(sf::IntRect(0,0, mob.getSize().x, mob.getSize().y));
+        mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
+        
+
+	//Ajout d'une cible potentielle d'attaque au héros 
+	personnage.addAvTarget(&mob);
+
+        
+   	//Variable d'état de la touche d'attaque
+        bool space=false;
+
+	//Les évenements ne se répètent pas tant que la ou les touches restent appuyées
+        window.setKeyRepeatEnabled(false);
+        
+
+	//Boucle principale
 	while(window.isOpen())
 	{
+		
+		personnage.update();
                 window.clear();
+		
                 
                 
 		sf::Event event;
@@ -27,46 +56,31 @@ int main()
 		{
 			if(event.type == sf::Event::Closed)
 				window.close();
+			if((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
+				space=true;
 		}
 		
 		
-		
-		
-		// Déplacement du personnage
-		
-		int speed = personnage.getSpeed();
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                    personnage.move(sf::Vector2f(+sqrt(speed), -sqrt(speed)));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-                    personnage.move(sf::Vector2f(-sqrt(speed), -sqrt(speed)));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                    personnage.move(sf::Vector2f(+sqrt(speed), +sqrt(speed)));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-                    personnage.move(sf::Vector2f(-sqrt(speed), +sqrt(speed)));
-                
-		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-                    personnage.move(sf::Vector2f(0, -speed));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                    personnage.move(sf::Vector2f(0, speed));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-                    personnage.move(sf::Vector2f(-speed, 0));
-                
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                    personnage.move(sf::Vector2f(speed, 0));
-		
-                
+		// Les entrées claviers permettent d'intéragir sur le personnage
+		character_key_input(&personnage, &space);
+                physics_characters(&personnage, &mob);
                 
                 
                 
                 
 		
+                
+                
+                
+                
+                
+                
+                
 		personnage.getDrawn(&window);
+                mob.getDrawn(&window);
+
 		window.display();
+		
 	}
 	return 0;
 }

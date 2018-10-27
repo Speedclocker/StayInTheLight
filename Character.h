@@ -6,6 +6,8 @@
 #include <iostream>
 #include <math.h>
 #include "collision.h"
+#include "Animation.h"
+
 
 #define PI 3.14159
 
@@ -122,6 +124,7 @@ private:
     sf::Vector2f m_size;
     
     sf::RectangleShape m_sprite;
+    AnimatedSprite* m_sprite2;
     sf::IntRect m_hitbox;
     
     State m_state;

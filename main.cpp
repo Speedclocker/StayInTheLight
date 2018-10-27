@@ -46,7 +46,7 @@ int main()
 	while(window.isOpen())
 	{
 		
-		personnage.update();
+		
                 window.clear();
 		
                 
@@ -68,7 +68,8 @@ int main()
                 
                 
                 
-		
+		personnage.update();
+		mob.update();
                 
                 
                 

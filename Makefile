@@ -1,7 +1,7 @@
 all : main
 
-main: main.o Character.o Interactions.o collision.o
-	g++ -g -o main main.o Character.o Interactions.o collision.o -lsfml-graphics -lsfml-window -lsfml-system 
+main: main.o Animation.o Character.o Interactions.o collision.o
+	g++ -g -o main main.o Animation.o Character.o Interactions.o collision.o -lsfml-graphics -lsfml-window -lsfml-system 
 	
 	
 main.o: main.cpp Character.h Interactions.h
@@ -16,7 +16,9 @@ Interactions.o: Interactions.cpp Interactions.h Character.h
 
 Character.o: Character.cpp Character.h
 	g++ -c Character.cpp -I /usr/lib/x86_64-linux-gnu/ 
-	
+
+Animation.o: Animation.cpp Animation.h
+	g++ -c Animation.cpp -I /usr/lib/x86_64-linux-gnu/ 
 
 	
 clean:

@@ -190,6 +190,9 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 
 	m_sprite.setFillColor(color);
 
+	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 8, sf::Vector2f(0,30) );
+	m_sprite2->setFPSQuotient(4);
+
 	this->setSize(sf::Vector2f(rect_sprite.width, rect_sprite.height));
 	this->update();
 
@@ -313,6 +316,9 @@ void Character::update()
 {
     //MAJ Position du sprite en fonction de l'entité Character
     m_sprite.setPosition(m_position);
+	
+    m_sprite2->setPosition(m_position);
+    m_sprite2->update();
     
 
     //Vérifie l'état de l'attaque
@@ -342,14 +348,16 @@ void Character::getDrawn(sf::RenderWindow* window)
 	window->draw(test_rect);
     }
     window->draw(m_sprite);
+    window->draw(*m_sprite2);
 }
 
 
 
 void Character::move(sf::Vector2f movement)
 {
-    m_position+=movement;
-    this->update();
+	m_position+=movement;
+	m_sprite2->setPosition(m_position);
+	
 }
 
 void Character::attack()

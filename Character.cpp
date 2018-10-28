@@ -3,7 +3,7 @@
 #include "Character.h"
 
 
-
+	
 
 
 
@@ -31,7 +31,7 @@ Attack::Attack(int nbr_frames, std::vector< sf::IntRect > zones_collision, Chara
 
 Attack::~Attack()
 {
-  
+	
 }
 
 int Attack::getDamages()
@@ -190,7 +190,8 @@ bool Attack::update()
 
 Character::Character()
 {
-    
+	m_actual_attack=NULL;
+    	m_sprite2=NULL;
 }
 
 Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
@@ -204,6 +205,7 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
 	m_sprite2->setFPSQuotient(4);
 
+
 	this->setSize(sf::Vector2f(22, 28));
 	this->update();
 
@@ -214,7 +216,8 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 
 Character::~Character()
 {
-    //delete m_actual_attack;
+	delete m_sprite2;
+    	delete m_actual_attack;
 }
 
 
@@ -346,15 +349,19 @@ void Character::addAvTarget(Character* target)
 
 void Character::update()
 {
-    //MAJ Position du sprite en fonction de l'entité Character
-    m_sprite.setPosition(m_position);
-	
-    m_sprite2->setPosition(m_position);
-    m_sprite2->update();
-    
+	//MAJ Position du sprite en fonction de l'entité Character
+	m_sprite.setPosition(m_position);
 
-    //Vérifie l'état de l'attaque
-    
+
+	if(m_sprite2!=NULL)
+	{
+		m_sprite2->setPosition(m_position);
+		m_sprite2->update();
+	}
+
+
+	//Vérifie l'état de l'attaque
+
 
 	if(m_state==ATTACKING && m_actual_attack!=NULL)
 	{

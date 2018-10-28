@@ -63,8 +63,8 @@ int main()
 		
 		// Les entrées claviers permettent d'intéragir sur le personnage
 		character_key_input(&personnage, &space);
+
                 physics_characters(&personnage, &mob);
-                
                 
                 
                 // Mise à jour des personnages
@@ -83,6 +83,7 @@ int main()
 		
 		// Affichage des éléments
 		window.display();
+		
 		
 	}
 	return 0;

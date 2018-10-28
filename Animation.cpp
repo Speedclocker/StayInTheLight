@@ -141,7 +141,6 @@ void AnimatedSprite::update()
 	if(m_phase_f_to_f == 0) 
 		m_actual_frame = (m_actual_frame+1)%m_nbr_frames;
 
-
 	m_sprite.setTextureRect( sf::IntRect(m_init_txt_pos.x + m_actual_frame*(m_size.x + m_spacing), m_init_txt_pos.y, m_size.x, m_size.y) );
 	m_sprite.setPosition(m_position);
 }

@@ -273,6 +273,13 @@ Sense Character::getSense()
 	return m_sense;
 }
 
+
+AnimatedSprite* Character::getSprite()
+{
+	// Renvoie un pointeur vers le sprite du personnage
+	return m_sprite2;
+}
+
 std::vector< Character* > Character::getAvTargets()
 {
 	// Renvoie les cibles potentielles pouvant être attaquées par le personnage
@@ -355,6 +362,37 @@ void Character::update()
 
 	if(m_sprite2!=NULL)
 	{
+		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
+		if(this->getSense()==UP || this->getSense()==UP_RIGHT || this->getSense()==UP_LEFT)
+		{
+			if(this->getState()==MOVING)
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,29), 0);
+			else
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,29), 0);
+		}
+		else if(this->getSense()==DOWN || this->getSense()==DOWN_RIGHT || this->getSense()==DOWN_LEFT)
+		{
+			if(this->getState()==MOVING)
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,0), 0);
+			else
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,0), 0);
+		}
+		else if(this->getSense()==RIGHT)
+		{
+			if(this->getState()==MOVING)
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,88), 0);
+			else
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,88), 0);
+		}	
+		else
+		{
+			if(this->getState()==MOVING)
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,58), 0);
+			else
+				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
+		}
+		
+		// Met à jour le sprite
 		m_sprite2->setPosition(m_position);
 		m_sprite2->update();
 	}

@@ -30,7 +30,6 @@ void physics_characters(Character* character_1, Character* character_2)
 	// Simule un mouvement physique de poussée entre deux Characters
 	if(collision_characters(*character_1, *character_2))
 	{
-		std::cout << "2" << std::endl;
 		int dec_x=0, dec_y=0;
 
 		if(character_1->getAbsHitbox().left + character_1->getAbsHitbox().width/2 < character_2->getAbsHitbox().left + character_2->getAbsHitbox().width/2)

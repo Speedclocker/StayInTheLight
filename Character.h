@@ -99,6 +99,8 @@ public:
 	State getState();
 	Sense getSense();
 
+	AnimatedSprite* getSprite();
+
 	std::vector< Character* > getAvTargets();
 
 

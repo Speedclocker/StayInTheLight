@@ -16,6 +16,7 @@ AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_
 {
 	m_texture = texture;
 	m_size = size;
+		m_actual_frame = 0;
 	m_nbr_frames = nbr_frames;
 	m_init_txt_pos = init_text_pos;
 	m_spacing = 0;
@@ -32,6 +33,7 @@ AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_
 {
 	m_texture = texture;
 	m_size = size;
+	m_actual_frame = 0;
 	m_nbr_frames = nbr_frames;
 	m_init_txt_pos = init_text_pos;
 	m_spacing = spacing;
@@ -117,6 +119,21 @@ int AnimatedSprite::getPhaseFToF()
 
 //Modificateurs
 
+void AnimatedSprite::setInitTxtPos(sf::Vector2f init_text_pos)
+{
+	// Modifie la position initiale de capture dans la texture
+	m_init_txt_pos = init_text_pos;
+}
+
+void AnimatedSprite::setParameters(sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing)
+{
+	//Modifie les paramètre de capture dans la texture
+	m_size = size;
+	m_nbr_frames = nbr_frames;
+	m_init_txt_pos = init_text_pos;
+	m_spacing = spacing;
+
+}
 
 void AnimatedSprite::setPosition(sf::Vector2f position)
 {

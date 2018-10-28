@@ -13,7 +13,7 @@ int main()
 
 	//Création et chargement de texture
         sf::Texture texture_link;
-        texture_link.loadFromFile("link.png");
+        texture_link.loadFromFile("linkmv.png");
     
         
         //Création du personnage

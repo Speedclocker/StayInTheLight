@@ -36,6 +36,8 @@ public:
 	int getPhaseFToF();
 
 	//Modificateurs;
+	void setInitTxtPos(sf::Vector2f init_text_pos);
+	void setParameters(sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing);
 	void setPosition(sf::Vector2f position);
 	void setFPSQuotient(int quotient);
 	

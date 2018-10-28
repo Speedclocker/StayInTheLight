@@ -52,62 +52,81 @@ AnimatedSprite::~AnimatedSprite()
 
 sf::Texture* AnimatedSprite::getTexture()
 {
+	// Renvoie un pointeur vers la texture utilisée
 	return m_texture;
 }
 
 
 sf::Vector2f AnimatedSprite::getSize()
 {
+	// Renvoie la taille du sprite animé
 	return m_size;
 }
 
 sf::Vector2f AnimatedSprite::getPosition()
 {
+	// Renvoie la position du sprite animé
 	return m_position;
 }
 
 int AnimatedSprite::getSpacing()
 {
+	// Renvoie le décalage de frames (espace séparant deux frames sur une même ligne dans la texture)
 	return m_spacing;
 }
 
 
 sf::Vector2f AnimatedSprite::getInitTxtPos()
-{
+{	
+	// Renvoie le position initiale de capture dans la texture
 	return m_init_txt_pos;
 }
 
 
 sf::Sprite AnimatedSprite::getSprite()
 {
+	// Renvoie le sprite
 	return m_sprite;
 }
 
 int AnimatedSprite::getNbrFrames()
 {
+	// Renvoie le nombre de frames de l'animation
 	return m_nbr_frames;
 }
 
 
 int AnimatedSprite::getActualFrame()
 {
+	// Renvoie la frame actuelle de l'animation
 	return m_actual_frame;
 }
 
+int AnimatedSprite::getFPSQuotient()
+{
+	// Renvoie le quotient fps (le nombre de fps de l'animation sera divisé par ce quotient)
+	return m_fps_quotient;
+}
 
-
-
+int AnimatedSprite::getPhaseFToF()
+{
+	// Renvoie l'état transitionelle entre deux frames 
+	// (utilisé avec le fps quotient, s'incrémente à chaque mise à jour jusqu'à atteindre le fps quotient pour changer de frame)
+	return m_phase_f_to_f;
+}
 
 //Modificateurs
 
 
 void AnimatedSprite::setPosition(sf::Vector2f position)
 {
+	// Modifie la position en fonction d'un vecteur pris en paramètres
 	m_position=position;
 }
 
 void AnimatedSprite::setFPSQuotient(int quotient)
 {
+	// Modifie le quotient fps
 	m_fps_quotient = quotient;
 }
 
@@ -116,6 +135,7 @@ void AnimatedSprite::setFPSQuotient(int quotient)
 
 void AnimatedSprite::update()
 {
+	// Met à jour en incrémentant la phase frame à frame, ou en incrémentant la frame actuelle
 	m_phase_f_to_f = (m_phase_f_to_f+1)%m_fps_quotient;
 
 	if(m_phase_f_to_f == 0) 
@@ -129,6 +149,7 @@ void AnimatedSprite::update()
 
 void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	// Dessine le sprite
 	target.draw(m_sprite);
 }
 

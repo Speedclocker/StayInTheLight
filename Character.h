@@ -38,30 +38,35 @@ class Character;
 class Attack
 {
 public:
-    Attack();
-    Attack(int nbr_frames, std::vector< sf::IntRect > zones_collision, Character* emitter, int damages);
-    ~Attack();
-    
-    int getDamages();
-    int getActualFrame();
-    int getNbrFrames();
+	
+	//Constructeurs et Destructeurs
+	Attack();
+	Attack(int nbr_frames, std::vector< sf::IntRect > zones_collision, Character* emitter, int damages);
+	~Attack();
+	
+	// Accesseurs
+	int getDamages();
+	int getActualFrame();
+	int getNbrFrames();
 
-    sf::IntRect getCurZone();
-    Character* getEmitter();
-    std::vector< Character* > getMetTargets();
-    
-    bool update();
+	sf::IntRect getCurZone();
+	Character* getEmitter();
+	std::vector< Character* > getMetTargets();
+
+
+	// Methodes
+	bool update();
     
 private:
 
-    int m_damages;
-    int m_nbr_frames;
-    int m_actual_frame;
-    
-    std::vector< sf::IntRect > m_zones_collision;
-    
-    Character *m_emitter;
-    std::vector< Character* > m_met_targets;
+	int m_damages;
+	int m_nbr_frames;
+	int m_actual_frame;
+
+	std::vector< sf::IntRect > m_zones_collision;
+
+	Character *m_emitter;
+	std::vector< Character* > m_met_targets;
 };
 
 
@@ -77,61 +82,62 @@ private:
 class Character
 {
 public:
-    Character();
-    Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
-    ~Character();
-    
-    //Accesseurs
-    int getHealth();
-    int getSpeed();
+	//Constructeurs et Destructeurs
+	Character();
+	Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
+	~Character();
 
-    sf::Vector2f getPosition();
-    sf::Vector2f getSize();
-    
-    sf::IntRect getHitbox();
-    sf::IntRect getAbsHitbox();
-    State getState();
-    Sense getSense();
-    
-    std::vector< Character* > getAvTargets();
+	//Accesseurs
+	int getHealth();
+	int getSpeed();
 
-    
-    //Modificateurs 
-    void setHealth(int health);
-    void setSpeed(int speed);
-    
-    void setPosition(sf::Vector2f position);
-    void setSize(sf::Vector2f size);
-    
-    void setHitbox(sf::IntRect hitbox);
-    void setState(State state);
-    void setSense(Sense sense);
-    void addAvTarget(Character* target);
-    
-    //Méthodes
-    void update();
-    void getDrawn(sf::RenderWindow* window);
-    
-    void move(sf::Vector2f movement);
-    void attack();
-    void takeDamages(int damages);
+	sf::Vector2f getPosition();
+	sf::Vector2f getSize();
+
+	sf::IntRect getHitbox();
+	sf::IntRect getAbsHitbox();
+	State getState();
+	Sense getSense();
+
+	std::vector< Character* > getAvTargets();
+
+
+	//Modificateurs 
+	void setHealth(int health);
+	void setSpeed(int speed);
+
+	void setPosition(sf::Vector2f position);
+	void setSize(sf::Vector2f size);
+
+	void setHitbox(sf::IntRect hitbox);
+	void setState(State state);
+	void setSense(Sense sense);
+	void addAvTarget(Character* target);
+
+	//Méthodes
+	void update();
+	void getDrawn(sf::RenderWindow* window);
+
+	void move(sf::Vector2f movement);
+	void attack();
+	void takeDamages(int damages);
     
 private:
-    int m_health;
-    int m_speed;
-    
-    sf::Vector2f m_position;
-    sf::Vector2f m_size;
-    
-    sf::RectangleShape m_sprite;
-    AnimatedSprite* m_sprite2;
-    sf::IntRect m_hitbox;
-    
-    State m_state;
-    Sense m_sense;
-    
-    Attack* m_actual_attack;
-    std::vector< Character* > m_av_targets;
+	int m_health;
+	int m_speed;
+
+	sf::Vector2f m_position;
+	sf::Vector2f m_size;
+
+	sf::RectangleShape m_sprite;
+	AnimatedSprite* m_sprite2;
+	sf::IntRect m_hitbox;
+
+	State m_state;
+	Sense m_sense;
+
+	Attack* m_actual_attack;
+	std::vector< Character* > m_av_targets;
 };
 
 

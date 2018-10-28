@@ -50,7 +50,7 @@ int main()
                 window.clear();
 		
                 
-                
+                // Attente des évenements
 		sf::Event event;
 		while(window.pollEvent(event))
 		{
@@ -67,7 +67,7 @@ int main()
                 
                 
                 
-                
+                // Mise à jour des personnages
 		personnage.update();
 		mob.update();
                 
@@ -76,10 +76,12 @@ int main()
                 
                 
                 
-                
+                // Dessin des personnages à l'écran
+		mob.getDrawn(&window);
 		personnage.getDrawn(&window);
-                mob.getDrawn(&window);
-
+                
+		
+		// Affichage des éléments
 		window.display();
 		
 	}

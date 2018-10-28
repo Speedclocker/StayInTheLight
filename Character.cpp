@@ -36,103 +36,114 @@ Attack::~Attack()
 
 int Attack::getDamages()
 {
+	// Renvoie les dommages qu'est censé faire passer l'attaque
 	return m_damages;
 }
 
 int Attack::getActualFrame()
 {
-    return m_actual_frame;
+	// Renvoie la frame actuelle de l'attaque
+	return m_actual_frame;
 }
 
 int Attack::getNbrFrames()
 {
-    return m_nbr_frames;
+	// Renvoie le nombre de frames de l'attaque
+	return m_nbr_frames;
 }
 
 sf::IntRect Attack::getCurZone()
 {
-    sf::IntRect actual_zone(m_zones_collision[m_actual_frame]);
-    sf::IntRect res_zone=actual_zone;
-    float angle(atan2(actual_zone.left, actual_zone.top)), 
-          length(sqrt((actual_zone.left) * (actual_zone.left) + (actual_zone.top) * (actual_zone.top)));
-    sf::Vector2f e_ctr(m_emitter->getAbsHitbox().left + m_emitter->getAbsHitbox().width/2, m_emitter->getAbsHitbox().top + m_emitter->getAbsHitbox().height/2);
-    
-    switch(m_emitter->getSense())
-    {
-        case(UP):
-            res_zone.left = e_ctr.x + sin(angle+PI)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle+PI)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break;
-            
-        case(LEFT):
-            res_zone.left = e_ctr.x + sin(angle-PI/2)*length - actual_zone.height/2;
-            res_zone.top = e_ctr.y + cos(angle-PI/2)*length - actual_zone.width/2;
-            res_zone.width = actual_zone.height;
-            res_zone.height = actual_zone.width;
-            break; 
-            
-        case(RIGHT):
-            res_zone.left = e_ctr.x + sin(angle+PI/2)*length - actual_zone.height/2;
-            res_zone.top = e_ctr.y + cos(angle+PI/2)*length - actual_zone.width/2;
-            res_zone.width = actual_zone.height;
-            res_zone.height = actual_zone.width;
-            break; 
-            
-        case(DOWN_RIGHT):
-            res_zone.left = e_ctr.x + sin(angle+PI/4)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle+PI/4)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break;
-            
-        case(DOWN_LEFT):
-            res_zone.left = e_ctr.x + sin(angle-PI/4)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle-PI/4)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break; 
-            
-        case(UP_RIGHT):
-            res_zone.left = e_ctr.x + sin(angle+3*PI/4)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle+3*PI/4)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break;
-            
-        case(UP_LEFT):
-            res_zone.left = e_ctr.x + sin(angle-3*PI/4)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle-3*PI/4)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break; 
-            
-        default:
-            res_zone.left = e_ctr.x + sin(angle)*length - actual_zone.width/2;
-            res_zone.top = e_ctr.y + cos(angle)*length - actual_zone.height/2;
-            res_zone.width = actual_zone.width;
-            res_zone.height = actual_zone.height;
-            break;
-    }
-    
-    return res_zone;
+	//Renvoie la hitbox correspondant à la frame d'attaque actuelle, en tenant compte de la frame, du sens et de la position de l'emetteur (s'il y a emetteur) 
+
+	sf::IntRect actual_zone(m_zones_collision[m_actual_frame]);
+	sf::IntRect res_zone=actual_zone;
+	float angle(atan2(actual_zone.left, actual_zone.top)), 
+	  length(sqrt((actual_zone.left) * (actual_zone.left) + (actual_zone.top) * (actual_zone.top)));
+	sf::Vector2f e_ctr(m_emitter->getAbsHitbox().left + m_emitter->getAbsHitbox().width/2, m_emitter->getAbsHitbox().top + m_emitter->getAbsHitbox().height/2);
+
+	
+	if(m_emitter!=NULL)
+	{
+		switch(m_emitter->getSense())
+		{
+		case(UP):
+		    res_zone.left = e_ctr.x + sin(angle+PI)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle+PI)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break;
+		    
+		case(LEFT):
+		    res_zone.left = e_ctr.x + sin(angle-PI/2)*length - actual_zone.height/2;
+		    res_zone.top = e_ctr.y + cos(angle-PI/2)*length - actual_zone.width/2;
+		    res_zone.width = actual_zone.height;
+		    res_zone.height = actual_zone.width;
+		    break; 
+		    
+		case(RIGHT):
+		    res_zone.left = e_ctr.x + sin(angle+PI/2)*length - actual_zone.height/2;
+		    res_zone.top = e_ctr.y + cos(angle+PI/2)*length - actual_zone.width/2;
+		    res_zone.width = actual_zone.height;
+		    res_zone.height = actual_zone.width;
+		    break; 
+		    
+		case(DOWN_RIGHT):
+		    res_zone.left = e_ctr.x + sin(angle+PI/4)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle+PI/4)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break;
+		    
+		case(DOWN_LEFT):
+		    res_zone.left = e_ctr.x + sin(angle-PI/4)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle-PI/4)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break; 
+		    
+		case(UP_RIGHT):
+		    res_zone.left = e_ctr.x + sin(angle+3*PI/4)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle+3*PI/4)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break;
+		    
+		case(UP_LEFT):
+		    res_zone.left = e_ctr.x + sin(angle-3*PI/4)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle-3*PI/4)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break; 
+		    
+		default:
+		    res_zone.left = e_ctr.x + sin(angle)*length - actual_zone.width/2;
+		    res_zone.top = e_ctr.y + cos(angle)*length - actual_zone.height/2;
+		    res_zone.width = actual_zone.width;
+		    res_zone.height = actual_zone.height;
+		    break;
+		}
+	}
+
+	return res_zone;
 }
 
 Character* Attack::getEmitter()
 {
+	// Renvoie le pointeur vers l'emetteur de l'attaque
 	return m_emitter;
 }
 
 std::vector< Character* > Attack::getMetTargets()
 {
+	// Renvoie un vecteur contenant les pointeurs vers les cibles déjà rencontrées (utiles pour que la cible ne subisse qu'une fois l'attaque)
 	return m_met_targets;
 }
 
 bool Attack::update()
 {
 
-    	
+	//Met à jour l'état de l'attaque (fait passer à la frame suivante ou termine l'attaque)    	
 	if(this->getEmitter()!=NULL)
 	{
 		for(int i=0; i<this->getEmitter()->getAvTargets().size(); i++)
@@ -185,15 +196,15 @@ Character::Character()
 Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
 {
 	m_actual_attack=NULL;
-	m_sprite.setSize(sf::Vector2f(rect_sprite.width, rect_sprite.height));
+	m_sprite.setSize(sf::Vector2f(22, 28));
 	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
 
 	m_sprite.setFillColor(color);
 
-	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 8, sf::Vector2f(0,30) );
+	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
 	m_sprite2->setFPSQuotient(4);
 
-	this->setSize(sf::Vector2f(rect_sprite.width, rect_sprite.height));
+	this->setSize(sf::Vector2f(22, 28));
 	this->update();
 
 	this->setState(STANDING);
@@ -212,46 +223,56 @@ Character::~Character()
 
 int Character::getHealth()
 {
-    return m_health;
+	// Renvoie la santé d'un personnage
+	return m_health;
 }
 
 int Character::getSpeed()
 {
-    return m_speed;
+	// Renvoie la vitesse de déplacement d'un personnage
+	return m_speed;
 }
 
 sf::Vector2f Character::getPosition()
 {
-    return m_position;
+	// Renvoie la position d'un personnage
+	return m_position;
 }
 
 sf::Vector2f Character::getSize()
 {
-    return m_size;
+	// Renvoie un vecteur de 2 dimensions contenant la taille d'un personnage en largeur et en longueur
+	return m_size;
 }
 
 sf::IntRect Character::getHitbox()
 {
-    return m_hitbox;
+	// Renvoie la hitbox (dont la taille diffère de celle du personnage) relative au personnage (la position est relative à celle du personnage)
+	return m_hitbox;
 }
 
 sf::IntRect Character::getAbsHitbox()
 {
-    return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
+	// Renvoie la hitbox absolue (la position est absolue)
+	return sf::IntRect(m_hitbox.left + m_position.x + m_size.x/2 - m_hitbox.width/2, m_hitbox.top + m_position.y + m_size.y/2 - m_hitbox.height/2, 
+			   m_hitbox.width, m_hitbox.height);
 }
 
 State Character::getState()
 {
-    return m_state;
+	// Renvoie l'état du personnage
+	return m_state;
 }
 
 Sense Character::getSense()
 {
-    return m_sense;
+	// Renvoie le sens du personnage
+	return m_sense;
 }
 
 std::vector< Character* > Character::getAvTargets()
 {
+	// Renvoie les cibles potentielles pouvant être attaquées par le personnage
 	return m_av_targets;
 }
 
@@ -259,42 +280,53 @@ std::vector< Character* > Character::getAvTargets()
 
 void Character::setHealth(int health)
 {
-    m_health = health;
+	// Modifie la santé du personnage	
+	m_health = health;
 }
 
 void Character::setSpeed(int speed)
 {
-    m_speed = speed;
+	// Modifie la vitesse de déplacement du personnage
+	m_speed = speed;
 }
 
 void Character::setPosition(sf::Vector2f position)
 {
-    m_position = position;
-    this->update();
+
+	//Modifie la position du personnage
+	m_position = position;
+	m_sprite.setPosition(m_position);
+	
+	m_sprite2->setPosition(m_position);
 }
 
 void Character::setSize(sf::Vector2f size)
-{
-    m_size = size;
+{	
+	//Modifie la taille du personnage
+	m_size = size;
 }
 
 void Character::setHitbox(sf::IntRect hitbox)
 {
-    m_hitbox = hitbox;
+	// Modifie la hitbox du personnage (la position est relative à celle du personnage)
+	m_hitbox = hitbox;
 }
 
 void Character::setState(State state)
 {
-    m_state = state;
+	// Modifie l'état du personnage en fonction de l'état en paramètre
+	m_state = state;	
 }
 
 void Character::setSense(Sense sense)
 {
-    m_sense = sense;
+	// Modifie le sens du personnage en fonction du sens en paramètre
+	m_sense = sense;
 }
 
 void Character::addAvTarget(Character* target)
 {
+	// Rajoute une cible potentielle pouvant être attaquée par le personnage tout en vérifiant si celle ci n'est pas déjà dans la liste des cibles potentielles
 	bool already_av =false;
 	for(int i=0; i<this->getAvTargets().size(); i++)
 	{
@@ -341,44 +373,50 @@ void Character::update()
 
 void Character::getDrawn(sf::RenderWindow* window)
 {
-    if(this->getState()==ATTACKING)
-    {
-	sf::RectangleShape test_rect(sf::Vector2f(m_actual_attack->getCurZone().width, m_actual_attack->getCurZone().height));
-	test_rect.setPosition(m_actual_attack->getCurZone().left, m_actual_attack->getCurZone().top);
-	window->draw(test_rect);
-    }
-    window->draw(m_sprite);
-    window->draw(*m_sprite2);
+	//Dessine le personnage sur une fenêtre dont le pointeur est pris en paramètre
+	
+	window->draw(m_sprite);
+	window->draw(*m_sprite2);
+
+	if(this->getState()==ATTACKING)
+	{
+		sf::RectangleShape test_rect(sf::Vector2f(m_actual_attack->getCurZone().width, m_actual_attack->getCurZone().height));
+		test_rect.setPosition(m_actual_attack->getCurZone().left, m_actual_attack->getCurZone().top);
+		window->draw(test_rect);
+	}
 }
 
 
 
 void Character::move(sf::Vector2f movement)
 {
+	// Déplace le personnage
 	m_position+=movement;
 	m_sprite2->setPosition(m_position);
 	
-}
+}	
 
 void Character::attack()
 {
-    
-    if(m_state!=ATTACKING && m_actual_attack==NULL)
-    {
-                
-        std::vector< sf::IntRect > test_rect;
-	for(int i=0; i<this->getSize().x; i+=4)
+	
+	// Lance une attaque si le personnage n'attaque déjà pas
+	if(m_state!=ATTACKING && m_actual_attack==NULL)
 	{
-        	test_rect.push_back(sf::IntRect(i-this->getSize().x/2,this->getSize().y/2+15,10,10));
-        }
-        
-        m_actual_attack = new Attack(test_rect.size(), test_rect, this, 2);
-        m_state=ATTACKING;
-    
-    }
+		//Exemple d'attaque rectiligne
+		std::vector< sf::IntRect > test_rect;
+		for(int i=0; i<this->getSize().x; i+=4)
+		{
+			test_rect.push_back(sf::IntRect(i-this->getSize().x/2,this->getSize().y/2+5,10,10));
+		}
+
+		m_actual_attack = new Attack(test_rect.size(), test_rect, this, 2);
+		m_state=ATTACKING;
+
+	}
 }
 
 void Character::takeDamages(int damages)
 {
+	//Prends des dommages en fonction des dégâts en paramètres.
 	m_health-=damages;
 }

@@ -31,7 +31,9 @@ public:
 
 	int getNbrFrames();
 	int getActualFrame();
-
+	
+	int getFPSQuotient();
+	int getPhaseFToF();
 
 	//Modificateurs;
 	void setPosition(sf::Vector2f position);

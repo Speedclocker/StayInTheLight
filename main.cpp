@@ -70,8 +70,8 @@ int main()
                 // Mise à jour des personnages
 		personnage.update();
 		mob.update();
-                
-                
+               
+
                 
                 
                 
@@ -79,7 +79,7 @@ int main()
                 // Dessin des personnages à l'écran
 		mob.getDrawn(&window);
 		personnage.getDrawn(&window);
-                
+		
 		
 		// Affichage des éléments
 		window.display();

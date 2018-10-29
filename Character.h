@@ -63,6 +63,10 @@ private:
 	int m_nbr_frames;
 	int m_actual_frame;
 
+	
+	bool m_push_effect;
+	int m_push_percent;
+
 	std::vector< sf::IntRect > m_zones_collision;
 
 	Character *m_emitter;
@@ -127,6 +131,7 @@ public:
 private:
 	int m_health;
 	int m_speed;
+
 
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;

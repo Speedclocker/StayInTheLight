@@ -13,14 +13,17 @@
 
 Attack::Attack()
 {
-    m_actual_frame=0;
-    m_nbr_frames = 1;
-    m_emitter = NULL;
+	m_push_effect = true;
+	m_push_percent = 10;
+	m_actual_frame=0;
+	m_nbr_frames = 1;
+	m_emitter = NULL;
 }
 
 Attack::Attack(int nbr_frames, std::vector< sf::IntRect > zones_collision, Character* emitter, int damages)
 {
-
+	m_push_effect = true;
+	m_push_percent = 10;
 	m_actual_frame=0;
 	m_nbr_frames = nbr_frames;
 	m_zones_collision = zones_collision;
@@ -155,10 +158,23 @@ bool Attack::update()
 					already_met=true;
 			}
 
-			if(!already_met && collision_rects(this->getEmitter()->getAvTargets()[i]->getAbsHitbox(), this->getCurZone()))
+			if(collision_rects(this->getEmitter()->getAvTargets()[i]->getAbsHitbox(), this->getCurZone()))
 			{
-				this->getEmitter()->getAvTargets()[i]->takeDamages(this->getDamages());
-				m_met_targets.push_back(this->getEmitter()->getAvTargets()[i]);
+				//Effet de poussée en fonction de la distance emetteur-receveur et un facteur de pourcentage de poussée
+				if(m_push_effect)
+				{
+					int dist_x = (this->getEmitter()->getAvTargets()[i]->getPosition().x + this->getEmitter()->getAvTargets()[i]->getSize().x/2) - (this->getEmitter()->getPosition().x + this->getEmitter()->getSize().x/2);
+					int dist_y = (this->getEmitter()->getAvTargets()[i]->getPosition().y + this->getEmitter()->getAvTargets()[i]->getSize().y/2) - (this->getEmitter()->getPosition().y + this->getEmitter()->getSize().y/2);
+				
+				
+					this->getEmitter()->getAvTargets()[i]->move( sf::Vector2f( m_push_percent*dist_x/100 ,  m_push_percent*dist_y/100 ) );
+				}
+
+				if(!already_met)
+				{
+					this->getEmitter()->getAvTargets()[i]->takeDamages(this->getDamages());
+					m_met_targets.push_back(this->getEmitter()->getAvTargets()[i]);
+				}
 			}
 		}
 	}

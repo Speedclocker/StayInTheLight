@@ -1,8 +1,13 @@
-all : main
+CC=g++
+CFLAGS=-W -Wall -Wextra
+EXEC= Rogue
 
-main: main.o Animation.o Character.o Interactions.o collision.o
-	g++ -g -o main main.o Animation.o Character.o Interactions.o collision.o -lsfml-graphics -lsfml-window -lsfml-system 
-	
+
+
+all : $(EXEC)
+
+Rogue: main.o Animation.o Character.o Interactions.o collision.o  Map.o
+	g++ -g -o Rogue.elf main.o Animation.o Character.o Interactions.o collision.o Map.o -lsfml-graphics -lsfml-window -lsfml-system 
 	
 main.o: main.cpp Character.h Interactions.h
 	g++ -c main.cpp -I /usr/lib/x86_64-linux-gnu/ 
@@ -20,6 +25,10 @@ Character.o: Character.cpp Character.h
 Animation.o: Animation.cpp Animation.h
 	g++ -c Animation.cpp -I /usr/lib/x86_64-linux-gnu/ 
 
+
+Map.o: Map.cpp Map.h
+	g++ -c Map.cpp -I /usr/lib/x86_64-linux-gnu/
 	
+
 clean:
 	rm -f *.o

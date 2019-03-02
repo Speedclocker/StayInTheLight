@@ -11,9 +11,10 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");
         window.setFramerateLimit(60);
 
+
 	//Création et chargement de texture
         sf::Texture texture_link;
-        texture_link.loadFromFile("linkmv.png");
+        texture_link.loadFromFile("imgs/linkmv.png");
     
         
         //Création du personnage

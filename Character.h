@@ -98,12 +98,15 @@ public:
 	sf::Vector2f getPosition();
 	sf::Vector2f getSize();
 
+	AnimatedSprite* getSprite();	
+	
 	sf::IntRect getHitbox();
 	sf::IntRect getAbsHitbox();
 	State getState();
 	Sense getSense();
 
-	AnimatedSprite* getSprite();
+	sf::Clock getClock();
+	sf::Time getLastTimeAttack();
 
 	std::vector< Character* > getAvTargets();
 
@@ -116,8 +119,12 @@ public:
 	void setSize(sf::Vector2f size);
 
 	void setHitbox(sf::IntRect hitbox);
+
 	void setState(State state);
 	void setSense(Sense sense);
+	
+	void setLastTimeAttack(sf::Time last_time_attack);
+
 	void addAvTarget(Character* target);
 
 	//Méthodes
@@ -142,6 +149,9 @@ private:
 
 	State m_state;
 	Sense m_sense;
+
+	sf::Clock m_clock;
+	sf::Time m_last_time_attack;
 
 	Attack* m_actual_attack;
 	std::vector< Character* > m_av_targets;

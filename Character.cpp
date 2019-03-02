@@ -289,6 +289,18 @@ Sense Character::getSense()
 	return m_sense;
 }
 
+sf::Clock Character::getClock()
+{
+	// Renvoie l'horloge du personnage
+	return m_clock;
+}
+
+sf::Time Character::getLastTimeAttack()
+{
+	// Renvoie le dernier temps où le personnage a attaqué
+	return m_last_time_attack;
+}
+
 
 AnimatedSprite* Character::getSprite()
 {
@@ -348,6 +360,12 @@ void Character::setSense(Sense sense)
 {
 	// Modifie le sens du personnage en fonction du sens en paramètre
 	m_sense = sense;
+}
+
+void Character::setLastTimeAttack(sf::Time last_time_attack)
+{
+	// Modifie le temps de la dernière attaque
+	m_last_time_attack = last_time_attack;
 }
 
 void Character::addAvTarget(Character* target)
@@ -422,6 +440,7 @@ void Character::update()
 		if(m_actual_attack->update())
 		{
 			m_state=STANDING;
+			m_last_time_attack = m_clock.getElapsedTime();
 
 			delete m_actual_attack;
 			m_actual_attack=NULL;
@@ -461,7 +480,7 @@ void Character::attack()
 {
 	
 	// Lance une attaque si le personnage n'attaque déjà pas
-	if(m_state!=ATTACKING && m_actual_attack==NULL)
+	if(m_state!=ATTACKING && m_actual_attack==NULL && (m_clock.getElapsedTime().asMilliseconds() - m_last_time_attack.asMilliseconds() > 250 ) )
 	{
 		//Exemple d'attaque rectiligne
 		std::vector< sf::IntRect > test_rect;

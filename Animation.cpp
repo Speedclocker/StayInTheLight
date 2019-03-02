@@ -143,7 +143,7 @@ void AnimatedSprite::setPosition(sf::Vector2f position)
 
 void AnimatedSprite::setFPSQuotient(int quotient)
 {
-	// Modifie le quotient fps
+	// Modifie le quotient fps (sert à réduire la vitesse)
 	m_fps_quotient = quotient;
 }
 

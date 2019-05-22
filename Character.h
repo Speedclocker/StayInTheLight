@@ -7,6 +7,7 @@
 #include <math.h>
 #include "collision.h"
 #include "Animation.h"
+#include "Object.h"
 
 
 #define PI 3.14159
@@ -14,22 +15,15 @@
 
 
 
-
-
-
-
 enum State
 {
-    ATTACKING, MOVING, STANDING
+	ATTACKING, MOVING, STANDING
 };
 
 enum Sense
 {
-    UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
+	UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
 };
-
-
-
 
 
 class Character;
@@ -56,7 +50,7 @@ public:
 
 	// Methodes
 	bool update();
-    
+	
 private:
 
 	int m_damages;
@@ -83,7 +77,7 @@ private:
 
 
 
-class Character
+class Character : public Object
 {
 public:
 	//Constructeurs et Destructeurs
@@ -134,7 +128,7 @@ public:
 	void move(sf::Vector2f movement);
 	void attack();
 	void takeDamages(int damages);
-    
+	
 private:
 	int m_health;
 	int m_speed;

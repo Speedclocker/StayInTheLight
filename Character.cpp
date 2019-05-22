@@ -3,7 +3,7 @@
 #include "Character.h"
 
 
-	
+
 
 
 
@@ -29,7 +29,7 @@ Attack::Attack(int nbr_frames, std::vector< sf::IntRect > zones_collision, Chara
 	m_zones_collision = zones_collision;
 	m_emitter = emitter;
 	m_damages = damages;
-    
+	
 }
 
 Attack::~Attack()
@@ -62,7 +62,7 @@ sf::IntRect Attack::getCurZone()
 	sf::IntRect actual_zone(m_zones_collision[m_actual_frame]);
 	sf::IntRect res_zone=actual_zone;
 	float angle(atan2(actual_zone.left, actual_zone.top)), 
-	  length(sqrt((actual_zone.left) * (actual_zone.left) + (actual_zone.top) * (actual_zone.top)));
+	length(sqrt((actual_zone.left) * (actual_zone.left) + (actual_zone.top) * (actual_zone.top)));
 	sf::Vector2f e_ctr(m_emitter->getAbsHitbox().left + m_emitter->getAbsHitbox().width/2, m_emitter->getAbsHitbox().top + m_emitter->getAbsHitbox().height/2);
 
 	
@@ -70,61 +70,61 @@ sf::IntRect Attack::getCurZone()
 	{
 		switch(m_emitter->getSense())
 		{
-		case(UP):
-		    res_zone.left = e_ctr.x + sin(angle+PI)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle+PI)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break;
-		    
-		case(LEFT):
-		    res_zone.left = e_ctr.x + sin(angle-PI/2)*length - actual_zone.height/2;
-		    res_zone.top = e_ctr.y + cos(angle-PI/2)*length - actual_zone.width/2;
-		    res_zone.width = actual_zone.height;
-		    res_zone.height = actual_zone.width;
-		    break; 
-		    
-		case(RIGHT):
-		    res_zone.left = e_ctr.x + sin(angle+PI/2)*length - actual_zone.height/2;
-		    res_zone.top = e_ctr.y + cos(angle+PI/2)*length - actual_zone.width/2;
-		    res_zone.width = actual_zone.height;
-		    res_zone.height = actual_zone.width;
-		    break; 
-		    
-		case(DOWN_RIGHT):
-		    res_zone.left = e_ctr.x + sin(angle+PI/4)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle+PI/4)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break;
-		    
-		case(DOWN_LEFT):
-		    res_zone.left = e_ctr.x + sin(angle-PI/4)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle-PI/4)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break; 
-		    
-		case(UP_RIGHT):
-		    res_zone.left = e_ctr.x + sin(angle+3*PI/4)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle+3*PI/4)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break;
-		    
-		case(UP_LEFT):
-		    res_zone.left = e_ctr.x + sin(angle-3*PI/4)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle-3*PI/4)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break; 
-		    
-		default:
-		    res_zone.left = e_ctr.x + sin(angle)*length - actual_zone.width/2;
-		    res_zone.top = e_ctr.y + cos(angle)*length - actual_zone.height/2;
-		    res_zone.width = actual_zone.width;
-		    res_zone.height = actual_zone.height;
-		    break;
+			case(UP):
+			res_zone.left = e_ctr.x + sin(angle+PI)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle+PI)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break;
+			
+			case(LEFT):
+			res_zone.left = e_ctr.x + sin(angle-PI/2)*length - actual_zone.height/2;
+			res_zone.top = e_ctr.y + cos(angle-PI/2)*length - actual_zone.width/2;
+			res_zone.width = actual_zone.height;
+			res_zone.height = actual_zone.width;
+			break; 
+			
+			case(RIGHT):
+			res_zone.left = e_ctr.x + sin(angle+PI/2)*length - actual_zone.height/2;
+			res_zone.top = e_ctr.y + cos(angle+PI/2)*length - actual_zone.width/2;
+			res_zone.width = actual_zone.height;
+			res_zone.height = actual_zone.width;
+			break; 
+			
+			case(DOWN_RIGHT):
+			res_zone.left = e_ctr.x + sin(angle+PI/4)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle+PI/4)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break;
+			
+			case(DOWN_LEFT):
+			res_zone.left = e_ctr.x + sin(angle-PI/4)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle-PI/4)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break; 
+			
+			case(UP_RIGHT):
+			res_zone.left = e_ctr.x + sin(angle+3*PI/4)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle+3*PI/4)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break;
+			
+			case(UP_LEFT):
+			res_zone.left = e_ctr.x + sin(angle-3*PI/4)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle-3*PI/4)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break; 
+			
+			default:
+			res_zone.left = e_ctr.x + sin(angle)*length - actual_zone.width/2;
+			res_zone.top = e_ctr.y + cos(angle)*length - actual_zone.height/2;
+			res_zone.width = actual_zone.width;
+			res_zone.height = actual_zone.height;
+			break;
 		}
 	}
 
@@ -165,8 +165,8 @@ bool Attack::update()
 				{
 					int dist_x = (this->getEmitter()->getAvTargets()[i]->getPosition().x + this->getEmitter()->getAvTargets()[i]->getSize().x/2) - (this->getEmitter()->getPosition().x + this->getEmitter()->getSize().x/2);
 					int dist_y = (this->getEmitter()->getAvTargets()[i]->getPosition().y + this->getEmitter()->getAvTargets()[i]->getSize().y/2) - (this->getEmitter()->getPosition().y + this->getEmitter()->getSize().y/2);
-				
-				
+					
+					
 					this->getEmitter()->getAvTargets()[i]->move( sf::Vector2f( m_push_percent*dist_x/100 ,  m_push_percent*dist_y/100 ) );
 				}
 
@@ -207,7 +207,7 @@ bool Attack::update()
 Character::Character()
 {
 	m_actual_attack=NULL;
-    	m_sprite2=NULL;
+	m_sprite2=NULL;
 }
 
 Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
@@ -233,7 +233,7 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 Character::~Character()
 {
 	delete m_sprite2;
-    	delete m_actual_attack;
+	delete m_actual_attack;
 }
 
 
@@ -274,7 +274,7 @@ sf::IntRect Character::getAbsHitbox()
 {
 	// Renvoie la hitbox absolue (la position est absolue)
 	return sf::IntRect(m_hitbox.left + m_position.x + m_size.x/2 - m_hitbox.width/2, m_hitbox.top + m_position.y + m_size.y/2 - m_hitbox.height/2, 
-			   m_hitbox.width, m_hitbox.height);
+		m_hitbox.width, m_hitbox.height);
 }
 
 State Character::getState()
@@ -379,7 +379,7 @@ void Character::addAvTarget(Character* target)
 	}
 	
 	if(!already_av)
-    		m_av_targets.push_back(target);
+		m_av_targets.push_back(target);
 }
 
 
@@ -447,7 +447,7 @@ void Character::update()
 		}
 	}
 
-    
+	
 }
 
 

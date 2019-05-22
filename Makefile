@@ -1,34 +1,40 @@
 CC=g++
-CFLAGS=-W -Wall -Wextra
+CFLAGS=-W -Wall -Wextra -g 
 EXEC= Rogue
+SFMLDIR=/usr/lib/x86_64-linux-gnu/ 
+LDIR= -lsfml-graphics -lsfml-window -lsfml-system -lm
 
 
+all : $(EXEC) MapCreator
+	#rm -f *.o
 
-all : $(EXEC)
+MapCreator: MapCreator.cpp Map.o
+	g++ -o $@ $^ -I$(SFMLDIR) $(LDIR) $(CFLAGS)
 
-Rogue: main.o Animation.o Character.o Interactions.o collision.o  Map.o
-	g++ -g -o Rogue.elf main.o Animation.o Character.o Interactions.o collision.o Map.o -lsfml-graphics -lsfml-window -lsfml-system 
-	
+$(EXEC): main.o Animation.o Character.o Interactions.o collision.o Map.o Object.o
+	g++ -o $@ $^ $(LDIR) $(CFLAGS)
+
 main.o: main.cpp Character.h Interactions.h
-	g++ -c main.cpp -I /usr/lib/x86_64-linux-gnu/ 
-
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
 
 collision.o: collision.cpp collision.h Character.h
-	g++ -c collision.cpp -I /usr/lib/x86_64-linux-gnu/ 
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
 
 Interactions.o: Interactions.cpp Interactions.h Character.h
-	g++ -c Interactions.cpp -I /usr/lib/x86_64-linux-gnu/  -lm
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS) 
 
-Character.o: Character.cpp Character.h
-	g++ -c Character.cpp -I /usr/lib/x86_64-linux-gnu/ 
+Character.o: Character.cpp Character.h Object.h
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+
+Object.o: Object.cpp Object.h
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
 
 Animation.o: Animation.cpp Animation.h
-	g++ -c Animation.cpp -I /usr/lib/x86_64-linux-gnu/ 
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
 
+Map.o: Map.cpp Map.h 
+	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
 
-Map.o: Map.cpp Map.h
-	g++ -c Map.cpp -I /usr/lib/x86_64-linux-gnu/
-	
 
 clean:
-	rm -f *.o
+	rm -f *.o Rogue

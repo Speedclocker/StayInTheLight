@@ -121,7 +121,7 @@ void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, 
 int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::string* name_texture_file)
 {
 	std::ifstream file_to_load;
-	file_to_load.open(name_file_map_to_load);
+	file_to_load.open("maps/"+name_file_map_to_load);
 	if(file_to_load.fail()) {std::cerr << "Une erreur est survenue lors de la tentative d'ouverture du fichier " << name_file_map_to_load << std::endl; file_to_load.close(); return -1; }
 
 	sf::Vector2f size_map=sf::Vector2f(-1,-1);
@@ -163,7 +163,7 @@ int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::
 {
 	std::ofstream file_to_save;
 
-	file_to_save.open(name_file);
+	file_to_save.open("maps/"+name_file);
 	if(file_to_save.fail()) {std::cerr << "Une erreur est survenue lors de la tentative de création du fichier " << name_file << std::endl; file_to_save.close(); return -1; }
 
 	//Enregistrement du nom 

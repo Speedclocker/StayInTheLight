@@ -31,9 +31,6 @@ void choice_tile(Tile* tile_target, sf::RenderWindow* window, sf::Texture* textu
 			if(index<nbr_avail_tiles) 
 			{
 				*tile_target=tiles[index];
-				std::cout << "Mouse Position : " << positionTile.x << " , " << positionTile.y << std::endl;
-				std::cout << "Index : " << index << std::endl;
-
 			}
 		}
 
@@ -142,25 +139,16 @@ void control_view(sf::View* view, Map* map)
 {
 	//Fonction permettant de contrôler la vue
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (view->getCenter().y - view->getSize().y/2 > 0) ) 
-	{
 		view->move(0, -10);
-		std::cout << "View : " << view->getCenter().x << " , " << view->getCenter().y << std::endl;
-	} 
+	 
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (view->getCenter().y + view->getSize().y/2 < map->getSize().y * map->getTileSize() ) ) 
-	{
 		view->move(0, 10);		
-		std::cout << "View : " << view->getCenter().x << " , " << view->getCenter().y << std::endl;
-	}
+
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && (view->getCenter().x - view->getSize().x/2 > 0) ) 
-	{
 		view->move(-10, 0);
-		std::cout << "View : " << view->getCenter().x << " , " << view->getCenter().y << std::endl;
-	}
+
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (view->getCenter().x + view->getSize().x/2 < map->getSize().x * map->getTileSize()) ) 
-	{
-		view->move(10, 0);
-		std::cout << "View : " << view->getCenter().x << " , " << view->getCenter().y << std::endl;
-	}	
+		view->move(10, 0);	
 }
 
 
@@ -245,7 +233,21 @@ void set_tile(sf::RenderWindow* window, sf::Texture *texture, Map* map, Tile til
 
 bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 {	
-	static bool keyPressed_O = false, keyPressed_P = false, keyPressed_T = false, transparencydisplay=false;
+	static bool keyPressed_O = false, keyPressed_P = false, keyPressed_T = false, transparencydisplay=true;
+
+	//Permet d'afficher la hauteur	
+	char height_str[20];
+	sprintf(height_str, "Hauteur : %d", *chosen_height);
+
+	sf::Font height_font;
+	height_font.loadFromFile("arial.ttf");
+
+	sf::Text height_text(height_str,height_font);
+	height_text.setCharacterSize(14);
+	height_text.setFillColor(sf::Color::White);
+	height_text.setOutlineColor(sf::Color::Black);
+	height_text.setOutlineThickness(1);
+	height_text.setPosition(window->getView().getCenter().x + window->getView().getSize().x/2 - 85, window->getView().getCenter().y + window->getView().getSize().y/2 - 30);
 
 	//Changement de hauteur -
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::O) && window->hasFocus())
@@ -254,7 +256,6 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 	{
 		keyPressed_O = false;
 		if(*chosen_height>0) (*chosen_height)--;
-		std::cout << "Hauteur : " << *chosen_height << std::endl;
 	}
 
 	//Changement de hauteur +
@@ -264,7 +265,6 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 	{
 		keyPressed_P = false;
 		if(*chosen_height < map->getHeight()-1 ) (*chosen_height)++;
-		std::cout << "Hauteur : " << *chosen_height << std::endl;
 	}
 
 	//Mode transparent
@@ -275,6 +275,8 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 		keyPressed_T = false;
 		transparencydisplay^=true;
 	}
+
+	window->draw(height_text);
 
 	return transparencydisplay;
 }
@@ -358,12 +360,26 @@ int load_map(sf::RenderWindow* main_window, sf::RenderWindow* tileset_window, Ma
 				(*available_tiles)[i].m_pos_text = sf::Vector2f( (i%(texture->getSize().x/(*map_to_load)->getTileSize()))*(*map_to_load)->getTileSize(),  (i/(texture->getSize().x/(*map_to_load)->getTileSize()))*(*map_to_load)->getTileSize() );
 				(*available_tiles)[i].m_size_text = sf::Vector2f( (*map_to_load)->getTileSize(), (*map_to_load)->getTileSize() );
 				(*available_tiles)[i].m_collisionable = false;
-				std::cout << "Tiles " << i << " : " << (*available_tiles)[i].m_pos_text.x << " , " << (*available_tiles)[i].m_pos_text.y << std::endl;
 			}
 			return 1;
 		}
 	}
 	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void introText(void)
+{
+	std::cout << "MapCreator permet de créer ses propres maps" << std::endl;
+	std::cout << "Sélectionnez les tiles sur la fenêtre de tileset" << std::endl;
+	std::cout << "Pour voir les couches inférieurs aux couches supérieures, passez en mode transparent" << std::endl;
+	std::cout << "Pour celà, appuyez sur T" << std::endl;
+	std::cout << "Pour gérer les collisions de chaque tile au niveau du tileset, maintenez la touche LAlt et changez l'état du tile que vous souhaitez en cliquant dessus" << std::endl;
+	std::cout << "Pour poser plusieurs tiles, maintenez LShift et faites glisser le curseur" << std::endl;
+	std::cout << "Pour sauvegarder la map, maintenez LAlt et appuyez S. Les maps sont enregistrées dans le dossier ./maps" << std::endl;
+	std::cout << "Pour charger une map, maintenez LAlt et appuyez L" << std::endl;
 }
 
 
@@ -404,6 +420,10 @@ int main(int argc, char* argv[])
 
 	std::cout << "\t\t=== MapCreator ===\n\n" << std::endl;	
 
+	introText();
+
+
+
 	//Création de la fenêtre principale
 	sf::RenderWindow window(sf::VideoMode((size_tile*size_x<1200) ? size_tile*size_x : 1200 , (size_tile*size_y<720) ? size_tile*size_y : 720), "MapCreator");
 	window.setFramerateLimit(120);
@@ -423,7 +443,6 @@ int main(int argc, char* argv[])
 		available_tiles[i].m_pos_text = sf::Vector2f( (i%(texture_file.getSize().x/size_tile))*size_tile,  (i/(texture_file.getSize().x/size_tile))*size_tile );
 		available_tiles[i].m_size_text = sf::Vector2f( size_tile, size_tile );
 		available_tiles[i].m_collisionable = false;
-		std::cout << "Tiles " << i << " : " << available_tiles[i].m_pos_text.x << " , " << available_tiles[i].m_pos_text.y << std::endl;
 	}
 	Tile buff_tile=available_tiles[0];
 
@@ -433,29 +452,8 @@ int main(int argc, char* argv[])
 	window.setView(main_view);
 
 
-/*
-	Map* custom_map=NULL;
-	std::string tmp_text_file;
-	tmp_text_file.erase(std::remove(tmp_text_file.begin(), tmp_text_file.end(), ' '), tmp_text_file.end());
-
-	loadMap(&custom_map, "LittleHouse.map", &tmp_text_file);
-
-	std::cout << tmp_text_file << std::endl;
-
-	sf::Texture new_text;
-	
-	if( new_text.loadFromFile(tmp_text_file) == false)
-	{
-		std::cout << "Le fichier texture n'a pas pu être chargé." << std::endl;
-		return -1;
-	}
-	custom_map->setTexture(&new_text);
-
-*/
-
 
 	//Création de la map
-
 	Map* custom_map=new Map(sf::Vector2f(size_x, size_y), size_h, size_tile);
 	custom_map->setTexture(&texture_file);
 
@@ -498,17 +496,18 @@ int main(int argc, char* argv[])
 		{
 
 		}
+	
 		
+		window.draw(*custom_map);
+		window.draw(map_zone);
+
 
 		// Changement de hauteur
 		if(height_settings(&window, custom_map, &chosen_height))
 			custom_map->update_transparency(chosen_height);
 		else
 			custom_map->update();
-		
 
-		window.draw(*custom_map);
-		window.draw(map_zone);
 
 		//Si l'utilisateur utilise la fenêtre principale
 		if(window.hasFocus())
@@ -529,7 +528,6 @@ int main(int argc, char* argv[])
 		if(load_map(&window, &tileset_window, &custom_map, &texture_file, &available_tiles, &nbr_tiles)==1)
 		{
 			buff_tile=available_tiles[0];
-			std::cout << "bouffon : " << map_zone.getPosition().x << std::endl;
 		}
 
 		//Placement des élements

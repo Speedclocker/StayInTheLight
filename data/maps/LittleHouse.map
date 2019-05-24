@@ -3,7 +3,7 @@ Tile Size : 16
 Height : 2
 X : 30
 Y : 30
-Texture File : ../imgs/tileset.png
+Texture File : data/imgs/tileset.png
 
 Map : 
 H0 : 

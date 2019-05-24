@@ -2,7 +2,7 @@
 #include "Interactions.h"
 #include "Character.h"
 #include "collision.h"
-
+#include "loadMap.h"
 
 int main()
 {
@@ -17,7 +17,7 @@ int main()
 	texture_link.loadFromFile("data/imgs/linkmv.png");
 
 
-    //Création du personnage
+	//Création du personnage
 	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
 	personnage.setSpeed(2);
 	personnage.setHitbox(sf::IntRect(0,0, personnage.getSize().x, personnage.getSize().y));
@@ -41,6 +41,24 @@ int main()
 
 	//Les évenements ne se répètent pas tant que la ou les touches restent appuyées
 	window.setKeyRepeatEnabled(false);
+
+
+	//Création de la map
+	Map* map=NULL;
+
+	sf::Texture texture_map;
+	std::string texture_file;
+
+	if(loadMap(&map, "data/maps/LittleHouse.map", &texture_file)<0)
+	{
+		std::cerr << "Erreur lors du chargement de la map" << std::endl;
+		return -1;
+	}
+	texture_map.loadFromFile(texture_file);
+
+	map->setTexture(&texture_map);
+
+
 
 
 	//Boucle principale
@@ -72,10 +90,15 @@ int main()
 		mob.update();
 
 
+		// Dessin de la map
+		map->update();
+		window.draw(*map);
+
         // Dessin des personnages à l'écran
 		mob.getDrawn(&window);
 		personnage.getDrawn(&window);
 		
+
 		
 		// Affichage des éléments
 		window.display();

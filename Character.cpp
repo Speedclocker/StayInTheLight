@@ -149,10 +149,10 @@ bool Attack::update()
 	//Met à jour l'état de l'attaque (fait passer à la frame suivante ou termine l'attaque)    	
 	if(this->getEmitter()!=NULL)
 	{
-		for(int i=0; i<this->getEmitter()->getAvTargets().size(); i++)
+		for(unsigned int i=0; i<this->getEmitter()->getAvTargets().size(); i++)
 		{
 			bool already_met=false;
-			for(int j=0; j<this->getMetTargets().size(); j++)
+			for(unsigned int j=0; j<this->getMetTargets().size(); j++)
 			{
 				if(this->getEmitter()->getAvTargets()[i]==this->getMetTargets()[j])
 					already_met=true;
@@ -372,7 +372,7 @@ void Character::addAvTarget(Character* target)
 {
 	// Rajoute une cible potentielle pouvant être attaquée par le personnage tout en vérifiant si celle ci n'est pas déjà dans la liste des cibles potentielles
 	bool already_av =false;
-	for(int i=0; i<this->getAvTargets().size(); i++)
+	for(unsigned int i=0; i<this->getAvTargets().size(); i++)
 	{
 		if(this->getAvTargets()[i]==target)
 			already_av=true;
@@ -500,3 +500,13 @@ void Character::takeDamages(int damages)
 	//Prends des dommages en fonction des dégâts en paramètres.
 	m_health-=damages;
 }
+
+
+		
+void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	// Affiche le personnage
+	target.draw(*m_sprite2, states);
+};
+
+

@@ -33,23 +33,46 @@ Map::Map(sf::Vector2f size, int height, int tile_sz)
 		}
 	}	
 }
+
+
 	
 Map::~Map()
 {
+	for(int h=0; h<this->getHeight(); h++)
+	{
+		for(int i=0; i<this->getSize().x; i++)
+		{
+			if(m_map[h][i]!=NULL)
+				free(m_map[h][i]);
+		}
 
+		if(m_map[h]!=NULL)
+			free(m_map[h]);
+	}	
+	free(m_map);	
 }
 
 
 //Taille de la map
-int Map::getHeight() const		{	return m_height;	}
+int Map::getHeight() const										{	return m_height;	}
 
 
 //Hauteur de la map
-sf::Vector2f Map::getSize() const	{	return m_size;		}
+sf::Vector2f Map::getSize() const								{	return m_size;		}
 
 
 //Taille d'une tile
-int Map::getTileSize() const		{	return m_tile_sz;	}
+int Map::getTileSize() const									{	return m_tile_sz;	}
+
+
+//Une tile de la map
+Tile Map::getTile(int height, sf::Vector2i tile_pos) const 		
+{	
+	if(m_map!=NULL && m_map[height]!=NULL && m_map[height][tile_pos.x]!=NULL) 
+		return m_map[height][tile_pos.x][tile_pos.y]; 
+	else
+		return (Tile){sf::Vector2f(-1, -1), sf::Vector2f(-1, -1), false};
+}
 
 
 

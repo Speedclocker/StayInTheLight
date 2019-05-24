@@ -2,38 +2,36 @@ CC=g++
 CFLAGS=-W -Wall -Wextra -g 
 EXEC= Rogue
 SFMLDIR=/usr/lib/x86_64-linux-gnu/ 
+IDIR=-Iincludes/
 LDIR= -lsfml-graphics -lsfml-window -lsfml-system -lm
 
 
-all : $(EXEC) MapCreator
+all : $(EXEC)
 	#rm -f *.o
 
-MapCreator: MapCreator.cpp Map.o
-	g++ -o $@ $^ -I$(SFMLDIR) $(LDIR) $(CFLAGS)
-
 $(EXEC): main.o Animation.o Character.o Interactions.o collision.o Map.o Object.o
-	g++ -o $@ $^ $(LDIR) $(CFLAGS)
+	g++ -o $@ $^ $(IDIR) $(LDIR) $(CFLAGS)
 
-main.o: main.cpp Character.h Interactions.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+main.o: main.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
-collision.o: collision.cpp collision.h Character.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+collision.o: collision.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
-Interactions.o: Interactions.cpp Interactions.h Character.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS) 
+Interactions.o: Interactions.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS) 
 
-Character.o: Character.cpp Character.h Object.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+Character.o: Character.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
-Object.o: Object.cpp Object.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+Object.o: Object.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
-Animation.o: Animation.cpp Animation.h
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+Animation.o: Animation.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
-Map.o: Map.cpp Map.h 
-	g++ -c $< -I$(SFMLDIR) $(CFLAGS)
+Map.o: Map.cpp
+	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
 
 clean:

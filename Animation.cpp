@@ -166,7 +166,7 @@ void AnimatedSprite::update()
 void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Dessine le sprite
-	target.draw(m_sprite);
+	target.draw(m_sprite, states);
 }
 
 

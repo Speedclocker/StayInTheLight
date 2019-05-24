@@ -13,11 +13,13 @@ OBJECTS:=$(SOURCES:$(SDIR)%.cpp=$(ODIR)%.o)
 
 all : $(EXEC)
 
-$(EXEC): $(OBJECTS)
+$(EXEC): $(OBJECTS)	
 	g++ -o $@ $^ $(IDIR) $(LFLAGS) $(CFLAGS)
 
 $(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
+	@if [ ! -d $(ODIR) ]; then mkdir $(ODIR); fi
 	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+
 
 
 

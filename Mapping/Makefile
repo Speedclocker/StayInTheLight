@@ -4,7 +4,7 @@ EXEC= Rogue
 SFMLDIR=-I/usr/lib/x86_64-linux-gnu/ 
 IDIR=-I../includes
 LDIR= -lsfml-graphics -lsfml-window -lsfml-system -lm
-CDIR= ../
+CDIR= ../src/
 
 
 all : MapCreator

@@ -1,6 +1,17 @@
 #include <SFML/Graphics.hpp>
 #include "collision.h"
-#include "Character.h"
+
+
+
+struct Interval
+{
+    int a;
+    int b;
+    int length()
+    {
+        return b-a;
+    }
+};
 
 
 
@@ -75,4 +86,248 @@ void physics_characters(Character* character_1, Character* character_2)
 
 	}
 	
+}
+
+
+void physics_character_map(Character* character, Map* map, int height)
+{
+    struct Interval temp_vertical1{-1,-1};
+    struct Interval temp_vertical2{-1,-1};
+    struct Interval temp_horizontal1{-1,-1};
+    struct Interval temp_horizontal2{-1,-1};
+
+
+    std::vector < sf::IntRect > temp_hitbox_array;
+
+    for(int i=character->getAbsHitbox().left; i <= character->getAbsHitbox().left + character->getAbsHitbox().width + map->getTileSize(); i+=map->getTileSize())
+    {
+		for(int j=character->getAbsHitbox().top; j <= character->getAbsHitbox().top + character->getAbsHitbox().height+ map->getTileSize(); j+=map->getTileSize())
+        {
+            if(i>=0 && i<map->getSize().x*map->getTileSize() && j>=0 && j<map->getSize().y*map->getTileSize() && map->getTileFromCoords(height, sf::Vector2f(i, j)).m_collisionable )
+            {
+            	int tile_sz = map->getTileSize();
+                sf::IntRect temp_hitbox_rect( sf::Vector2i( (int)(i/tile_sz)*tile_sz , (int)(j/tile_sz)*tile_sz ), sf::Vector2i(tile_sz, tile_sz) );
+
+                temp_hitbox_array.push_back(temp_hitbox_rect);
+            }
+        }
+    }
+
+    for(std::vector< sf::IntRect >::iterator hit1 = temp_hitbox_array.begin() ; hit1 != temp_hitbox_array.end(); hit1++)
+    {
+        if( collision_rects(character->getAbsHitbox(), *hit1) )
+        {
+            if(hit1->top+hit1->height/2<character->getAbsHitbox().top+character->getAbsHitbox().height/2)
+            {
+                temp_vertical1.a=character->getAbsHitbox().top;
+                temp_vertical2.a=character->getAbsHitbox().top;
+
+                temp_vertical1.b=hit1->top+hit1->height;
+                temp_vertical2.b=hit1->top+hit1->height;
+            }
+            else
+            {
+                temp_vertical1.a=character->getAbsHitbox().top+character->getAbsHitbox().height;
+                temp_vertical2.a=character->getAbsHitbox().top+character->getAbsHitbox().height;
+
+                temp_vertical1.b=hit1->top;
+                temp_vertical2.b=hit1->top;
+            }
+
+            if(hit1->left+hit1->width/2<character->getAbsHitbox().left+character->getAbsHitbox().width/2)
+            {
+                temp_horizontal1.a=character->getAbsHitbox().left;
+                temp_horizontal2.a=character->getAbsHitbox().left;
+
+                temp_horizontal1.b=hit1->left+hit1->width;
+                temp_horizontal2.b=hit1->left+hit1->width;
+            }
+            else
+             {
+                temp_horizontal1.a=character->getAbsHitbox().left+character->getAbsHitbox().width;
+                temp_horizontal2.a=character->getAbsHitbox().left+character->getAbsHitbox().width;
+
+                temp_horizontal1.b=hit1->left;
+                temp_horizontal2.b=hit1->left;
+            }
+
+
+            for(std::vector< sf::IntRect >::iterator hit2 = temp_hitbox_array.begin() ; hit2 != temp_hitbox_array.end(); hit2++)
+    		{
+                if(collision_rects(character->getAbsHitbox(), (*hit2)) && hit1!=hit2)
+                {
+                    if(hit1->top+hit1->height/2<character->getAbsHitbox().top+character->getAbsHitbox().height/2
+                   	&& hit2->top+hit2->height/2<character->getAbsHitbox().top+character->getAbsHitbox().height/2)
+                    {
+                        if(temp_vertical1.b>hit2->top+hit2->height)		temp_vertical1.b=hit2->top+hit2->height;
+
+
+                        if(hit1->left+hit1->width/2<hit2->left+hit2->width/2)
+                        {
+                            if(hit2->left+hit2->width>character->getAbsHitbox().left+character->getAbsHitbox().width && temp_horizontal1.b<character->getAbsHitbox().left+character->getAbsHitbox().width)
+                                temp_horizontal1.b=character->getAbsHitbox().left+character->getAbsHitbox().width;
+
+                            else if(hit2->left+hit2->width<=character->getAbsHitbox().left+character->getAbsHitbox().width && temp_horizontal1.b<hit2->left+hit2->width)
+                               	temp_horizontal1.b=hit2->left+hit2->width;
+
+                        }
+                        else
+                        {
+                            if(hit2->left<character->getAbsHitbox().left && temp_horizontal1.a>character->getAbsHitbox().left)	
+                            	temp_horizontal1.a=character->getAbsHitbox().left;
+
+                            else if(hit2->left>=character->getAbsHitbox().left && temp_horizontal1.a>hit2->left)				
+                            	temp_horizontal1.a=hit2->left;
+                        }
+                    }
+
+                    else if(hit1->top+hit1->height/2>=character->getAbsHitbox().top+character->getAbsHitbox().height/2
+                         && hit2->top+hit2->height/2>=character->getAbsHitbox().top+character->getAbsHitbox().height/2)
+                    {
+                        if(temp_vertical1.b<hit2->top) 	temp_vertical1.b=hit2->top;
+
+                        if(hit1->left+hit1->width/2<hit2->left+hit2->width/2)
+                        {
+                            if(hit2->left+hit2->width>character->getAbsHitbox().left+character->getAbsHitbox().width
+                               && temp_horizontal1.b<character->getAbsHitbox().left+character->getAbsHitbox().width)
+                                temp_horizontal1.b=character->getAbsHitbox().left+character->getAbsHitbox().width;
+
+                            else if(hit2->left+hit2->width<=character->getAbsHitbox().left+character->getAbsHitbox().width
+                               && temp_horizontal1.b<hit2->left+hit2->width)
+                               	temp_horizontal1.b=hit2->left+hit2->width;
+
+                        }
+                        else
+                        {
+                            if(hit2->left<character->getAbsHitbox().left && temp_horizontal1.a>character->getAbsHitbox().left) 
+                            	temp_horizontal1.a=character->getAbsHitbox().left;
+
+                            else if(hit2->left>=character->getAbsHitbox().left && temp_horizontal1.a>hit2->left)
+                               	temp_horizontal1.a=hit2->left;
+                        }
+                    }
+
+                    if(hit1->left+hit1->width/2<character->getAbsHitbox().left+character->getAbsHitbox().width/2 
+                    && hit2->left+hit2->width/2<character->getAbsHitbox().left+character->getAbsHitbox().width/2)
+                    {
+                        if(temp_horizontal2.b>hit2->left+hit2->width) 	temp_horizontal2.b=hit2->left+hit2->width;
+
+
+                        if(hit1->top+hit1->height/2<hit2->top+hit2->height/2)
+                        {
+                            if(hit2->top+hit2->height>character->getAbsHitbox().top+character->getAbsHitbox().height
+                               && temp_vertical2.b<character->getAbsHitbox().top+character->getAbsHitbox().height)
+                                temp_vertical2.b=character->getAbsHitbox().top+character->getAbsHitbox().height;
+
+                            else if(hit2->top+hit2->height<=character->getAbsHitbox().top+character->getAbsHitbox().height
+                               && temp_vertical2.b<hit2->top+hit2->height)
+                            	temp_vertical2.b=hit2->top+hit2->height;
+
+                        }
+                        else
+                        {
+                            if(hit2->top<character->getAbsHitbox().top && temp_vertical2.a>character->getAbsHitbox().top)
+                                temp_vertical2.a=character->getAbsHitbox().top;
+
+                            else if(hit2->top>=character->getAbsHitbox().top && temp_vertical2.a>hit2->top)
+                               	temp_vertical2.a=hit2->top;
+                        }
+                    }
+
+                    else if(hit1->left+hit1->width/2>=character->getAbsHitbox().left+character->getAbsHitbox().width/2
+                       && hit2->left+hit2->width/2>=character->getAbsHitbox().left+character->getAbsHitbox().width/2)
+                    {
+                        if(temp_horizontal2.b<hit2->left) temp_horizontal2.b=hit2->left;
+
+                        if(hit1->top+hit1->height/2<hit2->top+hit2->height/2)
+                        {
+                            if(hit2->top+hit2->height>character->getAbsHitbox().top+character->getAbsHitbox().height
+                               && temp_vertical2.b<character->getAbsHitbox().top+character->getAbsHitbox().height)
+                                temp_vertical2.b=character->getAbsHitbox().top+character->getAbsHitbox().height;
+
+                            else if(hit2->top+hit2->height<=character->getAbsHitbox().top+character->getAbsHitbox().height
+                               && temp_vertical2.b<hit2->top+hit2->height)
+                               	temp_vertical2.b=hit2->top+hit2->height;
+
+                        }
+                        else
+                        {
+                            if(hit2->top<character->getAbsHitbox().top && temp_vertical2.a>character->getAbsHitbox().top)
+                                temp_vertical2.a=character->getAbsHitbox().top;
+
+                            else if(hit2->top>=character->getAbsHitbox().top && temp_vertical2.a>hit2->top)
+                               	temp_vertical2.a=hit2->top;
+                        }
+                    }
+
+                }
+            }
+
+
+            if(temp_horizontal2.length()==temp_horizontal1.length() && temp_vertical2.length()==temp_vertical1.length())
+            {
+                if(abs(temp_horizontal1.length())>abs(temp_vertical1.length()))
+                    character->move(0, temp_vertical1.length());
+                else if(abs(temp_horizontal1.length())<=abs(temp_vertical1.length()))
+                    character->move(temp_horizontal1.length(),0);
+            }
+            else if (temp_horizontal2.length()==temp_horizontal1.length())
+            {
+                if(abs(temp_vertical1.length())>abs(temp_vertical2.length()))
+                {
+                    if(abs(temp_horizontal1.length())>abs(temp_vertical1.length()))
+                        character->move(0, temp_vertical1.length());
+                    else if(abs(temp_horizontal1.length())<=abs(temp_vertical1.length()))
+                        character->move(temp_horizontal1.length(),0);
+                }
+                else if(abs(temp_vertical1.length())<=abs(temp_vertical2.length()))
+                {
+                    if(abs(temp_horizontal1.length())>abs(temp_vertical2.length()))
+                        character->move(0, temp_vertical2.length());
+                    else if(abs(temp_horizontal1.length())<=abs(temp_vertical2.length()))
+                        character->move(temp_horizontal1.length(),0);
+                }
+            }
+            else if (temp_vertical2.length()==temp_vertical1.length())
+            {
+                if(abs(temp_horizontal1.length())>abs(temp_horizontal2.length()))
+                {
+                    if(abs(temp_horizontal1.length())>abs(temp_vertical1.length()))
+                        character->move(0, temp_vertical1.length());
+                    else if(abs(temp_horizontal1.length())<=abs(temp_vertical1.length()))
+                        character->move(temp_horizontal1.length(),0);
+                }
+                else if(abs(temp_horizontal1.length())<=abs(temp_horizontal2.length()))
+                {
+                    if(abs(temp_horizontal2.length())>abs(temp_vertical1.length()))
+                        character->move(0, temp_vertical1.length());
+                    else if(abs(temp_horizontal2.length())<=abs(temp_vertical1.length()))
+                        character->move(temp_horizontal1.length(),0);
+                }
+            }
+            else
+            {
+                if(abs(temp_horizontal2.length())>abs(temp_vertical2.length()) && abs(temp_horizontal1.length())>abs(temp_vertical1.length()))
+                {
+                        character->move(0, temp_vertical2.length());
+                        character->move(0, temp_vertical1.length());
+                }
+                else if(abs(temp_horizontal2.length())<=abs(temp_vertical2.length()) && abs(temp_horizontal1.length())>abs(temp_vertical1.length()))
+                {
+                        character->move(temp_horizontal2.length(), 0);
+                        character->move(0, temp_vertical1.length());
+                }
+                else if(abs(temp_horizontal2.length())>abs(temp_vertical2.length()) && abs(temp_horizontal1.length())<=abs(temp_vertical1.length()))
+                {
+                        character->move(0, temp_vertical2.length());
+                        character->move(temp_horizontal1.length(), 0);
+                }
+                else if(abs(temp_horizontal2.length())<=abs(temp_vertical2.length()) && abs(temp_horizontal1.length())<=abs(temp_vertical1.length()))
+                {
+                        character->move(temp_horizontal2.length(), 0);
+                        character->move(temp_horizontal1.length(), 0);
+                }
+            }
+        }
+    }
 }

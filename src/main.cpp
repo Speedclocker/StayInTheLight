@@ -12,29 +12,6 @@ int main()
 	window.setFramerateLimit(60);
 
 
-	//Création et chargement de texture
-	sf::Texture texture_link;
-	texture_link.loadFromFile("data/imgs/linkmv.png");
-
-
-	//Création du personnage
-	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
-	personnage.setSpeed(2);
-	personnage.setHitbox(sf::IntRect(0,0, personnage.getSize().x, personnage.getSize().y));
-	personnage.setHealth(10);
-	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
-
-
-	//Création du mob
-	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue);
-	mob.setHealth(10);
-	mob.setHitbox(sf::IntRect(0,0, mob.getSize().x, mob.getSize().y));
-	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
-
-
-	//Ajout d'une cible potentielle d'attaque au héros 
-	personnage.addAvTarget(&mob);
-
 
    	//Variable d'état de la touche d'attaque
 	bool space=false;
@@ -49,7 +26,7 @@ int main()
 	sf::Texture texture_map;
 	std::string texture_file;
 
-	if(loadMap(&map, "data/maps/Ground.map", &texture_file)<0)
+	if(loadMap(&map, "data/maps/Test.map", &texture_file)<0)
 	{
 		std::cerr << "Erreur lors du chargement de la map" << std::endl;
 		return -1;
@@ -58,6 +35,33 @@ int main()
 
 	map->setTexture(&texture_map);
 
+
+
+	//Création et chargement de texture
+	sf::Texture texture_link;
+	texture_link.loadFromFile("data/imgs/linkmv.png");
+
+
+	//Création du personnage
+	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
+	personnage.setSpeed(2);
+	personnage.setHitbox(sf::IntRect(0,0, personnage.getSize().x, personnage.getSize().y));
+	personnage.setHealth(10);
+	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
+
+	map->addObject(&personnage);
+
+	//Création du mob
+	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue);
+	mob.setHealth(10);
+	mob.setHitbox(sf::IntRect(0,0, mob.getSize().x, mob.getSize().y));
+	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
+
+	map->addObject(&mob);
+
+
+	//Ajout d'une cible potentielle d'attaque au héros 
+	personnage.addAvTarget(&mob);
 
 
 
@@ -81,8 +85,14 @@ int main()
 		// Les entrées claviers permettent d'intéragir sur le personnage
 		character_key_input(&personnage, &space);
 
+/*
 		// On applique une physique entre le mob et le personnage
 		physics_characters(&personnage, &mob);
+
+		// On applique une physique entre le décor et le personnage
+		physics_character_map(&personnage, map, 0);
+*/
+		map->physics_objects();
 
 
         // Mise à jour des personnages
@@ -94,14 +104,17 @@ int main()
 		map->update();
 		window.draw(*map);
 
+
         // Dessin des personnages à l'écran
 		mob.getDrawn(&window);
 		personnage.getDrawn(&window);
 		
 
-		
 		// Affichage des éléments
 		window.display();
 	}
+
+	delete map;
+
 	return 0;
 }

@@ -10,3 +10,9 @@ Object::~Object()
 {
 
 }
+
+
+std::string Object::getType()
+{
+	return m_type;
+}

@@ -1,6 +1,7 @@
 #include "Map.h"
 
-
+#include "collision.h"
+#include "Character.h"
 Map::Map(void)
 {
 	
@@ -71,9 +72,22 @@ Tile Map::getTile(int height, sf::Vector2i tile_pos) const
 	if(m_map!=NULL && m_map[height]!=NULL && m_map[height][tile_pos.x]!=NULL) 
 		return m_map[height][tile_pos.x][tile_pos.y]; 
 	else
+	{
+		std::cerr << "Erreur lors de la tentative de l'acquisition d'une tile, la map n'est peut être pas correctement chargée" << std::endl;
 		return (Tile){sf::Vector2f(-1, -1), sf::Vector2f(-1, -1), false};
+	}
 }
 
+Tile Map::getTileFromCoords(int height, sf::Vector2f position) const
+{
+	if(m_map!=NULL && m_map[height]!=NULL && m_map[height][(int)(position.x/this->getTileSize())]!=NULL) 
+		return m_map[height][(int)(position.x/this->getTileSize())][(int)(position.y/this->getTileSize())]; 
+	else
+	{
+		std::cerr << "Erreur lors de la tentative de l'acquisition d'une tile, la map n'est peut être pas correctement chargée" << std::endl;	
+		return (Tile){sf::Vector2f(-1, -1), sf::Vector2f(-1, -1), false};
+	}
+}
 
 
 void Map::setTile(Tile tile, sf::Vector2i position, int height)
@@ -118,10 +132,7 @@ void Map::update()
 				m_vertex[index].color.a = 255;
 				m_vertex[index+1].color.a = 255;
 				m_vertex[index+2].color.a = 255;
-				m_vertex[index+3].color.a = 255;
-				
-
-				
+				m_vertex[index+3].color.a = 255;	
 			}
 		}	
 	}
@@ -172,6 +183,29 @@ void Map::update_transparency(int chosen_height)
 	}
 }
 
+
+void Map::physics_objects()
+{
+	for(std::vector<Object*>::iterator obj1=m_objects.begin(); obj1!=m_objects.end(); obj1++)
+	{
+		//Physique des objets avec les éléments de la map
+		physics_character_map((Character*)(*obj1), this, 0);
+		
+
+		//Physique des objets entre eux
+		for(std::vector<Object*>::iterator obj2=obj1+1; obj2!=m_objects.end(); obj2++)
+		{
+			if((*obj1)->getType().compare((*obj2)->getType())==0 && (*obj1)->getType().compare("Character")==0)
+				physics_characters((Character*)(*obj1), (Character*)(*obj2));
+		}
+	}
+}
+
+
+void Map::addObject(Object* object)
+{
+	m_objects.push_back(object);
+}
 		
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {

@@ -10,6 +10,11 @@ class Object : public sf::Drawable
 public:
 	Object();
 	~Object();	
+
+	std::string getType();
+
+protected:
+	std::string m_type;
 };
 
 #endif

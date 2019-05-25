@@ -23,6 +23,8 @@ public:
 	sf::Vector2f getSize() const;
 	int getTileSize() const;
 	Tile getTile(int height, sf::Vector2i tile_pos) const;
+	Tile getTileFromCoords(int height, sf::Vector2f position) const;
+
 
 
 	void setTile(Tile tile, sf::Vector2i position, int height);
@@ -32,18 +34,20 @@ public:
 	void update();
 	void update_transparency(int chosen_height);
 
+	void physics_objects();
+	void addObject(Object* object);
 	
 
 private:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-	Tile*** 			m_map;
-	Object*				m_objects;
-	sf::VertexArray 	m_vertex;
-	sf::Texture* 		m_texture;
-	int 				m_height;
-	sf::Vector2f 		m_size;
-	int					m_tile_sz;
+	Tile*** 				m_map;
+	std::vector<Object*>	m_objects;
+	sf::VertexArray 		m_vertex;
+	sf::Texture* 			m_texture;
+	int 					m_height;
+	sf::Vector2f 			m_size;
+	int						m_tile_sz;
 };
 
 

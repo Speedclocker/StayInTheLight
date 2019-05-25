@@ -126,6 +126,7 @@ public:
 	void getDrawn(sf::RenderWindow* window);
 
 	void move(sf::Vector2f movement);
+	void move(int mov_x, int mov_y);
 	void attack();
 	void takeDamages(int damages);
 	

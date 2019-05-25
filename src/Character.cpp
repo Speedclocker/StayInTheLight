@@ -206,12 +206,16 @@ bool Attack::update()
 
 Character::Character()
 {
+	m_type="Character";
+
 	m_actual_attack=NULL;
 	m_sprite2=NULL;
 }
 
 Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
 {
+	m_type="Character";
+
 	m_actual_attack=NULL;
 	m_sprite.setSize(sf::Vector2f(22, 28));
 	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
@@ -391,7 +395,9 @@ void Character::addAvTarget(Character* target)
 void Character::update()
 {
 	//MAJ Position du sprite en fonction de l'entité Character
-	m_sprite.setPosition(m_position);
+	m_sprite.setPosition(sf::Vector2f(this->getAbsHitbox().left, this->getAbsHitbox().top));
+	m_sprite.setSize(sf::Vector2f(this->getAbsHitbox().width, this->getAbsHitbox().height));
+
 
 
 	if(m_sprite2!=NULL)
@@ -475,6 +481,18 @@ void Character::move(sf::Vector2f movement)
 	m_sprite2->setPosition(m_position);
 	
 }	
+
+
+
+void Character::move(int mov_x, int mov_y)
+{
+	// Déplace le personnage
+	m_position+=sf::Vector2f (mov_x, mov_y);
+	m_sprite2->setPosition(m_position);
+	
+}	
+
+
 
 void Character::attack()
 {

@@ -195,7 +195,7 @@ void Map::physics_objects()
 		//Physique des objets entre eux
 		for(std::vector<Object*>::iterator obj2=obj1+1; obj2!=m_objects.end(); obj2++)
 		{
-			if((*obj1)->getType().compare((*obj2)->getType())==0 && (*obj1)->getType().compare("Character")==0)
+			if((*obj1)->getType().compare("Character")==0 && (*obj2)->getType().compare("Character")==0)
 				physics_characters((Character*)(*obj1), (Character*)(*obj2));
 		}
 	}

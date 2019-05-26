@@ -39,8 +39,10 @@ public:
 	
 
 private:
+	//virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
+	clock_t					m_time;
 	Tile*** 				m_map;
 	std::vector<Object*>	m_objects;
 	sf::VertexArray 		m_vertex;
@@ -50,5 +52,7 @@ private:
 	int						m_tile_sz;
 };
 
+
+bool comparePosY(Object* obj1, Object* obj2);
 
 #endif

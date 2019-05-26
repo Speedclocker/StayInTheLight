@@ -235,19 +235,6 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 {	
 	static bool keyPressed_O = false, keyPressed_P = false, keyPressed_T = false, transparencydisplay=true;
 
-	//Permet d'afficher la hauteur	
-	char height_str[20];
-	sprintf(height_str, "Hauteur : %d", *chosen_height);
-
-	sf::Font height_font;
-	height_font.loadFromFile("arial.ttf");
-
-	sf::Text height_text(height_str,height_font);
-	height_text.setCharacterSize(14);
-	height_text.setFillColor(sf::Color::White);
-	height_text.setOutlineColor(sf::Color::Black);
-	height_text.setOutlineThickness(1);
-	height_text.setPosition(window->getView().getCenter().x + window->getView().getSize().x/2 - 85, window->getView().getCenter().y + window->getView().getSize().y/2 - 30);
 
 	//Changement de hauteur -
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::O) && window->hasFocus())
@@ -276,7 +263,27 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 		transparencydisplay^=true;
 	}
 
+
+	//Permet d'afficher la hauteur	
+	char height_str[40];
+
+	if(transparencydisplay)
+		sprintf(height_str, "Hauteur : %d T-Mode", *chosen_height);
+	else
+		sprintf(height_str, "Hauteur : %d", *chosen_height);
+
+	sf::Font height_font;
+	height_font.loadFromFile("arial.ttf");
+
+	sf::Text height_text(height_str,height_font);
+	height_text.setCharacterSize(14);
+	height_text.setFillColor(sf::Color::White);
+	height_text.setOutlineColor(sf::Color::Black);
+	height_text.setOutlineThickness(1);
+	height_text.setPosition(window->getView().getCenter().x - window->getView().getSize().x/2 + 10, window->getView().getCenter().y + window->getView().getSize().y/2 - 30);
+
 	window->draw(height_text);
+
 
 	return transparencydisplay;
 }
@@ -465,12 +472,16 @@ int main(int argc, char* argv[])
 	int chosen_height=0;
 
 
+	
+	bool transparency=false;
+
 	//Boucle principale
 	while(window.isOpen() && tileset_window.isOpen())
 	{
-		map_zone.setSize(sf::Vector2f(custom_map->getSize().x*custom_map->getTileSize(), custom_map->getSize().y*custom_map->getTileSize()));
+		// MAIN WINDOW
+
 		window.clear();
-		tileset_window.clear();
+
 
         // Attente des évenements
 		sf::Event event, tileset_event;
@@ -488,25 +499,29 @@ int main(int argc, char* argv[])
 				main_view.setCenter(sf::Vector2f(custom_map->getTileSize() * custom_map->getSize().x/2, custom_map->getTileSize() * custom_map->getSize().y/2));
 				window.setView(main_view);
 			}
-
-
-		}
-
-		while(tileset_window.pollEvent(tileset_event))
-		{
-
 		}
 	
+
+		//Dessine la limite de la map
+		map_zone.setSize(sf::Vector2f(custom_map->getSize().x*custom_map->getTileSize(), custom_map->getSize().y*custom_map->getTileSize()));
+
 		
+		// Défini si l'affichage est en mode transparent ou normal		
+		if(transparency)
+			custom_map->update_transparency(chosen_height);
+		else
+			custom_map->update();
+
+
+		//Dessine la map
 		window.draw(*custom_map);
 		window.draw(map_zone);
 
 
+
 		// Changement de hauteur
-		if(height_settings(&window, custom_map, &chosen_height))
-			custom_map->update_transparency(chosen_height);
-		else
-			custom_map->update();
+		transparency=height_settings(&window, custom_map, &chosen_height);
+
 
 
 		//Si l'utilisateur utilise la fenêtre principale
@@ -521,8 +536,11 @@ int main(int argc, char* argv[])
 		//Pour placer les tiles
 		set_tile(&window, &texture_file, custom_map, buff_tile, chosen_height);
 
+
 		//Pour sauvegarder la map
 		save_map(custom_map, texture_file_name);
+
+
 
 		//Pour charger une map
 		if(load_map(&window, &tileset_window, &custom_map, &texture_file, &available_tiles, &nbr_tiles)==1)
@@ -530,21 +548,43 @@ int main(int argc, char* argv[])
 			buff_tile=available_tiles[0];
 		}
 
+
+		// Affichage des éléments
+		window.display();
+
+
+
+
+
+		// TILESET WINDOW
+
+		tileset_window.clear();
+
+
+		while(tileset_window.pollEvent(tileset_event))
+		{
+
+		}
+
 		//Placement des élements
 		tileset_window.draw(tileset_sprite);
 
 
+
 		//Choix de la tile
 		choice_tile(&buff_tile, &tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());
+
+	
 
 		if(tileset_window.hasFocus())
 		{
 			//Gestion de la collision des blocs
 			tileset_collision_settings(&tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());	
 		}
+
+
 	
 		// Affichage des éléments
-		window.display();
 		tileset_window.display();
 		
 	}

@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
 
-#include "Character.h"
 #include "Map.h"
 
 class Character;

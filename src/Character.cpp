@@ -146,7 +146,7 @@ std::vector< Character* > Attack::getMetTargets()
 bool Attack::update()
 {
 
-	//Met à jour l'état de l'attaque (fait passer à la frame suivante ou termine l'attaque)    	
+	//Met à jour l'état de l'attaque (fait passer à la frame suivante ou termine l'attaque). Renvoie true si l'attaque est finie
 	if(this->getEmitter()!=NULL)
 	{
 		for(unsigned int i=0; i<this->getEmitter()->getAvTargets().size(); i++)
@@ -217,14 +217,13 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 	m_type="Character";
 
 	m_actual_attack=NULL;
+
 	m_sprite.setSize(sf::Vector2f(22, 28));
 	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
-
 	m_sprite.setFillColor(color);
 
 	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
 	m_sprite2->setFPSQuotient(4);
-
 
 	this->setSize(sf::Vector2f(22, 28));
 	this->update();
@@ -262,6 +261,12 @@ sf::Vector2f Character::getPosition()
 	return m_position;
 }
 
+int Character::getHeight()
+{
+	//Renvoie la hauteur du personnage
+	return m_height;
+}
+
 sf::Vector2f Character::getSize()
 {
 	// Renvoie un vecteur de 2 dimensions contenant la taille d'un personnage en largeur et en longueur
@@ -281,7 +286,7 @@ sf::IntRect Character::getAbsHitbox()
 		m_hitbox.width, m_hitbox.height);
 }
 
-State Character::getState()
+State Character::getState() const
 {
 	// Renvoie l'état du personnage
 	return m_state;
@@ -340,6 +345,12 @@ void Character::setPosition(sf::Vector2f position)
 	m_sprite.setPosition(m_position);
 	
 	m_sprite2->setPosition(m_position);
+}
+
+void Character::setHeight(int height)
+{
+	//Modifie la hauteur du personnage
+	m_height=height;
 }
 
 void Character::setSize(sf::Vector2f size)
@@ -439,11 +450,9 @@ void Character::update()
 
 
 	//Vérifie l'état de l'attaque
-
-
 	if(m_state==ATTACKING && m_actual_attack!=NULL)
 	{
-		if(m_actual_attack->update())
+		if(m_actual_attack->update()) // Si l'attaque est finie...
 		{
 			m_state=STANDING;
 			m_last_time_attack = m_clock.getElapsedTime();
@@ -454,22 +463,6 @@ void Character::update()
 	}
 
 	
-}
-
-
-void Character::getDrawn(sf::RenderWindow* window)
-{
-	//Dessine le personnage sur une fenêtre dont le pointeur est pris en paramètre
-	
-	window->draw(m_sprite);
-	window->draw(*m_sprite2);
-
-	if(this->getState()==ATTACKING)
-	{
-		sf::RectangleShape test_rect(sf::Vector2f(m_actual_attack->getCurZone().width, m_actual_attack->getCurZone().height));
-		test_rect.setPosition(m_actual_attack->getCurZone().left, m_actual_attack->getCurZone().top);
-		window->draw(test_rect);
-	}
 }
 
 
@@ -524,7 +517,15 @@ void Character::takeDamages(int damages)
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Affiche le personnage
+	//target.draw(m_sprite);
 	target.draw(*m_sprite2, states);
+
+	if(this->getState()==ATTACKING)
+	{
+		sf::RectangleShape test_rect(sf::Vector2f(m_actual_attack->getCurZone().width, m_actual_attack->getCurZone().height));
+		test_rect.setPosition(m_actual_attack->getCurZone().left, m_actual_attack->getCurZone().top);
+		target.draw(test_rect);
+	}
 };
 
 

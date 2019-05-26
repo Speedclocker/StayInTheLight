@@ -13,8 +13,13 @@ OBJECTS:=$(SOURCES:$(SDIR)%.cpp=$(ODIR)%.o)
 
 all : $(EXEC)
 
-$(EXEC): $(OBJECTS)	
-	g++ -o $@ $^ $(IDIR) $(LFLAGS) $(CFLAGS)
+$(EXEC): $(OBJECTS) main.o	
+	$(CC) -o $@ $^ $(IDIR) $(LFLAGS) $(CFLAGS)
+
+main.o : main.cpp
+	$(CC) -c $< -o $@ $(IDIR) $(LFLAGS) $(CFLAGS)
+
+
 
 $(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
 	@if [ ! -d $(ODIR) ]; then mkdir $(ODIR); fi
@@ -25,4 +30,4 @@ $(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
 
 .PHONY: clean
 clean:
-	rm -f $(ODIR)*.o Rogue
+	rm -f $(ODIR)*.o Rogue *.o

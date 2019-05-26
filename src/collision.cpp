@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "collision.h"
+#include "Character.h"
 
 
 

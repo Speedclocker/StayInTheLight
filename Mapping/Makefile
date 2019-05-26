@@ -1,23 +1,50 @@
 CC=g++
 CFLAGS=-W -Wall -Wextra -g 
-EXEC= Rogue
+EXEC= MapCreator
 SFMLDIR=-I/usr/lib/x86_64-linux-gnu/ 
 IDIR=-I../includes
 LDIR= -lsfml-graphics -lsfml-window -lsfml-system -lm
-CDIR= ../src/
+SDIR= ../src/
+ODIR= ../obj/
+
+SOURCES:=$(filter-out $(SDIR)loadMap.cpp, $(wildcard $(SDIR)*.cpp))
+OBJECTS:=$(SOURCES:$(SDIR)%.cpp=$(ODIR)%.o)
 
 
-all : MapCreator
-	#rm -f *.o
+all : $(EXEC)
 
-MapCreator: MapCreator.cpp Map.o saveMap.o
-	g++ -o $@ $^ $(SFMLDIR) $(IDIR) $(LDIR) $(CFLAGS)
+$(EXEC): $(OBJECTS) saveMap.o MapCreator.cpp
+	g++ -o $@ $^ $(IDIR) $(LFLAGS) $(LDIR) $(CFLAGS)
 
-Map.o: $(CDIR)Map.cpp
-	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+MapCreator.o: MapCreator.cpp
+	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+
+$(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
+	@if [ ! -d $(ODIR) ]; then mkdir $(ODIR); fi
+	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
 saveMap.o: saveMap.cpp
-	g++ -c $< -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+
+
 
 clean:
 	rm -f *.o MapCreator
+
+
+
+#all : MapCreator
+#	rm -f *.o
+
+#MapCreator: MapCreator.cpp $(ODIR)Map.o saveMap.o
+#	g++ -o $@ $^ $(SFMLDIR) $(IDIR) $(LDIR) $(CFLAGS)
+
+#$(ODIR)Map.o: $(CDIR)Map.cpp
+#	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+
+#saveMap.o: saveMap.cpp
+#	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+
+
+
+

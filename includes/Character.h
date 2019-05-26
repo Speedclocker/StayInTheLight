@@ -90,13 +90,14 @@ public:
 	int getSpeed();
 
 	sf::Vector2f getPosition();
+	int getHeight();
 	sf::Vector2f getSize();
 
 	AnimatedSprite* getSprite();	
 	
 	sf::IntRect getHitbox();
 	sf::IntRect getAbsHitbox();
-	State getState();
+	State getState() const;
 	Sense getSense();
 
 	sf::Clock getClock();
@@ -110,6 +111,7 @@ public:
 	void setSpeed(int speed);
 
 	void setPosition(sf::Vector2f position);
+	void setHeight(int height);
 	void setSize(sf::Vector2f size);
 
 	void setHitbox(sf::IntRect hitbox);
@@ -137,9 +139,6 @@ private:
 	int m_health;
 	int m_speed;
 
-
-	sf::Vector2f m_position;
-	sf::Vector2f m_size;
 
 	sf::RectangleShape m_sprite;
 	AnimatedSprite* m_sprite2;

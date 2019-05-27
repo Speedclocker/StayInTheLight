@@ -19,10 +19,10 @@ struct Interval
 bool collision_rects(sf::IntRect rect_1, sf::IntRect rect_2)
 {
 	// Renvoie true s'il y a collision entre deux Rect, false sinon.
-	if (rect_1.top > rect_2.top + rect_2.height ||
-	    rect_2.top > rect_1.top + rect_1.height ||
-	    rect_1.left > rect_2.left + rect_2.width ||
-	    rect_2.left > rect_1.left + rect_1.width )
+	if (rect_1.top >= rect_2.top + rect_2.height ||
+	    rect_2.top >= rect_1.top + rect_1.height ||
+	    rect_1.left >= rect_2.left + rect_2.width ||
+	    rect_2.left >= rect_1.left + rect_1.width )
 		return false;
 
 	return true;

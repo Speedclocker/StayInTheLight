@@ -446,10 +446,14 @@ void Character::update()
 		// Met à jour le sprite
 		m_sprite2->setPosition(m_position);
 		m_sprite2->update();
-	}
+	}	
+}
 
 
-	//Vérifie l'état de l'attaque
+
+void Character::updateAttack()
+{
+	//Vérifie l'état de l'attaque et met à jour
 	if(m_state==ATTACKING && m_actual_attack!=NULL)
 	{
 		if(m_actual_attack->update()) // Si l'attaque est finie...
@@ -461,8 +465,6 @@ void Character::update()
 			m_actual_attack=NULL;
 		}
 	}
-
-	
 }
 
 
@@ -517,7 +519,7 @@ void Character::takeDamages(int damages)
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Affiche le personnage
-	//target.draw(m_sprite);
+	target.draw(m_sprite);
 	target.draw(*m_sprite2, states);
 
 	if(this->getState()==ATTACKING)

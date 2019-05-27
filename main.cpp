@@ -29,7 +29,7 @@ int main()
 	sf::Texture texture_map;
 	std::string texture_file;
 
-	if(loadMap(&map, "data/maps/Test.map", &texture_file)<0)
+	if(loadMap(&map, "data/maps/Caca.map", &texture_file)<0)
 	{
 		std::cerr << "Erreur lors du chargement de la map" << std::endl;
 		return -1;
@@ -48,18 +48,18 @@ int main()
 	//Création du personnage
 	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
 	personnage.setSpeed(2);
-	personnage.setHitbox(sf::IntRect(0,0, personnage.getSize().x, personnage.getSize().y));
+	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16/*personnage.getSize().y-10*/));
 	personnage.setHealth(10);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
-	personnage.setHeight(0);
+	personnage.setHeight(1);
 	map->addObject(&personnage);
 
 	//Création du mob
 	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue);
 	mob.setHealth(10);
-	mob.setHitbox(sf::IntRect(0,0, mob.getSize().x, mob.getSize().y));
+	mob.setHitbox(sf::IntRect(0, 5 , mob.getSize().x/1.5, 16 /*mob.getSize().y-10*/));
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
-	personnage.setHeight(0);
+	personnage.setHeight(1);
 	map->addObject(&mob);
 
 
@@ -73,7 +73,6 @@ int main()
 	//Boucle principale
 	while(window.isOpen())
 	{
-
 		window.clear();
 			
 		//Mise à jour de la map
@@ -95,13 +94,18 @@ int main()
 		character_key_input(&personnage, &space);
 
 
-        // Mise à jour des personnages
-		personnage.update();
-		mob.update();
+		// Mise à jour de l'attaque des personnages
+		personnage.updateAttack();
+		mob.updateAttack();
 
 
 		// On applique la physique sur les objets liés à la map
 		map->physics_objects();
+
+
+        // Mise à jour des personnages
+		personnage.update();
+		mob.update();
 
 
 		// Dessin de la map

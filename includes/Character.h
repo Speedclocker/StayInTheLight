@@ -125,6 +125,8 @@ public:
 
 	//Méthodes
 	void update();
+	void updateAttack();
+
 	void getDrawn(sf::RenderWindow* window);
 
 	void move(sf::Vector2f movement);

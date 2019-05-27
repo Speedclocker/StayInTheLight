@@ -27,6 +27,12 @@ void probeMap(const char* raw_line, Map* load_location_map)
 		std::vector<std::string> tmptile;
 		buffer=strtok(line, "(");
 		buffer=strtok(NULL, ")");
+
+		if(buffer!=NULL)
+		{
+			std::string tmp_str=buffer;
+			tmptile.push_back(tmp_str);
+		}
 		
 		while(buffer!=NULL)
 		{

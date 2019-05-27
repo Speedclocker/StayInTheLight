@@ -111,6 +111,9 @@ void Map::setTexture(sf::Texture* texture)
 
 void Map::update()
 {
+	std::sort(m_objects.begin(), m_objects.end(), comparePosY);
+
+
 	m_time=clock();
 	m_vertex.setPrimitiveType(sf::Quads);
 	m_vertex.resize(this->getSize().x * this->getSize().y * this->getHeight() * 4);
@@ -147,6 +150,9 @@ void Map::update()
 
 void Map::update_transparency(int chosen_height)
 {
+	std::sort(m_objects.begin(), m_objects.end(), comparePosY);
+
+	
 	m_vertex.setPrimitiveType(sf::Quads);
 	m_vertex.resize(this->getSize().x * this->getSize().y * this->getHeight() * 4);
 
@@ -223,7 +229,6 @@ void Map::addObject(Object* object)
 //Draw version simplifiée (sans perspective ou notion d'ordre d'affichage)
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	std::cout << "Temps :" << m_time << std::endl;
 	states.transform *= getTransform();
 
 	states.texture = m_texture;
@@ -247,6 +252,8 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	for(int j=0; j<this->getSize().y + this->getHeight() - 1; j++)
 	{
 
+
+
 		///////////////////////////////////
 		//Dessine les objets		
 		for(std::vector<Object*>::const_iterator it=m_objects.begin(); it!=m_objects.end(); it++)
@@ -260,8 +267,10 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 					obj_already_drawn = true;
 			}
 
+			Character* dyn_char = dynamic_cast<Character*>(*it); // Si l'objet est un personnage, on prend sa hitbox
+			int tmp_val = (dyn_char != nullptr) ? dyn_char->getAbsHitbox().top + dyn_char->getAbsHitbox().height : (*it)->getPosition().y + (*it)->getSize().y;
 
-			if(!obj_already_drawn && ((*it)->getPosition().y + (*it)->getSize().y) < ( (j) * this->getTileSize()) + 1)
+			if(!obj_already_drawn && /*((*it)->getPosition().y + (*it)->getSize().y)*/ tmp_val < ( (j) * this->getTileSize()) + 1)
 			{
 				target.draw(*(*it));
 				obj_drawn.push_back(*it);
@@ -315,8 +324,15 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 
 
-
 bool comparePosY(Object* obj1, Object* obj2)
 { 
-	return obj1->getPosition().y + obj1->getSize().y < obj2->getPosition().y + obj2->getSize().y;
+	Character* dyn_char1 = dynamic_cast<Character*>(obj1);
+	Character* dyn_char2 = dynamic_cast<Character*>(obj2);
+
+	int val1 = (dyn_char1 != nullptr) ? dyn_char1->getAbsHitbox().top + dyn_char1->getAbsHitbox().height : obj1->getPosition().y + obj1->getSize().y;
+	int val2 = (dyn_char2 != nullptr) ? dyn_char2->getAbsHitbox().top + dyn_char2->getAbsHitbox().height : obj2->getPosition().y + obj2->getSize().y;
+
+	std::cout << val1 << " < " << val2 << std::endl;
+
+	return val1 < val2;
 }

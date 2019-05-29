@@ -222,7 +222,7 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
 	m_sprite.setFillColor(color);
 
-	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
+	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 50), 6, sf::Vector2f(0,30) );
 	m_sprite2->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));

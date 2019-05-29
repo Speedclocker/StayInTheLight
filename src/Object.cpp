@@ -31,3 +31,8 @@ sf::Vector2f Object::getSize()
 	//Retourne la taille de l'objet
 	return m_size;
 }
+
+int Object::getHeight()
+{
+	return m_height;
+}

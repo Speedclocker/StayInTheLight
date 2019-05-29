@@ -15,6 +15,7 @@ public:
 
 	virtual sf::Vector2f getPosition();
 	virtual sf::Vector2f getSize();
+	virtual int getHeight();
 
 protected:
 	std::string m_type;

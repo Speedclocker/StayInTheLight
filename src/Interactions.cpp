@@ -60,6 +60,26 @@ void character_key_input(Character* character, bool* attack)
 			character->setSense(RIGHT);
 			character->setState(MOVING);
 		}
+		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::U))
+		{
+			character->setHeight(0);
+			character->setState(STANDING);
+		}
+		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
+		{
+			character->setHeight(1);
+			character->setState(STANDING);
+		}
+		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::O))
+		{
+			character->setHeight(2);
+			character->setState(STANDING);
+		}
+		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+		{
+			character->setHeight(3);
+			character->setState(STANDING);
+		}
 		else
 			character->setState(STANDING);
 	}

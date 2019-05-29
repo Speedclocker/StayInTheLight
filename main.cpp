@@ -46,9 +46,10 @@ int main()
 
 
 	//Création du personnage
+	/*personnage.getSize().y-10*/
 	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
 	personnage.setSpeed(2);
-	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16/*personnage.getSize().y-10*/));
+	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16));
 	personnage.setHealth(10);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	personnage.setHeight(1);
@@ -59,7 +60,7 @@ int main()
 	mob.setHealth(10);
 	mob.setHitbox(sf::IntRect(0, 5 , mob.getSize().x/1.5, 16 /*mob.getSize().y-10*/));
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
-	personnage.setHeight(1);
+	mob.setHeight(1);
 	map->addObject(&mob);
 
 

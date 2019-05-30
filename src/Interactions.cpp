@@ -9,30 +9,31 @@ void character_key_input(Character* character, bool* attack)
 	// Déplacement du personnage
 	
 	int speed = character->getSpeed();
+	float diag_speed = sqrt(2)/2*speed;
 
 	if(character->getState()!=ATTACKING)
 	{
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-			character->move(sf::Vector2f(+sqrt(speed), -sqrt(speed)));
+			character->move(sf::Vector2f(+diag_speed, -diag_speed));
 			character->setSense(UP_RIGHT);
 			character->setState(MOVING);
 		}
 		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 		{
-			character->move(sf::Vector2f(-sqrt(speed), -sqrt(speed)));
+			character->move(sf::Vector2f(-diag_speed, -diag_speed));
 			character->setSense(UP_LEFT);
 			character->setState(MOVING);
 		}
 		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-			character->move(sf::Vector2f(+sqrt(speed), +sqrt(speed)));
+			character->move(sf::Vector2f(+diag_speed, +diag_speed));
 			character->setSense(DOWN_RIGHT);
 			character->setState(MOVING);	
 		}
 		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 		{
-			character->move(sf::Vector2f(-sqrt(speed), +sqrt(speed)));
+			character->move(sf::Vector2f(-diag_speed, +diag_speed));
 			character->setSense(DOWN_LEFT);
 			character->setState(MOVING);
 		}

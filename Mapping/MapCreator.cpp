@@ -6,6 +6,25 @@
 #include "Map.h"
 #include "saveMap.h"
 
+
+
+/*
+void windowInside(sf::RenderWindow* window)
+{
+	sf::Vector2f m_size(200, 200), m_position(0, 0);
+
+	sf::RectangleShape m_appearance(m_size), m_titlebar(sf::Vector2f(m_size.x, 30));
+	m_titlebar.setFillColor(sf::Color(50, 75, 135, 200));
+	m_appearance.setFillColor(sf::Color(100, 100 , 100 , 160));
+
+	m_titlebar.setPosition(m_position);
+	m_appearance.setPosition(m_position + sf::Vector2f(0, m_titlebar.getSize().y) );
+
+	window->draw(m_titlebar);
+	window->draw(m_appearance);
+}
+*/	
+
 void choice_tile(Tile* tile_target, sf::RenderWindow* window, sf::Texture* texture_file, Tile tiles[], int nbr_avail_tiles, int size_tile)
 {
 	//Fonction qui permet le choix du tile
@@ -38,35 +57,6 @@ void choice_tile(Tile* tile_target, sf::RenderWindow* window, sf::Texture* textu
 
 	window->draw(choice_square);
 }
-
-/*
-
-void hitbox_settings(sf::RenderWindow* window, Map map, std::vector< sf::IntRect >* hitbox_zones)
-{
-	static bool click=false;
-	static sf::Vector2f origin_click(0,0), corner_click(0,0);
-
-
-
-
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && window->hasFocus())
-	{
-		sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-
-		if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !click)
-		{
-			origin_click=mousePos;
-			click=true;
-		}
-		else if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		{
-
-			corner_click=mousePos;
-		}
-	}
-
-}
-*/
 
 
 
@@ -135,20 +125,38 @@ void tileset_collision_settings(sf::RenderWindow* window, sf::Texture* texture_f
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void control_view(sf::View* view, Map* map) 
+void control_view(sf::RenderWindow* window, sf::View* view, Map* map) 
 {
-	//Fonction permettant de contrôler la vue
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (view->getCenter().y - view->getSize().y/2 > 0) ) 
-		view->move(0, -10);
-	 
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (view->getCenter().y + view->getSize().y/2 < map->getSize().y * map->getTileSize() ) ) 
-		view->move(0, 10);		
+	//Fonction qui permet de déplacer la vue avec le clic
+	static bool clicked = false;
+	static sf::Vector2f origin_click;
 
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && (view->getCenter().x - view->getSize().x/2 > 0) ) 
-		view->move(-10, 0);
+	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (view->getCenter().x + view->getSize().x/2 < map->getSize().x * map->getTileSize()) ) 
-		view->move(10, 0);	
+	sf::Vector2f refPos = origin_click;
+
+
+	if (!clicked && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && sf::Mouse::isButtonPressed(sf::Mouse::Right))
+	{
+		origin_click = mousePos;
+		view->setCenter((map->getSize().x) * map->getTileSize()/2, (map->getSize().y) * map->getTileSize()/2);
+	}
+	else if(!clicked && sf::Mouse::isButtonPressed(sf::Mouse::Right))
+	{
+		origin_click = mousePos;
+		clicked=true;
+	}
+
+	if(sf::Mouse::isButtonPressed(sf::Mouse::Right))
+	{
+		refPos = sf::Vector2f((view->getCenter().x + origin_click.x - mousePos.x > 0 && view->getCenter().x + origin_click.x - mousePos.x > 0)? mousePos.x : refPos.x,
+							  (view->getCenter().y + origin_click.y - mousePos.y > 0 && view->getCenter().y + origin_click.y - mousePos.y > 0)? mousePos.y : refPos.y);
+
+		view->move( ( (view->getCenter().x + origin_click.x - refPos.x > 0) && (view->getCenter().x + origin_click.x - refPos.x < map->getSize().x * map->getTileSize()) )  ? origin_click.x - refPos.x : 0,
+					( (view->getCenter().y + origin_click.y - refPos.y > 0) && (view->getCenter().y + origin_click.y - refPos.y < map->getSize().y * map->getTileSize()) )  ? origin_click.y - refPos.y : 0);
+	}
+	else
+		clicked=false;
 }
 
 
@@ -528,7 +536,7 @@ int main(int argc, char* argv[])
 		if(window.hasFocus())
 		{
 			//Contrôle de la vue
-			control_view(&main_view, custom_map);
+			control_view(&window, &main_view, custom_map);
 			window.setView(main_view);
 		}
 
@@ -550,6 +558,10 @@ int main(int argc, char* argv[])
 
 
 		// Affichage des éléments
+
+		//windowInside(&window);
+
+
 		window.display();
 
 
@@ -570,6 +582,7 @@ int main(int argc, char* argv[])
 		tileset_window.draw(tileset_sprite);
 
 
+		
 
 		//Choix de la tile
 		choice_tile(&buff_tile, &tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());

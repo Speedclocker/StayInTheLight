@@ -2,48 +2,43 @@ CC=g++
 CFLAGS=-W -Wall -Wextra -g 
 EXEC= MapCreator
 SFMLDIR=-I/usr/lib/x86_64-linux-gnu/ 
-IDIR=-I../includes
 LDIR= -lsfml-graphics -lsfml-window -lsfml-system -lm
-SDIR= ../src/
-ODIR= ../obj/
+IGAMEDIR=-I../includes
+IMAPDIR=-Iincludes
+SGAMEDIR= ../src/
+OGAMEDIR= ../obj/
+SMAPDIR= src/
+OMAPDIR= obj/
 
-SOURCES:=$(filter-out $(SDIR)loadMap.cpp, $(wildcard $(SDIR)*.cpp))
-OBJECTS:=$(SOURCES:$(SDIR)%.cpp=$(ODIR)%.o)
+SOURCES_GAME:=$(filter-out $(SGAMEDIR)loadMap.cpp, $(wildcard $(SGAMEDIR)*.cpp))
+OBJECTS_GAME:=$(SOURCES_GAME:$(SGAMEDIR)%.cpp=$(OGAMEDIR)%.o)
+
+SOURCES_MAP:=$(wildcard $(SMAPDIR)*.cpp)
+OBJECTS_MAP:=$(SOURCES_MAP:$(SMAPDIR)%.cpp=$(OMAPDIR)%.o)
 
 
 all : $(EXEC)
 
-$(EXEC): $(OBJECTS) saveMap.o MapCreator.cpp
-	g++ -o $@ $^ $(IDIR) $(LFLAGS) $(LDIR) $(CFLAGS)
+$(EXEC): $(OBJECTS_GAME) $(OBJECTS_MAP) MapCreator.cpp
+	g++ -o $@ $^ $(IGAMEDIR) $(IMAPDIR) $(LFLAGS) $(LDIR) $(CFLAGS)
 
 MapCreator.o: MapCreator.cpp
-	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+	g++ -c $< -o $@ $(SFMLDIR) $(IGAMEDIR) $(IMAPDIR)  $(CFLAGS)
 
-$(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
-	@if [ ! -d $(ODIR) ]; then mkdir $(ODIR); fi
-	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+$(OBJECTS_GAME): $(OGAMEDIR)%.o : $(SGAMEDIR)%.cpp
+	@if [ ! -d $(OGAMEDIR) ]; then mkdir $(OGAMEDIR); fi
+	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IGAMEDIR) $(CFLAGS)
 
-saveMap.o: saveMap.cpp
-	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+$(OBJECTS_MAP): $(OMAPDIR)%.o : $(SMAPDIR)%.cpp
+	@if [ ! -d $(OMAPDIR) ]; then mkdir $(OMAPDIR); fi
+	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IGAMEDIR) $(IMAPDIR) $(CFLAGS)
 
 
-
+.PHONY: clean
 clean:
-	rm -f *.o MapCreator
+	rm -f $(OBJECTS_MAP)*.o MapCreator
 
 
-
-#all : MapCreator
-#	rm -f *.o
-
-#MapCreator: MapCreator.cpp $(ODIR)Map.o saveMap.o
-#	g++ -o $@ $^ $(SFMLDIR) $(IDIR) $(LDIR) $(CFLAGS)
-
-#$(ODIR)Map.o: $(CDIR)Map.cpp
-#	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
-
-#saveMap.o: saveMap.cpp
-#	g++ -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
 
 
 

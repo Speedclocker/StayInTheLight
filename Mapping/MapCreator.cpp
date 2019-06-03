@@ -9,67 +9,106 @@
 #include "tools.h"
 
 
+typedef struct{Tab* tab; sf::Texture* texture;} ArgTilesetWindow;
+
 
 void TilesetWindow(void* argtab)
 {
-	Tab* tab = (Tab*)argtab;
+
+	Tab* tab = ((ArgTilesetWindow*)(argtab))->tab;
+	sf::Texture* texture = ((ArgTilesetWindow*)(argtab))->texture;
+		
+	sf::Rect<float> zone_tileset(sf::Vector2f(0, 0), sf::Vector2f(tab->getSize().x - 10, texture->getSize().y ));
+
 
 	if(!tab->initialized)
 	{
-		SlideBar *ptr_slide, *ptr_slide2;
+		// Outils interface -- Barres de slides pour le tileset et miniature tileset
+		SlideBar *ptr_slide;//, *ptr_slide2;
+		TilesetSelect *ptr_tileset;
 
-		ptr_slide = new SlideBar("slidebar1", 0, 100);
-		ptr_slide2 = new SlideBar("slidebar2", 0, 100);
 
-		ptr_slide->setSize(sf::Vector2f(120, 15));
+		//Initialisation du tileset
+		ptr_tileset = new TilesetSelect("tileset", texture, zone_tileset);
+		ptr_tileset->setPosition(sf::Vector2f(tab->getPosition().x + 5, tab->getPosition().y + tab->getTitleSize() + 5));
+		ptr_tileset->setZone(zone_tileset);
+
+
+		//Initialisation Slidebar1 
+		ptr_slide = new SlideBar("slidebar1", 0, ptr_tileset->getMaxZonePos().x);
+		ptr_slide->setSize(sf::Vector2f(ptr_tileset->getZone().width, 15));
 		ptr_slide->setType(SlideBar::HORIZONTAL);
+		ptr_slide->setPosition(sf::Vector2f(ptr_tileset->getPosition().x , ptr_tileset->getPosition().y + ptr_tileset->getZone().height + 5) );
+/*
 
-		ptr_slide2->setSize(sf::Vector2f(15, 120));
+		//Initialisation Slidebar2
+		ptr_slide2 = new SlideBar("slidebar2", 0, ptr_tileset->getMaxZonePos().y);
+		ptr_slide2->setSize(sf::Vector2f(15, sf::Vector2f(ptr_tileset->getZone().height)));
 		ptr_slide2->setType(SlideBar::VERTICAL);
+*/		
 
+		//Ajout des objets à l'onglet
 		tab->addObject(ptr_slide);
-		tab->addObject(ptr_slide2);
+		//tab->addObject(ptr_slide2);
+		tab->addObject(ptr_tileset);
 
 		tab->initialized = true;
 	}
 
 	if(tab->initialized)
 	{
+		//Paramétrage du tileset
+		TilesetSelect* tileset = dynamic_cast<TilesetSelect*>(tab->getObject("tileset"));
 
+		tileset->setZone(zone_tileset);
+		tileset->setPosition(sf::Vector2f(tab->getPosition().x + 5, tab->getPosition().y + tab->getTitleSize() + 5));
+
+
+		//Paramétrage des slidebar
 		SlideBar* slidebar1 = dynamic_cast<SlideBar*>(tab->getObject("slidebar1"));
-		SlideBar* slidebar2 = dynamic_cast<SlideBar*>(tab->getObject("slidebar2"));
+//		SlideBar* slidebar2 = dynamic_cast<SlideBar*>(tab->getObject("slidebar2"));
 
-		slidebar1->setPosition(tab->getPosition()+sf::Vector2f(50,50));
-		slidebar2->setPosition(tab->getPosition()+sf::Vector2f(50,30));
-
+		slidebar1->setPosition(sf::Vector2f(tileset->getPosition().x , tileset->getPosition().y + tileset->getZone().height + 5) );
+		slidebar1->setSize(sf::Vector2f(tileset->getZone().width, 15));
+		slidebar1->setMaxValue(tileset->getMaxZonePos().x);
+/*
+		slidebar2->setPosition(tab->getPosition() + sf::Vector2f(45 - slidebar2->getSize().x , 10 + tab->getTitleSize()) );
+		slidebar2->setSize(15, tileset->getZone().height);
+		slidebar2->setMaxValue(tileset->getMaxZonePos().y);
+*/
 		slidebar1->interactsWithUser(tab->getRenderWindow());
-		slidebar2->interactsWithUser(tab->getRenderWindow());
+//		slidebar2->interactsWithUser(tab->getRenderWindow());
 	}
-
 }
 
 
 
-void windowInside(sf::RenderWindow* window)
+void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset)
 {
 
 	static BoxWindow tmp_boxwindow(sf::Vector2f(200, 300), window);
 	
 	static Tab tmp_tab("Tileset", window, TilesetWindow);
 
-	tmp_tab.Function(&tmp_tab);
 
 	static bool initialized = false;
 	
 	if(!initialized)
 	{
 		tmp_boxwindow.addTab(&tmp_tab);
+		tmp_boxwindow.setPositionWindow(sf::Vector2f(window->getView().getSize().x - tmp_boxwindow.getSize().x - 100, 100));
 		tmp_boxwindow.update();
 
 		initialized = true;
 	}
 
 	tmp_boxwindow.interactsWithUser();
+
+	ArgTilesetWindow tmp_arg = ArgTilesetWindow{&tmp_tab, texture_tileset};
+
+	tmp_tab.Function(&tmp_arg);
+
+	tmp_boxwindow.update();
 
 	window->draw(tmp_boxwindow);
 }
@@ -107,11 +146,7 @@ int main(int argc, char* argv[])
 	}
 
 
-
-
-
-	std::cout << "\t\t=== MapCreator ===\n\n" << std::endl;	
-
+	//Texte à afficher au lancement
 	introText();
 
 
@@ -237,7 +272,7 @@ int main(int argc, char* argv[])
 
 		// Affichage des éléments
 
-		windowInside(&window);
+		windowInside(&window, &texture_file);
 
 		window.display();
 

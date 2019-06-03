@@ -5,114 +5,26 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 
+#include "InterfaceObject.h"
+
+
 #define FONT_FILE "AldoTheApache.ttf"
+
+#define ARG_TAB_BUFF_SIZE 30
+
+
+
+typedef struct{uint8_t val[ARG_TAB_BUFF_SIZE];} ArgTab;
 
 
 /* Classes permettant de construire les fenêtres applications, avec les différents onglets contenant le tileset, les entités à ajouter, les paramètres etc ... */
-
-class InterfaceObject : public sf::Drawable
-{
-public:
-	std::string			getID();
-	sf::Vector2f 		getSize();
-	sf::Vector2f 		getPosition();
-
-	void				setID(std::string id);
-	void 				setSize(sf::Vector2f size);
-	void 				setPosition(sf::Vector2f position);
-
-	virtual void		update();
-protected:
-	std::string			m_id;
-	sf::Vector2f		m_position;
-	sf::Vector2f		m_size;
-};
-
-
-
-
-class TilesetSelect : public InterfaceObject
-{
-public: 
-	//Constructeurs/Destructeurs
-	TilesetSelect();
-	~TilesetSelect();
-	TilesetSelect(std::string id, sf::Texture* texture, sf::Rect<float> zone);
-
-	//Accesseurs
-	sf::Rect<float>		getZone();
-	sf::Vector2f		getMaxZonePos();
-
-	//Modificateurs
-	void 				setPosition(sf::Vector2f position);
-	void				setSize(sf::Vector2f size);
-	void				setZone(sf::Rect<float> zone);
-
-	//Méthodes
-	void 				interactsWithUser(sf::RenderWindow* window);
-	void 				update();
-	void 				draw(sf::RenderTarget& target, sf::RenderStates states) const;
-
-
-private:
-	sf::Rect<float>		m_zone;
-	sf::VertexArray		m_vertex;
-	sf::Texture*		m_texture;
-};
-
-
-
-class SlideBar : public InterfaceObject
-{
-public: 
-	enum Type { HORIZONTAL, VERTICAL };
-
-	//Constructeurs/Destructeurs
-	SlideBar();
-	~SlideBar();
-	SlideBar(std::string id, float valMin, float valMax);
-
-
-	//Accesseurs
-	float			getMinValue();
-	float			getMaxValue();
-	float			getCurrentValue();	
-	Type 			getType();
-
-
-	//Modificateurs
-	void			setMinValue(float minValue);
-	void			setMaxValue(float maxValue);
-	void			setCurrentValue(float currentValue);
-	void 			setCurrentValueFromPos(sf::Vector2f clickPos);
-
-	void 			setType(Type type);
-
-
-	//Méthodes
-	void 			interactsWithUser(sf::RenderWindow* window);
-	void 			update();
-	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
-
-
-private:
-	float				m_minValue, m_maxValue, m_currentValue;
-	Type				m_type;
-
-	enum State {NONE, HOVER, CLICK};
-	State 				m_state;
-};
-
-
-
-
 
 class Tab : public sf::Drawable
 {
 public:
 	//Constructeurs/Destructeurs
 	Tab();
-	Tab(std::string name_title, sf::RenderWindow *window, void (*function)(void*));
+	Tab(std::string name_title, sf::RenderWindow *window, void (*function)(Tab*, ArgTab*), ArgTab* function_arg, size_t size_function_arg);
 	~Tab();
 
 
@@ -133,7 +45,7 @@ public:
 	void							setTitle(std::string title);
 
 	//Méthodes
-	void							Function(void* arg);
+	void							Function();
 	void							addObject(InterfaceObject* object);
 	void							update();
 	void 							draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -143,7 +55,8 @@ public:
 	bool 											initialized;
 
 private:
-	void 											(*tabFunction)(void*);
+	void 											(*tabFunction)(Tab*, ArgTab*);
+	ArgTab*											m_function_arg;
 
 	std::map< std::string, InterfaceObject*>		m_objects;
 	sf::Vector2f 									m_size;
@@ -192,6 +105,7 @@ public:
 	void				move_resize();
 	void				interactsWithUser();
 
+	void 				Function();
 	void 				update();
 	void 				draw(sf::RenderTarget& target, sf::RenderStates states) const;
 

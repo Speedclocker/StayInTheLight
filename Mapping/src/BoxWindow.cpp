@@ -4,298 +4,6 @@ int BOXWINDOW_SIZE_CHARACTER = 15 ;
 
 
 
-std::string InterfaceObject::getID()
-{
-	return m_id;
-}
-
-sf::Vector2f InterfaceObject::getPosition()
-{
-	return m_position;
-}
-
-sf::Vector2f InterfaceObject::getSize()
-{
-	return m_size;
-}
-
-
-
-
-void InterfaceObject::setID(std::string id)
-{
-	m_id = id;
-}
-
-void InterfaceObject::setSize(sf::Vector2f size)
-{
-	m_size=size;
-}
-
-void InterfaceObject::setPosition(sf::Vector2f position)
-{
-	m_position = position;
-}
-
-
-void InterfaceObject::update()
-{
-
-}
-
-
-
-//////////////////////////////////////////////////////////// TilesetSelect //////////////////////////////////////////////////////////
-
-
-
-TilesetSelect::TilesetSelect()
-{
-
-}
-
-
-TilesetSelect::~TilesetSelect()
-{
-
-}
-
-
-TilesetSelect::TilesetSelect(std::string id, sf::Texture* texture, sf::Rect<float> zone)
-{
-	m_id = id;
-	m_texture = texture;
-	m_zone = zone;
-}
-
-
-sf::Rect<float> TilesetSelect::getZone()
-{
-	return m_zone;
-}
-
-sf::Vector2f TilesetSelect::getMaxZonePos()
-{
-	return sf::Vector2f(m_texture->getSize().x - m_zone.width, m_texture->getSize().y - m_zone.height);
-}
-
-void TilesetSelect::setPosition(sf::Vector2f position)
-{
-	m_position = position;
-}
-
-
-void TilesetSelect::setSize(sf::Vector2f size)
-{
-	m_size = size;
-}
-
-
-void TilesetSelect::setZone(sf::Rect<float> zone)
-{
-	sf::Rect<float> tmp_zone = zone;
-	if(tmp_zone.left + tmp_zone.width > m_texture->getSize().x)
-		tmp_zone.left = m_texture->getSize().x - tmp_zone.width;
-
-	if(tmp_zone.top + tmp_zone.height > m_texture->getSize().y)
-		tmp_zone.top = m_texture->getSize().y - tmp_zone.height;
-
-	if(tmp_zone.left < 0)
-	{
-		tmp_zone.left = 0;
-		tmp_zone.width = m_texture->getSize().x;
-	}
-
-	if(tmp_zone.top < 0)
-	{
-		tmp_zone.top = 0;
-		tmp_zone.height = m_texture->getSize().y;
-	}
-
-	m_zone = tmp_zone;
-}
-
-
-void TilesetSelect::interactsWithUser(sf::RenderWindow* window)
-{
-
-}
-
-
-void TilesetSelect::update()
-{
-	m_vertex.setPrimitiveType(sf::Quads);
-
-	m_vertex.resize(4);
-
-	m_vertex[0].position = m_position;
-	m_vertex[1].position = m_position + sf::Vector2f( m_zone.width, 0);
-	m_vertex[2].position = m_position + sf::Vector2f( m_zone.width, m_zone.height );
-	m_vertex[3].position = m_position + sf::Vector2f( 0, m_zone.height );
-
-
-	m_vertex[0].texCoords = sf::Vector2f(m_zone.left, m_zone.top);
-	m_vertex[1].texCoords = sf::Vector2f(m_zone.left + m_zone.width , m_zone.top);
-	m_vertex[2].texCoords = sf::Vector2f(m_zone.left + m_zone.width, m_zone.top + m_zone.height);
-	m_vertex[3].texCoords = sf::Vector2f(m_zone.left, m_zone.top + m_zone.height);
-}
-
-
-void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-	states.texture = m_texture;
-
-	target.draw(m_vertex, states);
-}
-
-
-
-
-//////////////////////////////////////////////////////////// SLIDEBAR //////////////////////////////////////////////////////////
-
-
-
-SlideBar::SlideBar()
-{
-
-}
-
-
-SlideBar::SlideBar(std::string id, float minValue, float maxValue)
-{
-	m_id = id;
-	m_minValue = minValue;
-	m_maxValue = maxValue;
-	m_currentValue = minValue;
-}
-
-
-SlideBar::~SlideBar()
-{
-
-}
-
-
-// Accesseurs
-float SlideBar::getMinValue()
-{
-	return m_minValue;
-}
-
-float SlideBar::getMaxValue()
-{
-	return m_maxValue;
-}
-
-float SlideBar::getCurrentValue()
-{
-	return m_currentValue;
-}
-
-SlideBar::Type SlideBar::getType()
-{
-	return m_type;
-}
-
-
-//Modificateurs
-void SlideBar::setMinValue(float minValue)
-{
-	m_minValue = minValue;
-}
-
-void SlideBar::setMaxValue(float maxValue)
-{
-	m_maxValue = maxValue;
-}
-
-void SlideBar::setCurrentValue(float currentValue)
-{
-	m_currentValue = currentValue;
-}
-
-void SlideBar::setCurrentValueFromPos(sf::Vector2f clickPos)
-{
-	if(this->getType()==HORIZONTAL)
-	{
-		this->setCurrentValue( this->getMinValue() + (this->getMaxValue() - this->getMinValue())*(clickPos.x - this->getPosition().x)/this->getSize().x );
-		this->update();
-	}
-	else
-	{
-		this->setCurrentValue( this->getMinValue() + (this->getMaxValue() - this->getMinValue())*(clickPos.y - this->getPosition().y)/this->getSize().y );
-		this->update();
-	}
-}
-
-void SlideBar::setType(Type type)
-{
-	m_type = type;
-}
-
-
-
-//Méthodes
-void SlideBar::interactsWithUser(sf::RenderWindow* window)
-{
-	// Interaction avec l'utilisateur
-	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-
-	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect((sf::Vector2i)this->getPosition(), (sf::Vector2i)this->getSize()).contains(mousePos.x, mousePos.y))
-		m_state = HOVER;
-	else if(m_state==HOVER && sf::Mouse::isButtonPressed(sf::Mouse::Left)) 
-		m_state = CLICK;
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
-
-	if(m_state == CLICK)
-	{
-		this->setCurrentValueFromPos(mousePos);
-	}
-
-	this->update();
-}
-
-void SlideBar::update()
-{
-	if(m_currentValue > m_maxValue)	
-		m_currentValue = m_maxValue;
-
-	if(m_currentValue < m_minValue)	
-		m_currentValue = m_minValue;
-
-}
-
-
-void SlideBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-	sf::RectangleShape zone_bar, sliding_bar;
-	zone_bar.setFillColor(sf::Color(50,50,50,180));
-	zone_bar.setOutlineThickness(2);
-	zone_bar.setOutlineColor(sf::Color(40,40,40,200));
-	zone_bar.setSize(m_size);
-	zone_bar.setPosition(m_position);
-
-	sliding_bar.setFillColor(sf::Color(150, 150, 150, 225));
-
-	if(m_type==HORIZONTAL)
-	{
-		sliding_bar.setSize(sf::Vector2f(m_size.x*0.5, m_size.y));
-		sliding_bar.setPosition(m_position.x + (m_size.x - sliding_bar.getSize().x)*(m_currentValue - m_minValue)/(m_maxValue - m_minValue), m_position.y);
-	}
-	else
-	{
-		sliding_bar.setSize(sf::Vector2f(m_size.x, m_size.y*0.5));
-		sliding_bar.setPosition(m_position.x , m_position.y + (m_size.y - sliding_bar.getSize().y)*(m_currentValue - m_minValue)/(m_maxValue - m_minValue));
-	}
-
-	target.draw(zone_bar, states);
-	target.draw(sliding_bar, states);
-}
-
-
-
-
 
 ///////////////////////////////////////////////////////////// TAB //////////////////////////////////////////////////////////////
 
@@ -309,18 +17,22 @@ Tab::~Tab()
 {
 	for(std::map<std::string, InterfaceObject*>::iterator it = m_objects.begin(); it != m_objects.end(); it++)
 	{
-		delete (it->second);
+		delete it->second;
 		m_objects.erase(it);
 	}
+	free(m_function_arg);
 }
 
 
-Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(void*))
+Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(Tab*, ArgTab*), ArgTab* function_arg, size_t size_function_arg)
 {
 	initialized = false;
 
 	m_window = window;
 	tabFunction = function;
+	m_function_arg = (ArgTab*)malloc(size_function_arg);
+	*m_function_arg = *function_arg;
+
 	m_title = name_title;
 	m_title_size = 30;
 
@@ -330,6 +42,7 @@ Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(void
 		sf::Text tmp_char(m_title, m_font, BOXWINDOW_SIZE_CHARACTER);		
 		m_title_size = tmp_char.getLocalBounds().height * 2;
 	}
+
 }
 
 
@@ -413,9 +126,9 @@ void Tab::setTitle(std::string title)
 
 
 //Méthodes
-void Tab::Function(void* arg)
+void Tab::Function()
 {
-	tabFunction(arg);
+	tabFunction(this, m_function_arg);
 }
 
 
@@ -496,7 +209,11 @@ BoxWindow::BoxWindow(sf::Vector2f size, sf::RenderWindow* window)
 
 BoxWindow::~BoxWindow()
 {
-
+	for (int i = m_tabs.size() - 1 ; i >= 0 ; i--)
+	{
+		delete m_tabs[i];
+		m_tabs.erase(m_tabs.begin()+i);
+	}
 }
 
 //Accesseurs
@@ -571,13 +288,27 @@ void BoxWindow::setPositionWindow(sf::Vector2f position)
 
 void BoxWindow::setMinSize(sf::Vector2f minSize)
 {
-	m_minSize = minSize;
+	if(minSize.x >= m_maxSize.x) m_minSize.x = m_maxSize.x - 1;
+	else m_minSize.x = minSize.x;
+	if(minSize.y >= m_maxSize.y) m_minSize.y = m_maxSize.y - 1;
+	else m_minSize.y = minSize.y;
+
+	if(this->getSize().x < m_minSize.x) this->setSize(sf::Vector2f(m_minSize.x, this->getSize().y));
+	if(this->getSize().y < m_minSize.y) this->setSize(sf::Vector2f(this->getSize().x, m_minSize.y));
+
 }
 
 
 void BoxWindow::setMaxSize(sf::Vector2f maxSize)
 {
-	m_minSize = maxSize;
+	if(maxSize.x <= m_minSize.x) m_maxSize.x = m_minSize.x + 1;
+	else m_maxSize.x = maxSize.x;
+	if(maxSize.y <= m_minSize.y) m_maxSize.y = m_minSize.y + 1;
+	else m_maxSize.y = maxSize.y;
+
+
+	if(this->getSize().x > m_maxSize.x) this->setSize(sf::Vector2f(m_maxSize.x, this->getSize().y));
+	if(this->getSize().y > m_maxSize.y) this->setSize(sf::Vector2f(this->getSize().x, m_maxSize.y));
 }
 
 
@@ -659,6 +390,14 @@ void BoxWindow::interactsWithUser()
 	this->move_resize();
 }
 
+
+void BoxWindow::Function()
+{
+	for(std::vector<Tab*>::iterator it = m_tabs.begin(); it != m_tabs.end(); it++ )
+	{
+		(*it)->Function();
+	}
+}
 
 
 void BoxWindow::update()

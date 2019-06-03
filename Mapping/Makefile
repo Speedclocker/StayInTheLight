@@ -36,7 +36,7 @@ $(OBJECTS_MAP): $(OMAPDIR)%.o : $(SMAPDIR)%.cpp
 
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS_MAP)*.o MapCreator
+	rm -f $(OBJECTS_MAP) *.o MapCreator
 
 
 

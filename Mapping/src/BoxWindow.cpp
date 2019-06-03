@@ -1,7 +1,7 @@
 #include "BoxWindow.h"
+#include "functionTabs.h"
 
 int BOXWINDOW_SIZE_CHARACTER = 15 ;
-
 
 
 
@@ -27,11 +27,11 @@ Tab::~Tab()
 Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(Tab*, ArgTab*), ArgTab* function_arg, size_t size_function_arg)
 {
 	initialized = false;
-
 	m_window = window;
 	tabFunction = function;
 	m_function_arg = (ArgTab*)malloc(size_function_arg);
 	*m_function_arg = *function_arg;
+
 
 	m_title = name_title;
 	m_title_size = 30;

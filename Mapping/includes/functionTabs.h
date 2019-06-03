@@ -17,8 +17,10 @@ typedef struct
 {
 	sf::Texture* texture; 
 	Tile* tiles; 
-	int* nbr_avail_tiles; 
-	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(sf::Texture*) - sizeof(Tile*) - sizeof(int*) ] = { 0 };
+	const int* nbr_avail_tiles;
+	const int* size_tile;
+	Tile* target_tile;
+	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(sf::Texture*) - sizeof(Tile*) - sizeof(int*) - sizeof(int*) - sizeof(Tile*)] = { 0 };
 } ArgTilesetWindow;
 
 

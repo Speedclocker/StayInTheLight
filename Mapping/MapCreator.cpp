@@ -9,6 +9,8 @@
 #include "tools.h"
 #include "functionTabs.h"
 
+#define FULLSCREEN true
+
 
 /*
 typedef struct{uint8_t val[ARG_TAB_BUFF_SIZE];} ArgTab;
@@ -23,18 +25,16 @@ typedef struct
 
 
 
-void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile* tiles, int* nbr_avail_tiles)
+void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile* tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
 {
-
 	static BoxWindow tmp_boxwindow(sf::Vector2f(200, 300), window);
 	
 	static bool initialized = false;
 
-
 	
 	if(!initialized)
 	{
-		ArgTilesetWindow arg = ArgTilesetWindow{texture_tileset, tiles, nbr_avail_tiles};
+		ArgTilesetWindow arg = ArgTilesetWindow{texture_tileset, tiles, nbr_avail_tiles, size_tile, target_tile};
 		
 		Tab* tab = new Tab("Tileset", window, TilesetWindow, (ArgTab*)&arg, sizeof(ArgTilesetWindow));
 		
@@ -98,14 +98,17 @@ int main(int argc, char* argv[])
 
 
 	//Création de la fenêtre principale
-	sf::RenderWindow window(sf::VideoMode((size_tile*size_x<1200) ? size_tile*size_x : 1200 , (size_tile*size_y<720) ? size_tile*size_y : 720), "MapCreator", sf::Style::Fullscreen);
+	sf::RenderWindow window( ( (FULLSCREEN) ? sf::VideoMode(size_tile*size_x, size_tile*size_y) : sf::VideoMode((size_tile*size_x<1200) ? size_tile*size_x : 1200 , (size_tile*size_y<720) ? size_tile*size_y : 720)),
+							  "MapCreator", ( (FULLSCREEN) ? sf::Style::Fullscreen : sf::Style::Default ) );
 	window.setFramerateLimit(120);
 
 
 	//Création de la fenêtre adjacente
+	/*
 	sf::RenderWindow tileset_window(sf::VideoMode(texture_file.getSize().x,texture_file.getSize().y), "Tileset", sf::Style::Titlebar);
 	sf::Sprite tileset_sprite(texture_file);
 	tileset_sprite.setPosition(0,0);
+	*/
 
 
 	//Initialisation des tiles
@@ -142,7 +145,7 @@ int main(int argc, char* argv[])
 	bool transparency=false;
 
 	//Boucle principale
-	while(window.isOpen() && tileset_window.isOpen())
+	while(window.isOpen())
 	{
 		// MAIN WINDOW
 
@@ -151,13 +154,13 @@ int main(int argc, char* argv[])
 
 
         // Attente des évenements
-		sf::Event event, tileset_event;
+		sf::Event event;// tileset_event;
 		while(window.pollEvent(event))
 		{
 			if(event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
 			{
 				window.close();
-				tileset_window.close();
+				//tileset_window.close();
 			}
 			
 			if (event.type == sf::Event::Resized)
@@ -210,21 +213,22 @@ int main(int argc, char* argv[])
 
 
 		//Pour charger une map
-		if(load_map(&window, &tileset_window, &custom_map, &texture_file, &available_tiles, &nbr_tiles)==1)
+		if(load_map(&window, &custom_map, &texture_file, &available_tiles, &nbr_tiles, FULLSCREEN)==1)
 		{
+			size_tile=custom_map->getTileSize();
 			buff_tile=available_tiles[0];
 		}
 
 
 		// Affichage des éléments
 
-		windowInside(&window, &texture_file, available_tiles, &nbr_tiles);
+		windowInside(&window, &texture_file, available_tiles, &nbr_tiles, &size_tile, &buff_tile);
 
 		window.display();
 
 
 
-
+/*
 
 		// TILESET WINDOW
 
@@ -240,11 +244,10 @@ int main(int argc, char* argv[])
 		tileset_window.draw(tileset_sprite);
 
 
-		
-
 		//Choix de la tile
-		choice_tile(&buff_tile, &tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());
+		//choice_tile(&buff_tile, &tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());
 
+	
 	
 
 		if(tileset_window.hasFocus())
@@ -257,6 +260,7 @@ int main(int argc, char* argv[])
 	
 		// Affichage des éléments
 		tileset_window.display();
+		*/
 		
 	}
 

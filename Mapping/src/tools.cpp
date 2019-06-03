@@ -300,7 +300,7 @@ void save_map(Map* map_to_save, std::string texture_name)
 }
 
 
-int load_map(sf::RenderWindow* main_window, sf::RenderWindow* tileset_window, Map** map_to_load, sf::Texture* texture, Tile** available_tiles, int* nbr_tiles)
+int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* texture, Tile** available_tiles, int* nbr_tiles, bool fullscreen)
 {
 	// Pour le chargement de la map
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::L))
@@ -325,22 +325,29 @@ int load_map(sf::RenderWindow* main_window, sf::RenderWindow* tileset_window, Ma
 			if( texture->loadFromFile(tmp_text_file) == false) { std::cerr << "Le fichier texture n'a pas pu être chargé." << std::endl; }
 			else (*map_to_load)->setTexture(texture);
 
+			if(!fullscreen)
+			{
+				//Modification de la fenêtre principale
+				main_window->setSize(sf::Vector2u(( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x<1200) ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x : 1200 
+									,( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y<720)  ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y : 720));
 
-			//Modification de la fenêtre principale
-			main_window->setSize(sf::Vector2u(( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x<1200) ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x : 1200 
-								,( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y<720)  ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y : 720));
-
-
-			//Modification de la vue
-			sf::View main_view(sf::Vector2f((*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2, (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y/2), sf::Vector2f(main_window->getSize()));
-			std::cout << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << " // " << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << std::endl;
-			main_window->setView(main_view);
+			
 
 
+				//Modification de la vue
+				sf::View main_view(sf::Vector2f((*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2, (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y/2), sf::Vector2f(main_window->getSize()));
+				std::cout << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << " // " << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << std::endl;
+				main_window->setView(main_view);
+			}
+			
+
+
+/*
 			//Modification de la fenêtre de tileset
 			tileset_window->setSize(texture->getSize());
 			sf::Sprite tileset_sprite(*texture);
 			tileset_sprite.setPosition(0,0);
+*/
 
 			//Modification des tiles dispo:
 			*nbr_tiles=(texture->getSize().x/(*map_to_load)->getTileSize())*(texture->getSize().y/(*map_to_load)->getTileSize());

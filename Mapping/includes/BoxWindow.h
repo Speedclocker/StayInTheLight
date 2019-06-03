@@ -1,3 +1,5 @@
+#define ARG_TAB_BUFF_SIZE 100
+
 #ifndef __BOXWINDOW_H__
 #define __BOXWINDOW_H__
 
@@ -9,8 +11,6 @@
 
 
 #define FONT_FILE "AldoTheApache.ttf"
-
-#define ARG_TAB_BUFF_SIZE 30
 
 
 

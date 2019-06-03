@@ -17,7 +17,7 @@ void control_view(sf::RenderWindow* window, sf::View* view, Map* map);
 void set_tile(sf::RenderWindow* window, sf::Texture *texture, Map* map, Tile tile, int height);
 bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height);
 void save_map(Map* map_to_save, std::string texture_name);
-int load_map(sf::RenderWindow* main_window, sf::RenderWindow* tileset_window, Map** map_to_load, sf::Texture* texture, Tile** available_tiles, int* nbr_tiles);
+int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* texture, Tile** available_tiles, int* nbr_tiles, bool fullscreen);
 void introText(void);
 
 

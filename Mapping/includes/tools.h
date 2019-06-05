@@ -10,9 +10,6 @@
 
 /* Ce fichier l'ensemble des outils utilisés par MapCreator, que ce soit la mise en place des tiles, le déplacement entre les différentes couches etc...*/
 
-
-void choice_tile(Tile* tile_target, sf::RenderWindow* window, sf::Texture* texture_file, Tile tiles[], int nbr_avail_tiles, int size_tile);
-void tileset_collision_settings(sf::RenderWindow* window, sf::Texture* texture_file, Tile tiles[], int nbr_avail_tiles, int size_tile);
 void control_view(sf::RenderWindow* window, sf::View* view, Map* map);
 void set_tile(sf::RenderWindow* window, sf::Texture *texture, Map* map, Tile tile, int height);
 bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height);

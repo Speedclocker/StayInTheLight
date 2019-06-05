@@ -12,21 +12,11 @@
 #define FULLSCREEN true
 
 
-/*
-typedef struct{uint8_t val[ARG_TAB_BUFF_SIZE];} ArgTab;
-typedef struct
+
+void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile** tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
 {
-	sf::Texture* texture; 
-	Tile* tiles; 
-	int* nbr_avail_tiles; 
-	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(sf::Texture*) - sizeof(Tile*) - sizeof(int*) ] = { 0 };
-} ArgTilesetWindow;
-*/
+	//Gère les fenêtres internes à l'application
 
-
-
-void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile* tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
-{
 	static BoxWindow tmp_boxwindow(sf::Vector2f(200, 300), window);
 	
 	static bool initialized = false;
@@ -101,14 +91,6 @@ int main(int argc, char* argv[])
 	sf::RenderWindow window( ( (FULLSCREEN) ? sf::VideoMode(size_tile*size_x, size_tile*size_y) : sf::VideoMode((size_tile*size_x<1200) ? size_tile*size_x : 1200 , (size_tile*size_y<720) ? size_tile*size_y : 720)),
 							  "MapCreator", ( (FULLSCREEN) ? sf::Style::Fullscreen : sf::Style::Default ) );
 	window.setFramerateLimit(120);
-
-
-	//Création de la fenêtre adjacente
-	/*
-	sf::RenderWindow tileset_window(sf::VideoMode(texture_file.getSize().x,texture_file.getSize().y), "Tileset", sf::Style::Titlebar);
-	sf::Sprite tileset_sprite(texture_file);
-	tileset_sprite.setPosition(0,0);
-	*/
 
 
 	//Initialisation des tiles
@@ -222,46 +204,11 @@ int main(int argc, char* argv[])
 
 		// Affichage des éléments
 
-		windowInside(&window, &texture_file, available_tiles, &nbr_tiles, &size_tile, &buff_tile);
+		// Fenêtre interne de tileset
+		windowInside(&window, &texture_file, &available_tiles, &nbr_tiles, &size_tile, &buff_tile);
 
 		window.display();
 
-
-
-/*
-
-		// TILESET WINDOW
-
-		tileset_window.clear();
-
-
-		while(tileset_window.pollEvent(tileset_event))
-		{
-
-		}
-
-		//Placement des élements
-		tileset_window.draw(tileset_sprite);
-
-
-		//Choix de la tile
-		//choice_tile(&buff_tile, &tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());
-
-	
-	
-
-		if(tileset_window.hasFocus())
-		{
-			//Gestion de la collision des blocs
-			tileset_collision_settings(&tileset_window, &texture_file, available_tiles, nbr_tiles, custom_map->getTileSize());	
-		}
-
-
-	
-		// Affichage des éléments
-		tileset_window.display();
-		*/
-		
 	}
 
 	delete custom_map;

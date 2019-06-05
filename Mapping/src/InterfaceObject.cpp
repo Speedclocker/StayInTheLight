@@ -57,14 +57,23 @@ TilesetSelect::~TilesetSelect()
 }
 
 
-TilesetSelect::TilesetSelect(const std::string id, sf::Texture* texture, sf::Rect<float> zone, Tile tiles[], int nbr_available_tiles, int size_tile)
+TilesetSelect::TilesetSelect(const std::string id, const sf::Texture* texture, sf::Rect<float> zone, Tile** tiles, const int* nbr_available_tiles, const int* size_tile, Tile* target_tile)
 {
 	m_id = id;
-	m_texture = texture;
 	m_zone = zone;
+
+	// Association Pointeurs
+	m_texture = texture;
 	m_size_tile = size_tile;
 	m_nbr_tiles = nbr_available_tiles;
-	m_tiles = tiles;
+	m_ptr_tiles = tiles;
+	m_target_tile = target_tile;
+
+
+	m_chosen_tile_pos_text = m_target_tile->m_pos_text;
+	m_chosen_tile = (int)(m_chosen_tile_pos_text.x/this->getTileSize()) + (int)(m_chosen_tile_pos_text.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize());
+
+
 
 	if(!m_state_text.loadFromFile("imgs/state_collision.png")) { std::cerr << "Une erreur a eu lieu lors du chargement de l'image state_collision.png" << std::endl; }
 
@@ -103,9 +112,13 @@ sf::Vector2f TilesetSelect::getMaxZonePos()
 
 Tile TilesetSelect::getChosenTile()
 {
-	return m_tiles[m_chosen_tile];
+	return (*m_ptr_tiles)[m_chosen_tile];
 }
 
+int TilesetSelect::getTileSize()
+{
+	return *m_size_tile;
+}
 
 
 void TilesetSelect::setPosition(sf::Vector2f position)
@@ -146,12 +159,18 @@ void TilesetSelect::setZone(sf::Rect<float> zone)
 
 
 
+void TilesetSelect::setSizeTile(int* size_tile)
+{
+	m_size_tile = size_tile;
+}
+
+
 void TilesetSelect::collision_settings(sf::RenderWindow* window)
 {
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
-	sf::Vector2f positionTile((int)((mousePos.x - this->getPosition().x + this->getZone().left)/m_size_tile)*m_size_tile,
-							  (int)((mousePos.y - this->getPosition().y + this->getZone().top) /m_size_tile)*m_size_tile);
+	sf::Vector2f positionTile((int)((mousePos.x - this->getPosition().x + this->getZone().left)/this->getTileSize())*this->getTileSize(),
+							  (int)((mousePos.y - this->getPosition().y + this->getZone().top) /this->getTileSize())*this->getTileSize());
 
 	
 	if( !sf::Mouse::isButtonPressed(sf::Mouse::Left) && 
@@ -166,10 +185,10 @@ void TilesetSelect::collision_settings(sf::RenderWindow* window)
 	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
 	{
 		m_state = CLICK;
-		int index=(int)(positionTile.x/m_size_tile) + (int)(positionTile.y/m_size_tile) * (int)(m_texture->getSize().x/m_size_tile) ;
+		int index=(int)(positionTile.x/this->getTileSize()) + (int)(positionTile.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize()) ;
 
-		if(index < m_nbr_tiles)
-			m_tiles[index].m_collisionable^=true;
+		if(index < *m_nbr_tiles)
+			(*m_ptr_tiles)[index].m_collisionable^=true;
 	}
 }
 
@@ -179,8 +198,8 @@ void TilesetSelect::choice_tile(sf::RenderWindow* window)
 {
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
-	sf::Vector2f positionTile((int)((mousePos.x - this->getPosition().x + this->getZone().left)/m_size_tile)*m_size_tile,
-							  (int)((mousePos.y - this->getPosition().y + this->getZone().top) /m_size_tile)*m_size_tile);
+	sf::Vector2f positionTile((int)((mousePos.x - this->getPosition().x + this->getZone().left)/this->getTileSize())*this->getTileSize(),
+							  (int)((mousePos.y - this->getPosition().y + this->getZone().top) /this->getTileSize())*this->getTileSize());
 
 	//Fonction qui renvoie le tile choisi
 	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && 
@@ -196,9 +215,9 @@ void TilesetSelect::choice_tile(sf::RenderWindow* window)
 	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
 	{
 		m_state = CLICK;
-		int index=(int)(positionTile.x/m_size_tile) + (int)(positionTile.y/m_size_tile) * (int)(m_texture->getSize().x/m_size_tile) ;
+		int index=(int)(positionTile.x/this->getTileSize()) + (int)(positionTile.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize()) ;
 
-		if(index < m_nbr_tiles)
+		if(index < *m_nbr_tiles)
 		{
 			m_chosen_tile_pos_text = positionTile;
 			m_chosen_tile = index;
@@ -211,7 +230,7 @@ void TilesetSelect::choice_tile(sf::RenderWindow* window)
 
 void TilesetSelect::interactsWithUser(sf::RenderWindow* window)
 {
-	if(m_nbr_tiles > 0) 
+	if(*m_nbr_tiles > 0) 
 	{
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
 			this->collision_settings(window);
@@ -237,12 +256,15 @@ void TilesetSelect::update()
 	m_vertex[1].texCoords = sf::Vector2f(m_zone.left + m_zone.width , m_zone.top);
 	m_vertex[2].texCoords = sf::Vector2f(m_zone.left + m_zone.width, m_zone.top + m_zone.height);
 	m_vertex[3].texCoords = sf::Vector2f(m_zone.left, m_zone.top + m_zone.height);
+
+	m_chosen_tile_pos_text = m_target_tile->m_pos_text;
+	m_chosen_tile = (int)(m_chosen_tile_pos_text.x/this->getTileSize()) + (int)(m_chosen_tile_pos_text.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize()) ;
+
 }
 
 
 void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-
 	//Dessin du fond du tileset
 	sf::RectangleShape background_tileset(sf::Vector2f(m_zone.width, m_zone.height));
 	background_tileset.setFillColor(sf::Color(10,10,10,180));
@@ -258,13 +280,12 @@ void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 
 
 
-
 	//Dessin du rectangle de sélection
-	if(m_nbr_tiles > 0)
+	if(*m_nbr_tiles > 0)
 	{
-		if(m_chosen_tile_pos_text.x - m_zone.left + m_size_tile > 0 && m_chosen_tile_pos_text.x - m_zone.left < m_zone.width)
+		if(m_chosen_tile_pos_text.x - m_zone.left + (*m_size_tile) > 0 && m_chosen_tile_pos_text.x - m_zone.left < m_zone.width)
 		{
-			sf::RectangleShape choice_square(m_tiles[0].m_size_text);
+			sf::RectangleShape choice_square((*m_ptr_tiles)[0].m_size_text);
 			choice_square.setFillColor(sf::Color(0,0,0,0));
 			choice_square.setOutlineColor(sf::Color(255,0,0,255));
 			choice_square.setOutlineThickness(2);
@@ -274,7 +295,7 @@ void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 			if(tmp_rect.left < m_position.x)
 			{
 				tmp_rect.left = m_position.x;
-				tmp_rect.width = m_chosen_tile_pos_text.x - m_zone.left + m_size_tile;
+				tmp_rect.width = m_chosen_tile_pos_text.x - m_zone.left + (*m_size_tile);
 			}
 
 			if(tmp_rect.left + tmp_rect.width > m_position.x + m_zone.width)
@@ -294,18 +315,18 @@ void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 	//Montre l'état de collision des tiles
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
 	{
-		for(int i=0; i<m_nbr_tiles; i++)
+		for(int i=0; i<*m_nbr_tiles; i++)
 		{
-			if( -m_zone.left + m_tiles[i].m_pos_text.x + m_tiles[i].m_size_text.x > 0 && -m_zone.left + m_tiles[i].m_pos_text.x < m_zone.width)
+			if( -m_zone.left + (*m_ptr_tiles)[i].m_pos_text.x + (*m_ptr_tiles)[i].m_size_text.x > 0 && -m_zone.left + (*m_ptr_tiles)[i].m_pos_text.x < m_zone.width)
 			{
 				sf::VertexArray state_collision_bloc(sf::Quads, 4);
 
-				sf::Rect<float> tmp_rect( m_position + m_tiles[i].m_pos_text - sf::Vector2f(m_zone.left, m_zone.top), m_tiles[i].m_size_text );
+				sf::Rect<float> tmp_rect( m_position + (*m_ptr_tiles)[i].m_pos_text - sf::Vector2f(m_zone.left, m_zone.top), (*m_ptr_tiles)[i].m_size_text );
 
 				if(tmp_rect.left < m_position.x)
 				{
 					tmp_rect.left = m_position.x;
-					tmp_rect.width = m_tiles[i].m_pos_text.x - m_zone.left + m_tiles[i].m_size_text.x;
+					tmp_rect.width = (*m_ptr_tiles)[i].m_pos_text.x - m_zone.left + (*m_ptr_tiles)[i].m_size_text.x;
 				}
 
 				if(tmp_rect.left + tmp_rect.width > m_position.x + m_zone.width)
@@ -317,7 +338,7 @@ void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 				state_collision_bloc[3].position 	= 	sf::Vector2f(tmp_rect.left, tmp_rect.top) + sf::Vector2f(0, tmp_rect.height);
 
 				//Si il s'agit d'une croix, collisionable, sinon, non collisionable
-				sf::Vector2f offset_texture( (m_tiles[i].m_collisionable) ? m_state_text.getSize().x/2 : 0 , 0);
+				sf::Vector2f offset_texture( ((*m_ptr_tiles)[i].m_collisionable) ? m_state_text.getSize().x/2 : 0 , 0);
 
 				state_collision_bloc[0].texCoords	=	sf::Vector2f(0, 0) + offset_texture;
 				state_collision_bloc[1].texCoords 	= 	sf::Vector2f(m_state_text.getSize().x/2, 0) + offset_texture;

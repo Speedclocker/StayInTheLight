@@ -34,7 +34,7 @@ public:
 	//Constructeurs/Destructeurs
 	TilesetSelect();
 	~TilesetSelect();
-	TilesetSelect(const std::string id, sf::Texture* texture, sf::Rect<float> zone, Tile tiles[], int nbr_available_tiles, int size_tile);
+	TilesetSelect(const std::string id, const sf::Texture* texture, sf::Rect<float> zone, Tile** tiles, const int* nbr_available_tiles, const int* size_tile, Tile* target_tile);
 
 	//Accesseurs
 	sf::Vector2f		getPosition();
@@ -42,11 +42,13 @@ public:
 	sf::Rect<float>		getZone();
 	sf::Vector2f		getMaxZonePos();
 	Tile 				getChosenTile();
+	int 				getTileSize();
 
 	//Modificateurs
 	void 				setPosition(sf::Vector2f position);
 	void				setZone(sf::Rect<float> zone);
 	void				setSize(sf::Vector2f size);
+	void				setSizeTile(int* size_tile);
 
 	//Méthodes
 	void				collision_settings(sf::RenderWindow* window);
@@ -59,15 +61,20 @@ public:
 private:
 	sf::Rect<float>		m_zone;
 	sf::VertexArray		m_vertex;
-	sf::Texture*		m_texture;
 	sf::Texture 		m_state_text;
 
-
-	Tile* 				m_tiles;
-	int 				m_nbr_tiles;
 	int 				m_chosen_tile;
 	sf::Vector2f		m_chosen_tile_pos_text;
-	int 				m_size_tile;
+
+
+	// Pointeurs
+	const sf::Texture*		m_texture;
+	Tile** 					m_ptr_tiles;
+	const int* 				m_nbr_tiles;
+	const int*	 			m_size_tile;
+	Tile*			 		m_target_tile;
+
+
 
 	enum State {NONE, HOVER, CLICK};
 	State 				m_state;

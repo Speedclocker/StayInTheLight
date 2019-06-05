@@ -4,9 +4,9 @@
 void TilesetWindow(Tab* tab, ArgTab* argtab)
 {
 	sf::Texture* texture = ((ArgTilesetWindow*)(argtab))->texture;
-	Tile* tiles = ((ArgTilesetWindow*)(argtab))->tiles;
-	const int* nbr_avail_tiles= ((ArgTilesetWindow*)(argtab))->nbr_avail_tiles;
-	const int* size_tile = ((ArgTilesetWindow*)(argtab))->size_tile;
+	Tile** tiles = ((ArgTilesetWindow*)(argtab))->tiles;
+	int* nbr_avail_tiles= ((ArgTilesetWindow*)(argtab))->nbr_avail_tiles;
+	int* size_tile = ((ArgTilesetWindow*)(argtab))->size_tile;
 	Tile* target_tile = ((ArgTilesetWindow*)(argtab))->target_tile;
 
 	sf::Rect<float> zone_tileset(sf::Vector2f(0, 0), sf::Vector2f(tab->getSize().x - 10, texture->getSize().y ));
@@ -19,7 +19,7 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 
 
 		//Initialisation du tileset
-		ptr_tileset = new TilesetSelect("tileset", texture, zone_tileset, tiles, *nbr_avail_tiles, *size_tile);
+		ptr_tileset = new TilesetSelect("tileset", texture, zone_tileset, tiles, nbr_avail_tiles, size_tile, target_tile);
 		ptr_tileset->setPosition(sf::Vector2f(tab->getPosition().x + 5, tab->getPosition().y + tab->getTitleSize() + 5));
 		ptr_tileset->setZone(zone_tileset);
 
@@ -40,6 +40,7 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 
 	if(tab->initialized)
 	{
+
 		//Paramétrage du tileset
 		TilesetSelect* tileset = dynamic_cast<TilesetSelect*>(tab->getObject("tileset"));
 		tileset->setZone(zone_tileset);
@@ -53,12 +54,12 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 		slidebar1->setMaxValue(tileset->getMaxZonePos().x);
 
 
-		// Interaction
+		// Interaction SlideBar
 		slidebar1->interactsWithUser(tab->getRenderWindow());
-
 		tileset->setZone(sf::Rect<float>(slidebar1->getCurrentValue(), tileset->getZone().top, tileset->getZone().width, tileset->getZone().height));
-		tileset->interactsWithUser(tab->getRenderWindow());
 
+		// Interaction TilesetSelector
+		tileset->interactsWithUser(tab->getRenderWindow());
 		*target_tile = tileset->getChosenTile();
 	}
 

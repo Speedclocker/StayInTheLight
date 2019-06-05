@@ -2,104 +2,6 @@
 
 
 
-void choice_tile(Tile* tile_target, sf::RenderWindow* window, sf::Texture* texture_file, Tile tiles[], int nbr_avail_tiles, int size_tile)
-{
-	//Fonction qui permet le choix du tile
-	static sf::RectangleShape choice_square(tiles[0].m_size_text);
-	choice_square.setFillColor(sf::Color(0,0,0,0));
-	choice_square.setOutlineColor(sf::Color(255,0,0,255));
-	choice_square.setOutlineThickness(2);
-
-	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-
-	//Fonction qui renvoie le tile choisi
-	if(mousePos.x >=0 && mousePos.x < texture_file->getSize().x
-	&& mousePos.y >=0 && mousePos.y < texture_file->getSize().y )
-	{
-
-		sf::Vector2f positionTile((int)(mousePos.x/size_tile)*size_tile, (int)(mousePos.y/size_tile)*size_tile);
-
-		if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->hasFocus())
-		{
-			int index=(int)(positionTile.x/size_tile) + (int)(positionTile.y/size_tile) * (int)(texture_file->getSize().x/size_tile) ;
-			choice_square.setPosition(positionTile);
-
-			if(index<nbr_avail_tiles) 
-			{
-				*tile_target=tiles[index];
-			}
-		}
-
-	}
-
-	window->draw(choice_square);
-}
-
-
-
-void tileset_collision_settings(sf::RenderWindow* window, sf::Texture* texture_file, Tile tiles[], int nbr_avail_tiles, int size_tile)
-{
-	static bool clicked = false;
-	sf::VertexArray state_collision_bloc(sf::Quads, 4*nbr_avail_tiles);
-	sf::Texture state_text;
-	state_text.loadFromFile("imgs/state_collision.png");
-
-
-	//Affiche la collisionnabilité des tiles
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
-	{
-		sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-
-
-		if(mousePos.x >=0 && mousePos.x < texture_file->getSize().x
-		&& mousePos.y >=0 && mousePos.y < texture_file->getSize().y )
-		{
-
-			
-			if(sf::Mouse::isButtonPressed(sf::Mouse::Right))
-				clicked=true;
-
-			else if(clicked)
-			{
-				clicked=false;
-				sf::Vector2f positionTile((int)(mousePos.x/size_tile)*size_tile, (int)(mousePos.y/size_tile)*size_tile);
-
-				int index=(int)(positionTile.x/size_tile) + (int)(positionTile.y/size_tile) * (int)(texture_file->getSize().x/size_tile) ;
-
-				tiles[index].m_collisionable^=true;
-			}
-			
-
-		}
-
-		//Montre l'état de collision des tiles
-		for(int i=0; i<nbr_avail_tiles; i++)
-		{
-			state_collision_bloc[i*4].position		=	tiles[i].m_pos_text;
-			state_collision_bloc[i*4+1].position 	= 	tiles[i].m_pos_text + sf::Vector2f(tiles[i].m_size_text.x, 0);
-			state_collision_bloc[i*4+2].position 	= 	tiles[i].m_pos_text + sf::Vector2f(tiles[i].m_size_text.x, tiles[i].m_size_text.y);
-			state_collision_bloc[i*4+3].position 	= 	tiles[i].m_pos_text	 + sf::Vector2f(0, tiles[i].m_size_text.y);
-
-			sf::Vector2f offset_texture( (tiles[i].m_collisionable) ? state_text.getSize().x/2 : 0 , 0);
-
-
-
-			state_collision_bloc[i*4].texCoords		=	sf::Vector2f(0, 0) + offset_texture;
-			state_collision_bloc[i*4+1].texCoords 	= 	sf::Vector2f(state_text.getSize().x/2, 0) + offset_texture;
-			state_collision_bloc[i*4+2].texCoords 	= 	sf::Vector2f(state_text.getSize().x/2, state_text.getSize().y) + offset_texture;
-			state_collision_bloc[i*4+3].texCoords 	= 	sf::Vector2f(0, state_text.getSize().y) + offset_texture;
-		}
-
-		window->draw(state_collision_bloc, &state_text);
-
-	}
-
-}
-
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void control_view(sf::RenderWindow* window, sf::View* view, Map* map) 
@@ -331,23 +233,12 @@ int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* text
 				main_window->setSize(sf::Vector2u(( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x<1200) ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x : 1200 
 									,( (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y<720)  ? (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y : 720));
 
-			
-
-
-				//Modification de la vue
-				sf::View main_view(sf::Vector2f((*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2, (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y/2), sf::Vector2f(main_window->getSize()));
-				std::cout << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << " // " << (*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2 << std::endl;
-				main_window->setView(main_view);
 			}
-			
 
-
-/*
-			//Modification de la fenêtre de tileset
-			tileset_window->setSize(texture->getSize());
-			sf::Sprite tileset_sprite(*texture);
-			tileset_sprite.setPosition(0,0);
-*/
+			//Modification de la vue
+			sf::View main_view(sf::Vector2f((*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2, (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y/2), sf::Vector2f(main_window->getSize()));
+			main_window->setView(main_view);
+		
 
 			//Modification des tiles dispo:
 			*nbr_tiles=(texture->getSize().x/(*map_to_load)->getTileSize())*(texture->getSize().y/(*map_to_load)->getTileSize());

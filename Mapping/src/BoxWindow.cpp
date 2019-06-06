@@ -1,8 +1,14 @@
 #include "BoxWindow.h"
 #include "functionTabs.h"
 
-int BOXWINDOW_SIZE_CHARACTER = 15 ;
+int BOXWINDOW_SIZE_CHARACTER = 15;
 
+
+BoxWindow* BOXWINDOW_FOCUS_WINDOW;
+
+
+void unFocus_boxwindow() { BOXWINDOW_FOCUS_WINDOW=NULL; }
+bool noFocus_boxwindow() { return BOXWINDOW_FOCUS_WINDOW==NULL; }
 
 
 ///////////////////////////////////////////////////////////// TAB //////////////////////////////////////////////////////////////
@@ -326,17 +332,28 @@ void BoxWindow::addTab(Tab *tab)
 
 
 
+void BoxWindow::setFocus()
+{
+	BOXWINDOW_FOCUS_WINDOW = this;
+}
+
+bool BoxWindow::hasFocus()
+{
+	return this==BOXWINDOW_FOCUS_WINDOW;
+}
+
+
 void BoxWindow::move_resize()
 {
 	// Permet de modifier la taille de la fenêtre et de la déplacer
 	sf::Vector2f mousePos = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
 	static sf::Vector2f click_move_window;
 	
-	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(-5, this->getTabTitleSize())   ,   sf::Vector2i(11, this->getSize().y - this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
+	if(this->hasFocus() && !sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(-5, this->getTabTitleSize())   ,   sf::Vector2i(11, this->getSize().y - this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
 		m_state_hover = LEFT;
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(this->getSize().x - 5 , this->getTabTitleSize())   ,   sf::Vector2i(11, this->getSize().y - this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
+	else if(this->hasFocus() && !sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(this->getSize().x - 5 , this->getTabTitleSize())   ,   sf::Vector2i(11, this->getSize().y - this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
 		m_state_hover = RIGHT;
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(0, this->getSize().y - 5)   ,   sf::Vector2i(this->getSize().x, 11)  ).contains(mousePos.x, mousePos.y))
+	else if(this->hasFocus() && !sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(0, this->getSize().y - 5)   ,   sf::Vector2i(this->getSize().x, 11)  ).contains(mousePos.x, mousePos.y))
 		m_state_hover = BOTTOM;
 	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition(), sf::Vector2i(this->getSize().x, this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
 		m_state_hover = TOP;
@@ -412,10 +429,27 @@ void BoxWindow::update()
 		(*it)->setXOffset(i * (*it)->getTitle().length() * BOXWINDOW_SIZE_CHARACTER);
 		(*it)->update();
 	}
+
+	if(this->hasFocus())
+		m_focus = true;
+	else
+		m_focus = false;
 }
 
 void BoxWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	if(m_focus)
+	{
+		sf::RectangleShape focus(m_size);
+		focus.setPosition(m_position);
+		focus.setFillColor(sf::Color(0,0,0,0));
+		focus.setOutlineColor(sf::Color(255, 255, 255, 200));
+		focus.setOutlineThickness(1);
+
+		target.draw(focus, states);
+	}
+
+
 	sf::RectangleShape appearance(m_size);
 	appearance.setPosition(m_position);
 	appearance.setFillColor(sf::Color(50, 75, 135, 200));

@@ -29,7 +29,7 @@ int main()
 	sf::Texture texture_map;
 	std::string texture_file;
 
-	if(loadMap(&map, "data/maps/Caca.map", &texture_file)<0)
+	if(loadMap(&map, "data/maps/PetiteMaison.map", &texture_file)<0)
 	{
 		std::cerr << "Erreur lors du chargement de la map" << std::endl;
 		return -1;

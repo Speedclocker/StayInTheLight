@@ -315,6 +315,11 @@ void TilesetSelect::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 	//Montre l'état de collision des tiles
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
 	{
+		sf::RectangleShape tmp_collision_rect(sf::Vector2f(m_zone.width, m_zone.height));
+		tmp_collision_rect.setPosition(m_position);
+		tmp_collision_rect.setFillColor(sf::Color(25, 25, 25, 180));
+		target.draw(tmp_collision_rect);
+
 		for(int i=0; i<*m_nbr_tiles; i++)
 		{
 			if( -m_zone.left + (*m_ptr_tiles)[i].m_pos_text.x + (*m_ptr_tiles)[i].m_size_text.x > 0 && -m_zone.left + (*m_ptr_tiles)[i].m_pos_text.x < m_zone.width)
@@ -407,6 +412,7 @@ SlideBar::Type SlideBar::getType()
 
 
 //Modificateurs
+
 void SlideBar::setMinValue(float minValue)
 {
 	if(m_maxValue > minValue)	

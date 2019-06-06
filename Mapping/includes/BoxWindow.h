@@ -64,6 +64,7 @@ private:
 	sf::Vector2f 									m_position;
 	float											m_x_offset_title_pos;
 
+
 	std::string				 						m_title;
 	sf::Font										m_font;
 	sf::RenderWindow								*m_window;
@@ -101,6 +102,8 @@ public:
 	void				setTabTitleSize(float tabtitle_size);
 
 	//Méthodes
+	void 				setFocus();
+	bool				hasFocus();
 	void 				addTab(Tab* tab);
 	void				move_resize();
 	void				interactsWithUser();
@@ -117,11 +120,21 @@ private:
 	float				m_tabtitle_size;
 	sf::Vector2f		m_minSize, m_maxSize;
 
+	bool 				m_focus;
+
 	enum State {NONE, LEFT, RIGHT, BOTTOM, TOP};
 	State 				m_state_hover;
 	State 				m_state_click;
 	sf::RenderWindow	*m_window;
 };
+
+
+
+extern BoxWindow* BOXWINDOW_FOCUS_WINDOW;
+
+
+void unFocus_boxwindow();
+bool noFocus_boxwindow();
 
 
 

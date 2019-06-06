@@ -7,19 +7,21 @@
 #include "saveMap.h"
 #include "BoxWindow.h"
 #include "tools.h"
-#include "functionTabs.h"
+#include "functionTabs.h"	
 
 #define FULLSCREEN true
 
 
-
 void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile** tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
 {
-	//Gère les fenêtres internes à l'application
+	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
+	//Gère les fenêtres internes à l'application
 	static BoxWindow tmp_boxwindow(sf::Vector2f(200, 300), window);
 	
 	static bool initialized = false;
+	static const BoxWindow* mouse_hover = NULL;
+	static const BoxWindow* mouse_click = NULL;
 
 	
 	if(!initialized)
@@ -39,8 +41,32 @@ void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile**
 		initialized = true;
 	}
 	
+	sf::Rect<float> tmp_window_rect = sf::Rect<float>(tmp_boxwindow.getPosition()-sf::Vector2f(5,5), tmp_boxwindow.getSize()+sf::Vector2f(10,10));
 
+	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && tmp_window_rect.contains(mousePos))
+	{
+		mouse_hover = &tmp_boxwindow;
+	}
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !tmp_window_rect.contains(mousePos) && mouse_click == NULL)
+		unFocus_boxwindow();
+	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		mouse_hover = NULL;
+		mouse_click = NULL;
+	}
+
+	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_hover==&tmp_boxwindow)
+	{
+		mouse_click = &tmp_boxwindow;
+		tmp_boxwindow.setFocus();
+		mouse_hover = NULL;
+	}
+	
+
+
+	//if(tmp_boxwindow.hasFocus())
 	tmp_boxwindow.interactsWithUser();
+
 
 	tmp_boxwindow.Function();	
 
@@ -133,8 +159,6 @@ int main(int argc, char* argv[])
 
 		window.clear();
 
-
-
         // Attente des évenements
 		sf::Event event;// tileset_event;
 		while(window.pollEvent(event))
@@ -186,7 +210,9 @@ int main(int argc, char* argv[])
 
 
 		//Pour placer les tiles
-		set_tile(&window, &texture_file, custom_map, buff_tile, chosen_height);
+		if(noFocus_boxwindow())
+			set_tile(&window, &texture_file, custom_map, buff_tile, chosen_height);
+
 
 
 		//Pour sauvegarder la map

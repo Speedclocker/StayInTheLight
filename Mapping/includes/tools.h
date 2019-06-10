@@ -6,7 +6,6 @@
 #include <iostream>
 #include "Map.h"
 #include "saveMap.h"
-#define FONT_FILE "AldoTheApache.ttf"
 
 /* Ce fichier l'ensemble des outils utilisés par MapCreator, que ce soit la mise en place des tiles, le déplacement entre les différentes couches etc...*/
 

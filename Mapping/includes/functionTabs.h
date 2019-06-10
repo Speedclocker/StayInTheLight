@@ -7,12 +7,12 @@
 
 
 
-////////////// Pour l'onglet des tileset ////////////
+////////////// Tileset Tab ////////////
 
-// Fonction
+// Function
 void TilesetWindow(Tab* tab, ArgTab* argtab);
 
-// Argument
+// Argument Structure
 typedef struct
 {
 	sf::Texture* texture; 
@@ -25,13 +25,16 @@ typedef struct
 
 
 
-//////////// Pour l'onglet de           //////////////
+//////////// 				//////////////
 
-// Fonction
+// Function
+//void InfoWindow(Tab* tab, ArgTab* argtab);
 
-
-
-// Argument
-
-
+// Argument Structure
+/*
+typedef struct
+{
+	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE] = {0};
+} ArgInfoWindow;
+*/
 #endif

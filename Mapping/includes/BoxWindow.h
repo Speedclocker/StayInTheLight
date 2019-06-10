@@ -10,8 +10,6 @@
 #include "InterfaceObject.h"
 
 
-#define FONT_FILE "AldoTheApache.ttf"
-
 
 
 typedef struct{uint8_t val[ARG_TAB_BUFF_SIZE];} ArgTab;
@@ -45,6 +43,7 @@ public:
 	void							setTitle(std::string title);
 
 	//Méthodes
+	void 							interactsWithUser(sf::RenderWindow* window);
 	void							Function();
 	void							addObject(InterfaceObject* object);
 	void							update();
@@ -104,6 +103,7 @@ public:
 	//Méthodes
 	void 				setFocus();
 	bool				hasFocus();
+	void  				focusTab(Tab* tab);
 	void 				addTab(Tab* tab);
 	void				move_resize();
 	void				interactsWithUser();
@@ -114,17 +114,23 @@ public:
 
 private:
 	std::vector<Tab*>	m_tabs;
+	Tab* 				m_focus_tab;
+
 	sf::Vector2f		m_position;	
 	sf::Vector2f		m_position_window; // Il s'agit de la position relative à la View de la RenderWindow prise en paramètre et non des coordonnées absolues
+
 	sf::Vector2f		m_size;
-	float				m_tabtitle_size;
 	sf::Vector2f		m_minSize, m_maxSize;
+	float				m_tabtitle_size;
 
 	bool 				m_focus;
+
+	sf::Font 			m_font;
 
 	enum State {NONE, LEFT, RIGHT, BOTTOM, TOP};
 	State 				m_state_hover;
 	State 				m_state_click;
+	sf::Vector2f 		m_click_move_window;
 	sf::RenderWindow	*m_window;
 };
 

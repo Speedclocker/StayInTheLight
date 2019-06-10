@@ -15,10 +15,13 @@ typedef struct
 class Map : public sf::Drawable, public sf::Transformable
 {
 public:
+	// Constructors/Destructors
 	Map(void);
 	Map(sf::Vector2f size, int height, int tile_sz);
 	~Map();
 
+
+	// Getters
 	int getHeight() const;
 	sf::Vector2f getSize() const;
 	int getTileSize() const;
@@ -26,14 +29,16 @@ public:
 	Tile getTileFromCoords(int height, sf::Vector2f position) const;
 
 
-
+	// Setters
+	void setSize(unsigned int size_x, unsigned int size_y);
+	void setHeight(unsigned int height);
 	void setTile(Tile tile, sf::Vector2i position, int height);
 	void setTexture(sf::Texture* texture);
 
 
+	//Methods
 	void update();
 	void update_transparency(int chosen_height);
-
 	void physics_objects();
 	void addObject(Object* object);
 	

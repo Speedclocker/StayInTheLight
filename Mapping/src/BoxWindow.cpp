@@ -1,6 +1,10 @@
 #include "BoxWindow.h"
 #include "functionTabs.h"
 
+#define FONT_FILE "AldoTheApache.ttf"
+#define WIDTH_TITLETAB_COEFF 1.3
+
+
 int BOXWINDOW_SIZE_CHARACTER = 15;
 
 
@@ -26,20 +30,31 @@ Tab::~Tab()
 		delete it->second;
 		m_objects.erase(it);
 	}
-	free(m_function_arg);
+
+
+	if(m_function_arg != NULL)
+		free(m_function_arg);
 }
 
 
 Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(Tab*, ArgTab*), ArgTab* function_arg, size_t size_function_arg)
 {
-	initialized = false;
+	//Pointers association and allocation
 	m_window = window;
 	tabFunction = function;
-	m_function_arg = (ArgTab*)malloc(size_function_arg);
-	*m_function_arg = *function_arg;
+
+	if(function_arg != NULL)
+	{
+		m_function_arg = (ArgTab*)malloc(size_function_arg);
+		*m_function_arg = *function_arg;
+	}
+	else
+		m_function_arg = NULL;
 
 
-	m_title = name_title;
+	// Variable intialization
+	initialized = false;
+	m_title = name_title;	
 	m_title_size = 30;
 
 	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
@@ -132,9 +147,22 @@ void Tab::setTitle(std::string title)
 
 
 //Méthodes
+void Tab::interactsWithUser(sf::RenderWindow* window)
+{
+	for(std::map<std::string, InterfaceObject*>::iterator it = m_objects.begin(); it != m_objects.end(); it++)
+	{
+		(it->second)->interactsWithUser(window);
+	}
+}
+
+
+
 void Tab::Function()
 {
-	tabFunction(this, m_function_arg);
+	/* Execute the function tabFunction assiociated to the tab with its argument */
+
+	if(tabFunction != NULL)
+		tabFunction(this, m_function_arg);
 }
 
 
@@ -154,24 +182,11 @@ void Tab::update()
 
 void Tab::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	sf::Text title_char(m_title, m_font, BOXWINDOW_SIZE_CHARACTER);
-	title_char.setOutlineThickness(1);
-	title_char.setOutlineColor(sf::Color::Black);
-
-
-	sf::RectangleShape titlebar(sf::Vector2f(title_char.getLocalBounds().width * 1.3, m_title_size));
-	sf::RectangleShape appearance(sf::Vector2f(m_size.x, m_size.y-titlebar.getSize().y));
-	titlebar.setFillColor(sf::Color(50, 75, 135, 200));
+	sf::RectangleShape appearance(sf::Vector2f(m_size.x, m_size.y-m_title_size));
 	appearance.setFillColor(sf::Color(100, 100 , 100 , 160));
-
-	titlebar.setPosition(m_position + sf::Vector2f(m_x_offset_title_pos, 0));
-	appearance.setPosition(m_position + sf::Vector2f(0, titlebar.getSize().y) );
-	title_char.setPosition(titlebar.getPosition() + sf::Vector2f(titlebar.getSize().x/2 - title_char.getLocalBounds().width/2, titlebar.getSize().y/2 - title_char.getLocalBounds().height/2 - 2));
-
+	appearance.setPosition(m_position + sf::Vector2f(0, m_title_size) );
 
 	target.draw(appearance, states);
-	target.draw(titlebar);
-	target.draw(title_char);
 
 
 	for(std::map<std::string, InterfaceObject*>::const_iterator it = m_objects.begin(); it != m_objects.end(); it++)
@@ -202,11 +217,10 @@ BoxWindow::BoxWindow(sf::Vector2f size, sf::RenderWindow* window)
 	m_tabtitle_size = 30;
 
 	//Taille en fonction de la police
-	sf::Font tmp_font;
-	if(!tmp_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
+	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
 	else
 	{
-		sf::Text tmp_char("//", tmp_font, BOXWINDOW_SIZE_CHARACTER);		
+		sf::Text tmp_char("//", m_font, BOXWINDOW_SIZE_CHARACTER);		
 		m_tabtitle_size = tmp_char.getLocalBounds().height * 2;
 	}
 }
@@ -343,11 +357,25 @@ bool BoxWindow::hasFocus()
 }
 
 
+void BoxWindow::focusTab(Tab* tab)
+{
+	for(std::vector<Tab*>::iterator it = m_tabs.begin(); it != m_tabs.end() ; it++)
+	{
+		if(*it == tab)
+		{
+			m_focus_tab = tab;
+			break;
+		}
+	}
+
+}
+
+
 void BoxWindow::move_resize()
 {
-	// Permet de modifier la taille de la fenêtre et de la déplacer
+	// Permet de modifier la taille de la fenêtre, de la déplacer et de choisir un onglet
+
 	sf::Vector2f mousePos = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
-	static sf::Vector2f click_move_window;
 	
 	if(this->hasFocus() && !sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect( (sf::Vector2i)this->getPosition() + sf::Vector2i(-5, this->getTabTitleSize())   ,   sf::Vector2i(11, this->getSize().y - this->getTabTitleSize())  ).contains(mousePos.x, mousePos.y))
 		m_state_hover = LEFT;
@@ -363,20 +391,43 @@ void BoxWindow::move_resize()
 		m_state_click = NONE;
 	}
 
-	//Detection de clic (changement d'état)
+
+	// Detection de clic (changement d'état)
+
 	if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) 
 	{
 		if(m_state_hover == LEFT) m_state_click = LEFT; 
 		if(m_state_hover == RIGHT) m_state_click = RIGHT;
 		if(m_state_hover == BOTTOM) m_state_click = BOTTOM;
-		if(m_state_hover == TOP) m_state_click = TOP;
+		if(m_state_hover == TOP) 
+		{
+			// Permet de changer l'onglet sur lequel la fenêtre a son focus
+			if(this->hasFocus())
+			{
+				for(std::vector<Tab*>::iterator it = m_tabs.begin(); it != m_tabs.end(); it++)
+				{
+					sf::Text tmp_char((*it)->getTitle(), m_font, BOXWINDOW_SIZE_CHARACTER);
+					sf::Rect<float> rect_title_tab(m_position + sf::Vector2f((*it)->getXOffset(), 0), sf::Vector2f(tmp_char.getLocalBounds().width * WIDTH_TITLETAB_COEFF, (*it)->getTitleSize()));	
+
+					if(rect_title_tab.contains(mousePos))
+					{
+						this->focusTab(*it);
+						break;
+					}
+				}
+			}
+
+			m_state_click = TOP;
+		}
 
 		m_state_hover = NONE;
 	}
 	else
 		m_state_click = NONE;
 
-	if(m_state_click==NONE) click_move_window = mousePos - this->getPosition(); // Permet de déplacer la fenêtre depuis le point d'accroche
+
+
+	if(m_state_click==NONE) m_click_move_window = mousePos - this->getPosition(); // Permet de déplacer la fenêtre depuis le point d'accroche
 
 
 
@@ -393,19 +444,25 @@ void BoxWindow::move_resize()
 	{ 
 		this->setSize(sf::Vector2f(this->getSize().x, mousePos.y - this->getPosition().y));
 	}
-	else if(m_state_click == TOP)
+	else if(this->hasFocus() && m_state_click == TOP)
 	{
-		this->setPosition(mousePos - click_move_window);
+		this->setPosition(mousePos - m_click_move_window);
 	}
 
 	this->update();
 }
 
 
+
+
 void BoxWindow::interactsWithUser()
 {
 	this->move_resize();
+	if((this->hasFocus() || BOXWINDOW_FOCUS_WINDOW==NULL) && m_focus_tab!=NULL)
+		m_focus_tab->interactsWithUser(m_window);
 }
+
+
 
 
 void BoxWindow::Function()
@@ -417,8 +474,13 @@ void BoxWindow::Function()
 }
 
 
+
+
+
 void BoxWindow::update()
 {
+	/* Update the boxwindow and the tabs */
+
 	this->setPositionWindow(m_position_window);
 	int i=0;
 	for(std::vector<Tab*>::iterator it = m_tabs.begin(); it != m_tabs.end(); it++ )
@@ -426,8 +488,12 @@ void BoxWindow::update()
 		(*it)->setSize(m_size);
 		(*it)->setTitleSize(m_tabtitle_size);
 		(*it)->setPosition(m_position);
-		(*it)->setXOffset(i * (*it)->getTitle().length() * BOXWINDOW_SIZE_CHARACTER);
+		(*it)->setXOffset(i);
 		(*it)->update();
+
+		sf::Text tmp_char((*it)->getTitle(), m_font, BOXWINDOW_SIZE_CHARACTER);
+		i+=tmp_char.getLocalBounds().width * WIDTH_TITLETAB_COEFF;
+
 	}
 
 	if(this->hasFocus())
@@ -438,6 +504,7 @@ void BoxWindow::update()
 
 void BoxWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	//Draw a halo around the window if it has focus
 	if(m_focus)
 	{
 		sf::RectangleShape focus(m_size);
@@ -450,14 +517,56 @@ void BoxWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 
 
+	// Draw the general window appearance (the window bloc background)
 	sf::RectangleShape appearance(m_size);
 	appearance.setPosition(m_position);
 	appearance.setFillColor(sf::Color(50, 75, 135, 200));
 	target.draw(appearance);
+
+
+
+	// Draw the title for each tab
 	for(std::vector<Tab*>::const_iterator it = m_tabs.begin(); it != m_tabs.end(); it++ )
 	{
-		target.draw(*(*it), states);
+		if((*it)!=m_focus_tab)
+		{
+			sf::Text title_char((*it)->getTitle(), m_font, BOXWINDOW_SIZE_CHARACTER);
+			sf::RectangleShape titlebar(sf::Vector2f(title_char.getLocalBounds().width * WIDTH_TITLETAB_COEFF, (*it)->getTitleSize()));
+
+			title_char.setOutlineThickness(1);
+			title_char.setOutlineColor(sf::Color::Black);
+			
+			titlebar.setFillColor(sf::Color(20, 45, 85, 200));
+
+
+			titlebar.setPosition(m_position + sf::Vector2f((*it)->getXOffset(), 0));
+			title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2 - 2));
+
+			target.draw(titlebar, states);
+			target.draw(title_char, states);
+		}
 	}
+
+
+	// Draw the focused tab
+	if(m_focus_tab!=NULL)
+	{
+		sf::Text title_char(m_focus_tab->getTitle(), m_font, BOXWINDOW_SIZE_CHARACTER);
+		sf::RectangleShape titlebar(sf::Vector2f(title_char.getLocalBounds().width * WIDTH_TITLETAB_COEFF, m_focus_tab->getTitleSize()));
+
+		title_char.setOutlineThickness(1);
+		title_char.setOutlineColor(sf::Color::Black);
+		
+		titlebar.setFillColor(sf::Color(50, 75, 135, 200));
+
+		titlebar.setPosition(m_position + sf::Vector2f(m_focus_tab->getXOffset(), 0));
+		title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2 - 2));
+
+		target.draw(titlebar, states);
+		target.draw(title_char, states);
+		target.draw(*m_focus_tab, states);
+	}
+
 }
 
 

@@ -12,68 +12,126 @@
 #define FULLSCREEN true
 
 
+std::string* PTR_EVENT_TEXT_ENTERED;
+
+
 void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile** tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
 {
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
 	//Gère les fenêtres internes à l'application
-	static BoxWindow tmp_boxwindow(sf::Vector2f(200, 300), window);
-	
+	static BoxWindow editWindow(sf::Vector2f(200, 300), window);
+	static BoxWindow infoWindow(sf::Vector2f(200, 300), window);
+
 	static bool initialized = false;
 	static const BoxWindow* mouse_hover = NULL;
 	static const BoxWindow* mouse_click = NULL;
 
-	
+	static std::vector<BoxWindow*> box_windows; 
+
 	if(!initialized)
 	{
+		// -- Initialization editWindow --
+		editWindow.setPositionWindow(sf::Vector2f(window->getView().getSize().x - editWindow.getSize().x - 100, 500));
+		editWindow.setMinSize(sf::Vector2f(200, 400));
+		editWindow.setMaxSize(sf::Vector2f(texture_tileset->getSize().x + 10, 800));
+
+		// Initialization tab Tileset
 		ArgTilesetWindow arg = ArgTilesetWindow{texture_tileset, tiles, nbr_avail_tiles, size_tile, target_tile};
-		
 		Tab* tab = new Tab("Tileset", window, TilesetWindow, (ArgTab*)&arg, sizeof(ArgTilesetWindow));
+		editWindow.addTab(tab);
+		editWindow.focusTab(tab);
+
+		// Initialization tab Entities
+		Tab* tab2= new Tab("Entities", window, NULL, NULL, sizeof(NULL));
+		editWindow.addTab(tab2);
 		
-		tmp_boxwindow.addTab(tab);
-		tmp_boxwindow.setPositionWindow(sf::Vector2f(window->getView().getSize().x - tmp_boxwindow.getSize().x - 100, 100));
+		editWindow.update();
 
-		tmp_boxwindow.setMinSize(sf::Vector2f(200, 400));
+		box_windows.push_back(&editWindow);
 
-		tmp_boxwindow.setMaxSize(sf::Vector2f(texture_tileset->getSize().x + 10, 800));
-		tmp_boxwindow.update();
+
+
+
+		// -- Initialization infoWindow --
+		/*
+		infoWindow.setPositionWindow(sf::Vector2f(window->getView().getSize().x - editWindow.getSize().x - 300, 100));
+		infoWindow.setMinSize(sf::Vector2f(200, 200));
+		infoWindow.setMaxSize(sf::Vector2f(200, 200));
+
+		Tab* tab3= new Tab("Infos", window, NULL, NULL, sizeof(NULL));
+		infoWindow.addTab(tab3);
+		infoWindow.focusTab(tab3);
+
+		infoWindow.update();
+
+		box_windows.push_back(&infoWindow);
+		*/
 
 		initialized = true;
 	}
-	
-	sf::Rect<float> tmp_window_rect = sf::Rect<float>(tmp_boxwindow.getPosition()-sf::Vector2f(5,5), tmp_boxwindow.getSize()+sf::Vector2f(10,10));
 
-	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && tmp_window_rect.contains(mousePos))
+
+
+	bool no_BW_act = true; 
+	bool focus_change = false;
+	for(std::vector<BoxWindow*>::iterator it = box_windows.begin(); it != box_windows.end(); it++)
 	{
-		mouse_hover = &tmp_boxwindow;
+		sf::Rect<float> window_rect = sf::Rect<float>((*it)->getPosition() - sf::Vector2f(5,5), (*it)->getSize() + sf::Vector2f(10,10));
+		if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && window_rect.contains(mousePos))
+		{
+			mouse_hover = (*it);
+			no_BW_act = false;
+		}
+		if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_hover==(*it))
+		{
+			mouse_click = (*it);
+			(*it)->setFocus();
+			focus_change = true;
+			mouse_hover = NULL;
+			no_BW_act = false;
+		}
 	}
-	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !tmp_window_rect.contains(mousePos) && mouse_click == NULL)
-		unFocus_boxwindow();
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	if(no_BW_act)
 	{
-		mouse_hover = NULL;
-		mouse_click = NULL;
+		// If nothing was done on the box windows
+		if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			mouse_hover = NULL;
+			mouse_click = NULL;	
+		}
+		else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_click == NULL)
+			unFocus_boxwindow();
 	}
 
-	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouse_hover==&tmp_boxwindow)
+	if(focus_change)
 	{
-		mouse_click = &tmp_boxwindow;
-		tmp_boxwindow.setFocus();
-		mouse_hover = NULL;
+		// If the window is focused, put it at the end of the vector
+		std::vector<BoxWindow*>::iterator it = find(box_windows.begin(), box_windows.end(), BOXWINDOW_FOCUS_WINDOW);
+		box_windows.erase(it);
+		box_windows.push_back(BOXWINDOW_FOCUS_WINDOW);
 	}
-	
 
 
-	//if(tmp_boxwindow.hasFocus())
-	tmp_boxwindow.interactsWithUser();
+	for(std::vector<BoxWindow*>::iterator it = box_windows.begin(); it != box_windows.end(); it++)
+	{
+		// Interact and draw in the focus order
+		(*it)->interactsWithUser();
+		(*it)->Function();	
+		(*it)->update();
 
-
-	tmp_boxwindow.Function();	
-
-	tmp_boxwindow.update();
-
-	window->draw(tmp_boxwindow);
+		window->draw(**it);
+	}
 }
+
+
+
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +176,8 @@ int main(int argc, char* argv[])
 							  "MapCreator", ( (FULLSCREEN) ? sf::Style::Fullscreen : sf::Style::Default ) );
 	window.setFramerateLimit(120);
 
+	//Pointeur qui stocke les entrées texte
+	PTR_EVENT_TEXT_ENTERED=NULL;
 
 	//Initialisation des tiles
 	int nbr_tiles=(texture_file.getSize().x/size_tile)*(texture_file.getSize().y/size_tile);
@@ -141,6 +201,7 @@ int main(int argc, char* argv[])
 	Map* custom_map=new Map(sf::Vector2f(size_x, size_y), size_h, size_tile);
 	custom_map->setTexture(&texture_file);
 
+
 	//Zone Map
 	sf::RectangleShape map_zone(sf::Vector2f(custom_map->getSize().x*custom_map->getTileSize(), custom_map->getSize().y*custom_map->getTileSize()));
 	map_zone.setFillColor(sf::Color(0,0,0,0));
@@ -152,21 +213,23 @@ int main(int argc, char* argv[])
 	
 	bool transparency=false;
 
-	//Boucle principale
+	//Main Loop
 	while(window.isOpen())
 	{
-		// MAIN WINDOW
-
 		window.clear();
 
         // Attente des évenements
-		sf::Event event;// tileset_event;
+		sf::Event event;
 		while(window.pollEvent(event))
 		{
 			if(event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
-			{
 				window.close();
-				//tileset_window.close();
+
+			if( (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space) )
+			{
+				custom_map->setSize(custom_map->getSize().x + 1, custom_map->getSize().y - 1);
+				main_view.setCenter(sf::Vector2f(custom_map->getTileSize() * custom_map->getSize().x/2, custom_map->getTileSize() * custom_map->getSize().y/2));
+
 			}
 			
 			if (event.type == sf::Event::Resized)
@@ -174,6 +237,18 @@ int main(int argc, char* argv[])
 				main_view.setSize(event.size.width, event.size.height);
 				main_view.setCenter(sf::Vector2f(custom_map->getTileSize() * custom_map->getSize().x/2, custom_map->getTileSize() * custom_map->getSize().y/2));
 				window.setView(main_view);
+			}
+
+			if(event.type == sf::Event::TextEntered)
+			{
+				// If some text is entered
+				if (event.text.unicode < 128 && PTR_EVENT_TEXT_ENTERED!=NULL)
+				{
+					if(event.text.unicode == 8 && PTR_EVENT_TEXT_ENTERED->length() > 0)
+						PTR_EVENT_TEXT_ENTERED->erase(PTR_EVENT_TEXT_ENTERED->end()-1);
+					else if(event.text.unicode != 8)
+	        			*PTR_EVENT_TEXT_ENTERED += event.text.unicode;
+				}
 			}
 		}
 	
@@ -230,7 +305,7 @@ int main(int argc, char* argv[])
 
 		// Affichage des éléments
 
-		// Fenêtre interne de tileset
+		// BoxWindows
 		windowInside(&window, &texture_file, &available_tiles, &nbr_tiles, &size_tile, &buff_tile);
 
 		window.display();

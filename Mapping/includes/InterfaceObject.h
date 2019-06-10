@@ -7,18 +7,36 @@
 
 #include "Map.h"
 
+
+// Le pointeur qui redigera les entrées claviers
+extern std::string* PTR_EVENT_TEXT_ENTERED;
+
+
+
+/////////////////////// InterfaceObject ////////////////////////
+/* InterfaceObject is a mother-class containing all interface object classes such as buttons, slidebars... useful for user interactions*/
+
 class InterfaceObject : public sf::Drawable
 {
 public:
+	//Constructors/Destructors
+	InterfaceObject();
+	~InterfaceObject();
+
+
+	//Getters
 	std::string			getID();
 	sf::Vector2f 		getSize();
 	sf::Vector2f 		getPosition();
 
+
+	//Setters
 	void				setID(std::string id);
 	void 				setSize(sf::Vector2f size);
 	void 				setPosition(sf::Vector2f position);
 
 	virtual void		update();
+	virtual void 		interactsWithUser(sf::RenderWindow* window);
 protected:
 	std::string			m_id;
 	sf::Vector2f		m_position;
@@ -28,15 +46,127 @@ protected:
 
 
 
+
+////////////////////////// InputBar /////////////////////////////
+/* Child class allowing user to type text inside a box */
+
+class InputBar : public InterfaceObject
+{
+public:
+	enum Type 		{NUMERICAL, ALPHANUMERICAL};
+	enum State 		{NONE, HOVER, CLICK};
+
+	//Constructors/Destructors
+	InputBar();
+	~InputBar();
+	InputBar(std::string id, int size_font, int size_long, InputBar::Type type);
+
+
+	//Getters
+	sf::Vector2f	getPosition();
+	sf::Vector2f	getSize();
+	State 			getState();
+	std::string		getValue();
+	Type 			getType();
+
+	//Setters
+	void			setPosition(sf::Vector2f position);
+	void 			setSize(sf::Vector2f size);
+	void 			setType(Type type);
+	void  			setValue(std::string buff);
+
+
+	//Methods
+	bool 			hasFocus();
+	void			interactsWithUser(sf::RenderWindow* window);
+	void 			update();
+	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+
+private:
+	int 			m_size_font;
+
+	std::string		m_buff;
+	sf::Font		m_font;
+
+	clock_t 		m_time;
+	bool 			m_typing_cursor;
+
+	State			m_state;
+	Type 			m_type;
+
+	bool			m_keyboard_pressed;
+	bool			m_focus;
+
+};
+
+
+
+
+
+
+
+/////////////////////////// Button //////////////////////////////
+/* Child class which is a simple button */
+
+
+class Button : public InterfaceObject
+{
+public:
+	enum State {NONE, HOVER, CLICK};
+
+	//Constructors/Destructors
+	Button();
+	~Button();
+	Button(std::string id, std::string text, int size_font);
+
+
+	//Getters
+	sf::Vector2f	getPosition();
+	sf::Vector2f	getSize();
+	State 			getState();
+
+
+	//Setters
+	void			setPosition(sf::Vector2f position);
+	void 			setSize(sf::Vector2f size);
+
+
+	//Methods
+	bool 			isClick();
+	void			interactsWithUser(sf::RenderWindow* window);
+	void 			update();
+	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+
+private:
+	int 			m_size_font;
+
+	std::string		m_text;
+	sf::Font		m_font;
+
+
+	State			m_state;
+	bool			m_isClick;
+
+};
+
+
+
+
+/////////////////////////// TilesetSelect /////////////////////////////////
+/* Child class allowing user to select tile in a tileset, to manage collisions for each tile etc... */
+
+
 class TilesetSelect : public InterfaceObject
 {
 public: 
-	//Constructeurs/Destructeurs
+	//Constructors/Destructors
 	TilesetSelect();
 	~TilesetSelect();
 	TilesetSelect(const std::string id, const sf::Texture* texture, sf::Rect<float> zone, Tile** tiles, const int* nbr_available_tiles, const int* size_tile, Tile* target_tile);
 
-	//Accesseurs
+	//Getters
 	sf::Vector2f		getPosition();
 	sf::Vector2f		getSize();
 	sf::Rect<float>		getZone();
@@ -44,13 +174,13 @@ public:
 	Tile 				getChosenTile();
 	int 				getTileSize();
 
-	//Modificateurs
+	//Setters
 	void 				setPosition(sf::Vector2f position);
 	void				setZone(sf::Rect<float> zone);
 	void				setSize(sf::Vector2f size);
 	void				setSizeTile(int* size_tile);
 
-	//Méthodes
+	//Methods
 	void				collision_settings(sf::RenderWindow* window);
 	void 				choice_tile(sf::RenderWindow* window);
 	void 				interactsWithUser(sf::RenderWindow* window);
@@ -61,7 +191,7 @@ public:
 private:
 	sf::Rect<float>		m_zone;
 	sf::VertexArray		m_vertex;
-	sf::Texture 		m_state_text;
+	sf::Texture 		m_state_texture;
 
 	int 				m_chosen_tile;
 	sf::Vector2f		m_chosen_tile_pos_text;
@@ -82,25 +212,31 @@ private:
 
 
 
+
+
+/////////////////////////// SlideBar /////////////////////////////////
+/* Child class building a sliding bar */
+
+
 class SlideBar : public InterfaceObject
 {
 public: 
 	enum Type { HORIZONTAL, VERTICAL };
 
-	//Constructeurs/Destructeurs
+	//Constructors/Destructors
 	SlideBar();
 	~SlideBar();
 	SlideBar(std::string id, float valMin, float valMax);
 
 
-	//Accesseurs
+	//Getters
 	float			getMinValue();
 	float			getMaxValue();
 	float			getCurrentValue();	
 	Type 			getType();
 
 
-	//Modificateurs
+	//Setters
 	void			setMinValue(float minValue);
 	void			setMaxValue(float maxValue);
 	void			setCurrentValue(float currentValue);
@@ -109,7 +245,7 @@ public:
 	void 			setType(Type type);
 
 
-	//Méthodes
+	//Methods
 	void 			interactsWithUser(sf::RenderWindow* window);
 	void 			update();
 	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;

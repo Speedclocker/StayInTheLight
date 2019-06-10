@@ -17,22 +17,19 @@ Map::Map(sf::Vector2f size, int height, int tile_sz)
 	m_size=size;
 	m_tile_sz=tile_sz;
 	
-	//intern_time=clock();
-
 	//Allocation espace map
 
 	m_map = (Tile***)malloc( m_height * sizeof(Tile**));
-	for(int h=0; h<height; h++)
+	for(int h=0; h<m_height; h++)
 	{
-		m_map[h] = (Tile**)malloc( m_size.x * sizeof(Tile*) );
+		m_map[h] = (Tile**)malloc( (int)m_size.x * sizeof(Tile*) );
 		for(int i=0; i<m_size.x; i++)
 		{
-			m_map[h][i] = (Tile*)malloc(m_size.y * sizeof(Tile));
+			m_map[h][i] = (Tile*)malloc( (int)m_size.y * sizeof(Tile));
 			for(int j=0; j<m_size.y; j++)
 			{
 				m_map[h][i][j].m_pos_text=sf::Vector2f(0,0);
-
-				m_map[h][i][j].m_collisionable=true;
+				m_map[h][i][j].m_collisionable=false;
 			}
 		}
 	}	
@@ -94,6 +91,68 @@ Tile Map::getTileFromCoords(int height, sf::Vector2f position) const
 	}
 }
 
+
+
+
+
+
+
+// Setters
+
+void Map::setSize(unsigned int size_x, unsigned int size_y)
+{
+	/* Resize the map */
+
+	if(size_x==0 || size_y==0)
+		return;
+
+	for(int h=0; h<m_height; h++)
+	{
+		m_map[h] = (Tile**)realloc( m_map[h] , size_x * sizeof(Tile*) );
+		for(unsigned int i=0; i<size_x; i++)
+		{
+			if(i < m_size.x)
+				m_map[h][i] = (Tile*)realloc( m_map[h][i] , size_y * sizeof(Tile));
+			else
+				m_map[h][i] = (Tile*)malloc( size_y * sizeof(Tile));
+
+			for(unsigned int j=0; j<size_y; j++)
+			{
+				if(i>=m_size.x || j>=m_size.y)
+				{
+					m_map[h][i][j].m_pos_text=sf::Vector2f(0,0);
+					m_map[h][i][j].m_collisionable=false;
+				}
+			}
+		}
+	}
+
+	m_size.x = size_x;
+	m_size.y = size_y;
+}
+
+
+void Map::setHeight(unsigned int height)
+{
+	if(height==0)
+		return;
+
+	m_map = (Tile***)realloc( m_map , height * sizeof(Tile**));
+	for(unsigned int h=m_height; h<height; h++)
+	{
+		m_map[h] = (Tile**)malloc( m_size.x * sizeof(Tile*) );
+
+		for(int i=0; i<m_size.x; i++)
+		{
+			m_map[h][i] = (Tile*)malloc( (int)m_size.y * sizeof(Tile));
+			for(int j=0; j<m_size.y; j++)
+			{
+				m_map[h][i][j].m_pos_text=sf::Vector2f(0,0);
+				m_map[h][i][j].m_collisionable=false;
+			}
+		}
+	}
+}
 
 void Map::setTile(Tile tile, sf::Vector2i position, int height)
 {

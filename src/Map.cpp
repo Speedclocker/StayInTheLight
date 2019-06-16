@@ -170,7 +170,7 @@ void Map::setTexture(sf::Texture* texture)
 
 void Map::update()
 {
-	std::sort(m_objects.begin(), m_objects.end(), comparePosY);
+	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
 
 	m_time=clock();
@@ -209,7 +209,8 @@ void Map::update()
 
 void Map::update_transparency(int chosen_height)
 {
-	std::sort(m_objects.begin(), m_objects.end(), comparePosY);
+	/* Useful for MapCreator */
+	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
 	
 	m_vertex.setPrimitiveType(sf::Quads);
@@ -255,30 +256,30 @@ void Map::update_transparency(int chosen_height)
 }
 
 
-void Map::physics_objects()
+void Map::physics_entities()
 {
-	for(std::vector<Object*>::iterator obj1=m_objects.begin(); obj1!=m_objects.end(); obj1++)
+	for(std::vector<Entity*>::iterator ent1=m_entities.begin(); ent1!=m_entities.end(); ent1++)
 	{
 		
-		//Physique des objets entre eux
-		for(std::vector<Object*>::iterator obj2=obj1+1; obj2!=m_objects.end(); obj2++)
+		//Physique des entités entre eux
+		for(std::vector<Entity*>::iterator ent2=ent1+1; ent2!=m_entities.end(); ent2++)
 		{
-			if((*obj1)->getType().compare("Character")==0 && (*obj2)->getType().compare("Character")==0)
-				physics_characters((Character*)(*obj1), (Character*)(*obj2));
+			if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Character")==0)
+				physics_characters((Character*)(*ent1), (Character*)(*ent2));
 		}
 
-		//Physique des objets avec les éléments de la map
-		physics_character_map((Character*)(*obj1), this, 0);
+		//Physique des entités avec les éléments de la map
+		physics_character_map((Character*)(*ent1), this, 0);
 		
 	}
 }
 
 
-void Map::addObject(Object* object)
+void Map::addEntity(Entity* entity)
 {
-	m_objects.push_back(object);
+	m_entities.push_back(entity);
 
-	std::sort(m_objects.begin(), m_objects.end(), comparePosY);
+	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 }
 	
 
@@ -308,7 +309,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	sf::VertexArray tmp_vertex;
 	tmp_vertex.setPrimitiveType(sf::Quads);
 
-	std::vector<Object*> obj_drawn;
+	std::vector<Entity*> obj_drawn;
 
 	for(int j=0; j<this->getSize().y + this->getHeight() - 1; j++)
 	{
@@ -317,12 +318,12 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 		///////////////////////////////////
 		//Dessine les objets		
-		for(std::vector<Object*>::const_iterator it=m_objects.begin(); it!=m_objects.end(); it++)
+		for(std::vector<Entity*>::const_iterator it=m_entities.begin(); it!=m_entities.end(); it++)
 		{
 			
 			bool obj_already_drawn=false;
 	
-			for(std::vector<Object*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
+			for(std::vector<Entity*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
 			{
 				if( (*it)==(*it2) )
 					obj_already_drawn = true;
@@ -384,6 +385,73 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 };
 */
 
+void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	//Permet de dessiner la map et les objets qui s'y trouvent dans un ordre dépendant de leur position. En effet, l'ordre d'affichage permet de définir un effet de perspective.
+	states.transform *= getTransform();
+
+	states.texture = m_texture;
+
+	sf::VertexArray tmp_vertex;
+	tmp_vertex.setPrimitiveType(sf::Quads);
+
+
+	for(int h=0; h<this->getHeight(); h++)
+	{
+
+		std::vector<Entity*> obj_drawn;
+
+		for(int j=0; j<this->getSize().y; j++)
+		{
+			///////////////////////////////////
+			//Dessine les objets		
+			for(std::vector<Entity*>::const_iterator it=m_entities.begin(); it!=m_entities.end(); it++)
+			{	
+				bool obj_already_drawn=false;
+
+				for(std::vector<Entity*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
+				{
+					if( (*it)==(*it2) )
+						obj_already_drawn = true;
+				}
+				Character* dyn_char = dynamic_cast<Character*>(*it); // Si l'objet est un personnage, on prend sa hitbox
+				int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
+				
+				if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
+				{
+					if(h<this->getHeight()-1)
+						(*it)->drawPart((sf::RenderWindow*)&target, h-(*it)->getHeight());
+					else
+						(*it)->drawPartAndAbove((sf::RenderWindow*)&target, h-(*it)->getHeight());
+
+					//target.draw(*(*it));
+					obj_drawn.push_back(*it);
+				}
+			}
+			//
+			////////////////////////////////////
+
+			////////////////////////////////////
+			// Dessine la map
+			tmp_vertex.resize(this->getSize().x * 4);
+
+			for(int i=0; i< this->getSize().x; i++)
+			{
+				int index_tmp_vertex = i*4;
+				int index_vertex = h*this->getSize().x * this->getSize().y * 4 + i*this->getSize().y * 4 + j*4;
+				
+				tmp_vertex[index_tmp_vertex] = m_vertex[index_vertex];
+				tmp_vertex[index_tmp_vertex+1]=m_vertex[index_vertex+1];
+				tmp_vertex[index_tmp_vertex+2]=m_vertex[index_vertex+2];
+				tmp_vertex[index_tmp_vertex+3]=m_vertex[index_vertex+3];
+			}
+			target.draw(tmp_vertex, states);
+			//
+			//////////////////////////////////
+		}
+	}
+};
+
 /*
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
@@ -395,30 +463,31 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	sf::VertexArray tmp_vertex;
 	tmp_vertex.setPrimitiveType(sf::Quads);
 
-	std::vector<Object*> obj_drawn;
+	std::vector<Entity*> obj_drawn;
 
-	for(int h=0; h<this->getHeight(); h++)
+	for(int j=0; j<this->getSize().y; j++)
 	{
-		for(int j=0; j<this->getSize().y; j++)
+		for(int h=0; h<this->getHeight(); h++)
 		{
 			///////////////////////////////////
 			//Dessine les objets		
-			for(std::vector<Object*>::const_iterator it=m_objects.begin(); it!=m_objects.end(); it++)
+			for(std::vector<Entity*>::const_iterator it=m_entities.begin(); it!=m_entities.end(); it++)
 			{	
 				bool obj_already_drawn=false;
 
-				for(std::vector<Object*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
+				for(std::vector<Entity*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
 				{
 					if( (*it)==(*it2) )
 						obj_already_drawn = true;
 				}
-				std::cout << (*it)->getHeight() << std::endl;
+
 				Character* dyn_char = dynamic_cast<Character*>(*it); // Si l'objet est un personnage, on prend sa hitbox
 				int tmp_val = (dyn_char != nullptr) ? dyn_char->getAbsHitbox().top + dyn_char->getAbsHitbox().height : (*it)->getPosition().y + (*it)->getSize().y;
+			
 
-				if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val < (j-h)*this->getTileSize())
+				if(!obj_already_drawn && (tmp_val + (*it)->getHeight()*this->getTileSize()) <= (j+h+1)*this->getTileSize())
 				{
-					target.draw(*(*it));
+					//target.draw(**it);
 					obj_drawn.push_back(*it);
 				}
 			}
@@ -447,77 +516,13 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 };
 */
 
-void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-	//Permet de dessiner la map et les objets qui s'y trouvent dans un ordre dépendant de leur position. En effet, l'ordre d'affichage permet de définir un effet de perspective.
-	states.transform *= getTransform();
-
-	states.texture = m_texture;
-
-	sf::VertexArray tmp_vertex;
-	tmp_vertex.setPrimitiveType(sf::Quads);
-
-	std::vector<Object*> obj_drawn;
-
-	for(int j=0; j<this->getSize().y; j++)
-	{
-		for(int h=0; h<this->getHeight(); h++)
-		{
-			///////////////////////////////////
-			//Dessine les objets		
-			for(std::vector<Object*>::const_iterator it=m_objects.begin(); it!=m_objects.end(); it++)
-			{	
-				bool obj_already_drawn=false;
-
-				for(std::vector<Object*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
-				{
-					if( (*it)==(*it2) )
-						obj_already_drawn = true;
-				}
-
-				Character* dyn_char = dynamic_cast<Character*>(*it); // Si l'objet est un personnage, on prend sa hitbox
-				int tmp_val = (dyn_char != nullptr) ? dyn_char->getAbsHitbox().top + dyn_char->getAbsHitbox().height : (*it)->getPosition().y + (*it)->getSize().y;
-
-				if(!obj_already_drawn && (tmp_val + (*it)->getHeight()*this->getTileSize()) <= (j+h+1)*this->getTileSize())
-				{
-					target.draw(*(*it));
-					obj_drawn.push_back(*it);
-				}
-			}
-			//
-			////////////////////////////////////
-
-			////////////////////////////////////
-			// Dessine la map
-			tmp_vertex.resize(this->getSize().x * 4);
-
-			for(int i=0; i< this->getSize().x; i++)
-			{
-				int index_tmp_vertex = i*4;
-				int index_vertex = h*this->getSize().x * this->getSize().y * 4 + i*this->getSize().y * 4 + j*4;
-				
-				tmp_vertex[index_tmp_vertex] = m_vertex[index_vertex];
-				tmp_vertex[index_tmp_vertex+1]=m_vertex[index_vertex+1];
-				tmp_vertex[index_tmp_vertex+2]=m_vertex[index_vertex+2];
-				tmp_vertex[index_tmp_vertex+3]=m_vertex[index_vertex+3];
-			}
-			target.draw(tmp_vertex, states);
-			//
-			//////////////////////////////////
-		}
-	}
-};
-
-
-bool comparePosY(Object* obj1, Object* obj2)
+bool comparePosY(Entity* ent1, Entity* ent2)
 { 
-	Character* dyn_char1 = dynamic_cast<Character*>(obj1);
-	Character* dyn_char2 = dynamic_cast<Character*>(obj2);
+	Character* dyn_char1 = dynamic_cast<Character*>(ent1);
+	Character* dyn_char2 = dynamic_cast<Character*>(ent2);
 
-	int val1 = (dyn_char1 != nullptr) ? dyn_char1->getAbsHitbox().top + dyn_char1->getAbsHitbox().height : obj1->getPosition().y + obj1->getSize().y;
-	int val2 = (dyn_char2 != nullptr) ? dyn_char2->getAbsHitbox().top + dyn_char2->getAbsHitbox().height : obj2->getPosition().y + obj2->getSize().y;
-
-	//std::cout << val1 << " < " << val2 << std::endl;
+	int val1 = (dyn_char1 != nullptr) ? dyn_char1->getAbsHitbox().top + dyn_char1->getAbsHitbox().height : ent1->getPosition().y + ent1->getSize().y;
+	int val2 = (dyn_char2 != nullptr) ? dyn_char2->getAbsHitbox().top + dyn_char2->getAbsHitbox().height : ent2->getPosition().y + ent2->getSize().y;
 
 	return val1 < val2;
 }

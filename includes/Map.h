@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "Object.h"
+#include "Entity.h"
 
 typedef struct
 {
@@ -39,8 +39,8 @@ public:
 	//Methods
 	void update();
 	void update_transparency(int chosen_height);
-	void physics_objects();
-	void addObject(Object* object);
+	void physics_entities();
+	void addEntity(Entity* entity);
 	
 
 private:
@@ -49,7 +49,7 @@ private:
 
 	clock_t					m_time;
 	Tile*** 				m_map;
-	std::vector<Object*>	m_objects;
+	std::vector<Entity*>	m_entities;
 	sf::VertexArray 		m_vertex;
 	sf::Texture* 			m_texture;
 	int 					m_height;
@@ -58,6 +58,6 @@ private:
 };
 
 
-bool comparePosY(Object* obj1, Object* obj2);
+bool comparePosY(Entity* ent1, Entity* ent2);
 
 #endif

@@ -7,7 +7,7 @@
 #include <math.h>
 #include "collision.h"
 #include "Animation.h"
-#include "Object.h"
+#include "Entity.h"
 
 
 #define PI 3.14159
@@ -77,12 +77,13 @@ private:
 
 
 
-class Character : public Object
+class Character : public Entity
 {
 public:
 	//Constructeurs et Destructeurs
 	Character();
-	Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
+	//Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
+	Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color, Map* map);
 	~Character();
 
 	//Accesseurs
@@ -93,7 +94,7 @@ public:
 	int getHeight();
 	sf::Vector2f getSize();
 
-	AnimatedSprite* getSprite();	
+	AnimatedSpriteInMap* getSprite();	
 	
 	sf::IntRect getHitbox();
 	sf::IntRect getAbsHitbox();
@@ -133,6 +134,11 @@ public:
 	void move(int mov_x, int mov_y);
 	void attack();
 	void takeDamages(int damages);
+
+	void drawPart(sf::RenderWindow* window, unsigned int height);
+	void drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
+
+
 	
 private:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -142,8 +148,10 @@ private:
 	int m_speed;
 
 
-	sf::RectangleShape m_sprite;
-	AnimatedSprite* m_sprite2;
+	//sf::RectangleShape m_sprite;
+	//AnimatedSprite* m_sprite2;
+	AnimatedSpriteInMap* m_sprite3;
+
 	sf::IntRect m_hitbox;
 
 	State m_state;

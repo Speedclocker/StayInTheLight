@@ -29,11 +29,12 @@ int main()
 	sf::Texture texture_map;
 	std::string texture_file;
 
-	if(loadMap(&map, "data/maps/PetiteMaison.map", &texture_file)<0)
+	if(loadMap(&map, "data/maps/PetiteMaison2.map", &texture_file)<0)
 	{
 		std::cerr << "Erreur lors du chargement de la map" << std::endl;
 		return -1;
 	}
+	//std::cout << map->getTile(2, sf::Vector2i(1,1)).m_pos_text.x << std::endl;
 	texture_map.loadFromFile(texture_file);
 
 	map->setTexture(&texture_map);
@@ -47,21 +48,21 @@ int main()
 
 	//Création du personnage
 	/*personnage.getSize().y-10*/
-	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red);
+	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red, map);
 	personnage.setSpeed(2);
 	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16));
 	personnage.setHealth(10);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	personnage.setHeight(1);
-	map->addObject(&personnage);
+	map->addEntity(&personnage);
 
 	//Création du mob
-	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue);
+	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue, map);
 	mob.setHealth(10);
 	mob.setHitbox(sf::IntRect(0, 5 , mob.getSize().x/1.5, 16 /*mob.getSize().y-10*/));
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
 	mob.setHeight(1);
-	map->addObject(&mob);
+	map->addEntity(&mob);
 
 
 	//Ajout d'une cible potentielle d'attaque au héros 
@@ -101,7 +102,7 @@ int main()
 
 
 		// On applique la physique sur les objets liés à la map
-		map->physics_objects();
+		map->physics_entities();
 
 
         // Mise à jour des personnages
@@ -115,7 +116,8 @@ int main()
 
         // Dessin des personnages à l'écran
         //window.draw(mob);
-        //window.draw(personnage);
+        //personnage.drawPart(&window, 0);
+        //personnage.drawPart(&window, 1);
 
 
 		// Affichage des éléments

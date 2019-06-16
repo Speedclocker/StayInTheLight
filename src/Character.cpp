@@ -209,9 +209,11 @@ Character::Character()
 	m_type="Character";
 
 	m_actual_attack=NULL;
-	m_sprite2=NULL;
+	m_sprite3=NULL;
 }
 
+
+/*
 Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
 {
 	m_type="Character";
@@ -222,8 +224,35 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
 	m_sprite.setFillColor(color);
 
-	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 50), 6, sf::Vector2f(0,30) );
+	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
 	m_sprite2->setFPSQuotient(4);
+
+	this->setSize(sf::Vector2f(22, 28));
+	this->update();
+
+	this->setState(STANDING);
+	
+	this->setSense(DOWN);
+}
+*/
+
+Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color, Map* map)
+{
+	m_type="Character";
+
+	m_actual_attack=NULL;
+	m_ground_zone = 14;
+
+/*
+	m_sprite.setSize(sf::Vector2f(22, 28));
+	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
+	m_sprite.setFillColor(color);
+
+	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30));
+	m_sprite2->setFPSQuotient(4);
+*/
+	m_sprite3 = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
+	m_sprite3->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));
 	this->update();
@@ -235,8 +264,14 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 
 Character::~Character()
 {
-	delete m_sprite2;
-	delete m_actual_attack;
+	//if(m_sprite2 != NULL)
+	//	delete m_sprite2;
+
+	if(m_sprite3 != NULL)
+		delete m_sprite3;
+
+	if(m_actual_attack != NULL)
+		delete m_actual_attack;
 }
 
 
@@ -311,10 +346,10 @@ sf::Time Character::getLastTimeAttack()
 }
 
 
-AnimatedSprite* Character::getSprite()
+AnimatedSpriteInMap* Character::getSprite()
 {
 	// Renvoie un pointeur vers le sprite du personnage
-	return m_sprite2;
+	return m_sprite3;
 }
 
 std::vector< Character* > Character::getAvTargets()
@@ -342,9 +377,12 @@ void Character::setPosition(sf::Vector2f position)
 
 	//Modifie la position du personnage
 	m_position = position;
-	m_sprite.setPosition(m_position);
+	//m_sprite.setPosition(m_position);
 	
-	m_sprite2->setPosition(m_position);
+	//m_sprite2->setPosition(m_position);
+
+	m_sprite3->setPosition(m_position);
+
 }
 
 void Character::setHeight(int height)
@@ -406,6 +444,7 @@ void Character::addAvTarget(Character* target)
 void Character::update()
 {
 	//MAJ Position du sprite en fonction de l'entité Character
+	/*
 	m_sprite.setPosition(sf::Vector2f(this->getAbsHitbox().left, this->getAbsHitbox().top));
 	m_sprite.setSize(sf::Vector2f(this->getAbsHitbox().width, this->getAbsHitbox().height));
 
@@ -447,6 +486,44 @@ void Character::update()
 		m_sprite2->setPosition(m_position);
 		m_sprite2->update();
 	}	
+*/
+
+	if(m_sprite3!=NULL)
+	{
+		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
+		if(this->getSense()==UP || this->getSense()==UP_RIGHT || this->getSense()==UP_LEFT)
+		{
+			if(this->getState()==MOVING)
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,29), 0);
+			else
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,29), 0);
+		}
+		else if(this->getSense()==DOWN || this->getSense()==DOWN_RIGHT || this->getSense()==DOWN_LEFT)
+		{
+			if(this->getState()==MOVING)
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,0), 0);
+			else
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,0), 0);
+		}
+		else if(this->getSense()==RIGHT)
+		{
+			if(this->getState()==MOVING)
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,88), 0);
+			else
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,88), 0);
+		}	
+		else
+		{
+			if(this->getState()==MOVING)
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,58), 0);
+			else
+				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
+		}
+		
+		// Met à jour le sprite
+		m_sprite3->setPosition(m_position);
+		m_sprite3->update();
+	}	
 }
 
 
@@ -473,7 +550,12 @@ void Character::move(sf::Vector2f movement)
 {
 	// Déplace le personnage
 	m_position+=movement;
-	m_sprite2->setPosition(m_position);
+	
+	//if(m_sprite2!=NULL)
+	//	m_sprite2->setPosition(m_position);
+	
+	if(m_sprite3!=NULL)
+		m_sprite3->setPosition(m_position);
 	
 }	
 
@@ -483,7 +565,12 @@ void Character::move(int mov_x, int mov_y)
 {
 	// Déplace le personnage
 	m_position+=sf::Vector2f (mov_x, mov_y);
-	m_sprite2->setPosition(m_position);
+
+	//if(m_sprite2!=NULL)
+	//	m_sprite2->setPosition(m_position);
+
+	if(m_sprite3!=NULL)
+		m_sprite3->setPosition(m_position);
 	
 }	
 
@@ -519,8 +606,13 @@ void Character::takeDamages(int damages)
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Affiche le personnage
-	target.draw(m_sprite);
-	target.draw(*m_sprite2, states);
+	//target.draw(m_sprite, states);
+
+	//if(m_sprite2!=NULL)
+		//target.draw(*m_sprite2, states);
+
+	if(m_sprite3!=NULL)
+		target.draw(*m_sprite3, states);
 
 	if(this->getState()==ATTACKING)
 	{
@@ -531,3 +623,14 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 };
 
 
+void Character::drawPart(sf::RenderWindow* window, unsigned int height)
+{
+	(*m_sprite3).drawPart(window, height);
+}
+
+
+
+void Character::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
+{
+	(*m_sprite3).drawPartAndAbove(window, height);
+}

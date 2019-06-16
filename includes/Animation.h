@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+#include "Map.h"
 
 
 
@@ -44,7 +45,7 @@ public:
 	//Méthodes
 	void update();
 
-private:
+protected:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 
@@ -69,7 +70,30 @@ private:
 
 
 
+class AnimatedSpriteInMap : public AnimatedSprite
+{
+public:
+	AnimatedSpriteInMap();
+	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, float ground_zone_y, Map* map);
+	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, float ground_zone_y, Map* map);
 
+	int getHeightLevels();
+
+	void update();
+	void drawPart(sf::RenderWindow* window, unsigned int height);
+	void drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
+
+
+private:
+	virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+
+	int 								m_height_levels;
+
+	float						 		m_ground_zone_y;
+	Map* 								m_map;
+
+	std::vector<sf::VertexArray> 		m_vertex_arrays;
+};
 
 
 

@@ -17,7 +17,7 @@ Map::Map(sf::Vector2f size, int height, int tile_sz)
 	m_size=size;
 	m_tile_sz=tile_sz;
 	
-	//Allocation espace map
+	//Allocation memory for the map map
 
 	m_map = (Tile***)malloc( m_height * sizeof(Tile**));
 	for(int h=0; h<m_height; h++)
@@ -56,21 +56,35 @@ Map::~Map()
 }
 
 
-//Taille de la map
-int Map::getHeight() const										{	return m_height;	}
 
 
-//Hauteur de la map
-sf::Vector2f Map::getSize() const								{	return m_size;		}
+// Getters
+
+int Map::getHeight() const
+{	
+	// Return the map size
+	return m_height;	
+}
 
 
-//Taille d'une tile
-int Map::getTileSize() const									{	return m_tile_sz;	}
+sf::Vector2f Map::getSize() const
+{
+	// Return the map height	
+	return m_size;		
+}
 
 
-//Une tile de la map
+int Map::getTileSize() const
+{	
+	// Return the tile size	
+	return m_tile_sz;	
+}
+
+
 Tile Map::getTile(int height, sf::Vector2i tile_pos) const 		
 {	
+	// Return a specific tile of the map for which the indexes are given in parameters
+	
 	if(m_map!=NULL && m_map[height]!=NULL && m_map[height][tile_pos.x]!=NULL) 
 		return m_map[height][tile_pos.x][tile_pos.y]; 
 	else
@@ -82,6 +96,8 @@ Tile Map::getTile(int height, sf::Vector2i tile_pos) const
 
 Tile Map::getTileFromCoords(int height, sf::Vector2f position) const
 {
+	// Return a specific tile of the map for which the coordinates are given in parameters
+
 	if(m_map!=NULL && m_map[height]!=NULL && m_map[height][(int)(position.x/this->getTileSize())]!=NULL) 
 		return m_map[height][(int)(position.x/this->getTileSize())][(int)(position.y/this->getTileSize())]; 
 	else
@@ -172,8 +188,8 @@ void Map::update()
 {
 	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
-
 	m_time=clock();
+	m_vertex.clear();
 	m_vertex.setPrimitiveType(sf::Quads);
 	m_vertex.resize(this->getSize().x * this->getSize().y * this->getHeight() * 4);
 
@@ -195,7 +211,6 @@ void Map::update()
 				m_vertex[index+1].texCoords = m_map[h][i][j].m_pos_text + sf::Vector2f(m_tile_sz, 0);
 				m_vertex[index+2].texCoords = m_map[h][i][j].m_pos_text + sf::Vector2f(m_tile_sz, m_tile_sz);
 				m_vertex[index+3].texCoords= m_map[h][i][j].m_pos_text + sf::Vector2f(0, m_tile_sz);
-
 
 				m_vertex[index].color.a = 255;
 				m_vertex[index+1].color.a = 255;
@@ -414,7 +429,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 					if( (*it)==(*it2) )
 						obj_already_drawn = true;
 				}
-				Character* dyn_char = dynamic_cast<Character*>(*it); // Si l'objet est un personnage, on prend sa hitbox
+				
 				int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
 				
 				if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())

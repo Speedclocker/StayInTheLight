@@ -9,7 +9,7 @@
 #include "tools.h"
 #include "functionTabs.h"	
 
-#define FULLSCREEN false
+#define FULLSCREEN true
 
 
 std::string* PTR_EVENT_TEXT_ENTERED;
@@ -184,16 +184,16 @@ int main(int argc, char* argv[])
 	Tile* available_tiles= (Tile*)malloc(nbr_tiles * sizeof(Tile));
 	for(int i=0; i<nbr_tiles;i++)
 	{
-		available_tiles[i].m_pos_text = sf::Vector2f( (i%(texture_file.getSize().x/size_tile))*size_tile,  (i/(texture_file.getSize().x/size_tile))*size_tile );
+		available_tiles[i].m_pos_text = sf::Vector2f( (i%(int)(texture_file.getSize().x/size_tile))*size_tile,  (i/(int)(texture_file.getSize().x/size_tile))*size_tile );
 		available_tiles[i].m_size_text = sf::Vector2f( size_tile, size_tile );
 		available_tiles[i].m_collisionable = false;
-		std::cout << available_tiles[i].m_pos_text.x << "," << available_tiles[i].m_pos_text.y << std::endl;
 	}
 	Tile buff_tile=available_tiles[0];
 
 
 	//Création de la vue
 	sf::View main_view(sf::Vector2f(size_x*size_tile/2, size_y*size_tile/2), sf::Vector2f(window.getSize()));
+	main_view.setCenter(0,0);
 	window.setView(main_view);
 
 
@@ -232,13 +232,14 @@ int main(int argc, char* argv[])
 				main_view.setCenter(sf::Vector2f(custom_map->getTileSize() * custom_map->getSize().x/2, custom_map->getTileSize() * custom_map->getSize().y/2));
 
 			}
-			
+				//if((int)window.getSize().x%2==1) window.setSize(sf::Vector2u(window.getSize().x-1, window.getSize().y));
+				//if((int)window.getSize().y%2==1) window.setSize(sf::Vector2u(window.getSize().x, window.getSize().y-1));
 			if (event.type == sf::Event::Resized)
 			{
+				
 				main_view.setSize(event.size.width, event.size.height);
-				if((int)main_view.getSize().x%2==1) main_view.setSize(main_view.getSize().x-1, main_view.getSize().y);
-				if((int)main_view.getSize().y%2==1) main_view.setSize(main_view.getSize().x, main_view.getSize().y-1);
-
+				
+				
 				main_view.setCenter(sf::Vector2f(custom_map->getTileSize() * custom_map->getSize().x/2, custom_map->getTileSize() * custom_map->getSize().y/2));
 				window.setView(main_view);
 			}
@@ -275,9 +276,7 @@ int main(int argc, char* argv[])
 
 
 		// Changement de hauteur
-		transparency=height_settings(&window, custom_map, &chosen_height);
-
-
+		transparency = height_settings_command(&window, custom_map, &chosen_height);
 
 		//Si l'utilisateur utilise la fenêtre principale
 		if(window.hasFocus())
@@ -295,12 +294,12 @@ int main(int argc, char* argv[])
 
 
 		//Pour sauvegarder la map
-		save_map(custom_map, texture_file_name);
+		save_map_command(custom_map, texture_file_name, available_tiles, nbr_tiles);
 
 
 
 		//Pour charger une map
-		if(load_map(&window, &custom_map, &texture_file, &available_tiles, &nbr_tiles, FULLSCREEN)==1)
+		if(load_map_command(&window, &custom_map, &texture_file, &available_tiles, &nbr_tiles, FULLSCREEN)==1)
 		{
 			size_tile=custom_map->getTileSize();
 			buff_tile=available_tiles[0];

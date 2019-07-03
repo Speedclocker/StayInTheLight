@@ -1,7 +1,7 @@
 #include "BoxWindow.h"
 #include "functionTabs.h"
 
-#define FONT_FILE "AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 #define WIDTH_TITLETAB_COEFF 1.3
 
 

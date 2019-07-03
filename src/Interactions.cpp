@@ -6,7 +6,7 @@
 
 void character_key_input(Character* character, bool* attack)
 {
-	// Déplacement du personnage
+	// Get keys to move the character
 	
 	int speed = character->getSpeed();
 	float diag_speed = sqrt(2)/2*speed;

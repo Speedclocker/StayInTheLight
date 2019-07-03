@@ -2,6 +2,31 @@
 
 
 
+void probeTileset(const char* raw_line, Tile* tileset, int tileset_size)
+{
+	char line[BUFF_SIZE];
+	strcpy(line, raw_line);
+
+	char* buffer=NULL;
+
+	if(strstr(line, "|")!=NULL)
+	{	
+		buffer=strtok(line, "|/ ");
+
+		int i=0;
+		while(buffer!=NULL && i<tileset_size)
+		{
+			if(atoi(buffer)==0) tileset[i].m_collisionable = false;
+			else tileset[i].m_collisionable = true;
+
+			buffer=strtok(NULL, "|/ ");
+			i++;
+		}
+	}
+}
+
+
+
 void probeMap(const char* raw_line, Map* load_location_map)
 {
 	static int actual_height=0, actual_X=0;
@@ -9,11 +34,12 @@ void probeMap(const char* raw_line, Map* load_location_map)
 	strcpy(line, raw_line);
 
 	char* buffer=NULL;
-	if(strstr(line, "H")!=NULL && strstr(line, "/H")==NULL)
+
+	if(strstr(line, "[H")!=NULL)
 	{
 		//Detection d'un changement de hauteur
-		buffer = strtok(line, "H:\n");
-		
+		buffer = strtok(line, "H\n");
+		buffer = strtok(NULL, "]\n");
 
 		actual_height = atoi(buffer);
 		actual_X = 0;
@@ -50,10 +76,10 @@ void probeMap(const char* raw_line, Map* load_location_map)
 		{
 			Tile tile;
 			buffer=strtok((char*)((*it).c_str()), ",");
-			tile.m_pos_text.x = atoi(buffer);
+			tile.m_pos_text.x = atoi(buffer)*load_location_map->getTileSize();
 
 			buffer=strtok(NULL, "-");
-			tile.m_pos_text.y = atoi(buffer);
+			tile.m_pos_text.y = atoi(buffer)*load_location_map->getTileSize();
 
 			buffer=strtok(NULL, "\n");
 			tile.m_collisionable = atoi(buffer);
@@ -67,9 +93,9 @@ void probeMap(const char* raw_line, Map* load_location_map)
 
 		actual_X++;
 	}
-
-
 }
+
+
 
 void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, int* tile_sz_map, char texture_name_file[BUFF_SIZE])
 {
@@ -123,7 +149,7 @@ void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, 
 }
 
 
-int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::string* name_texture_file)
+int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::string* name_texture_file, sf::Texture* texture, Tile** tileset, int* tileset_size)
 {
 	std::ifstream file_to_load;
 	file_to_load.open("maps/"+name_file_map_to_load);
@@ -131,32 +157,81 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 	sf::Vector2f size_map=sf::Vector2f(-1,-1);
 	int height_map=-1, tile_sz_map=-1;
+	bool texture_load = false;
 	char texture_name_file[BUFF_SIZE];
-
-	if(*load_location_map != NULL)
-	{
-		delete *load_location_map;
-		*load_location_map=NULL;
-	}
 
 	std::string buffer="";
 
-	//Lecture du fichier
-	while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "Map :")==NULL)
+
+	while(std::getline(file_to_load, buffer))
 	{
-		probeHeader(buffer.c_str(), &size_map, &height_map, &tile_sz_map, texture_name_file);
-	}
+		if(strstr(buffer.c_str(), "[Header]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Header]")==NULL)
+			{
+				probeHeader(buffer.c_str(), &size_map, &height_map, &tile_sz_map, texture_name_file);
+			}
 
-	if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
+			*name_texture_file = texture_name_file;
 
-	*load_location_map = new Map(size_map, height_map, tile_sz_map);
-	*name_texture_file = texture_name_file;
+			//En cas d'erreur
+			if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
+			if(!texture->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
+			else texture_load = true;
 
-	while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "/Map")==NULL)
-	{
-		probeMap(buffer.c_str(), *load_location_map);
+			// If no error during map loading, we free the map
+			if(*load_location_map != NULL)
+			{
+				delete *load_location_map;
+				*load_location_map=NULL;
+			}
+
+
+			// Creation of the map
+			*load_location_map = new Map(size_map, height_map, tile_sz_map);
+			
+
+			//Modification des tiles dispo:
+			*tileset_size=(texture->getSize().x/tile_sz_map)*(texture->getSize().y/tile_sz_map);
+			*tileset=(Tile*)realloc((*tileset),(*tileset_size)*sizeof(Tile));
+
+
+			for(int i=0; i<*tileset_size;i++)
+			{
+				(*tileset)[i].m_pos_text = sf::Vector2f( (i%(texture->getSize().x/tile_sz_map))*tile_sz_map,  (i/(texture->getSize().x/tile_sz_map))*tile_sz_map );
+				(*tileset)[i].m_size_text = sf::Vector2f( tile_sz_map, tile_sz_map );
+				(*tileset)[i].m_collisionable = false;
+			}
+		}
+
+
+		else if(strstr(buffer.c_str(), "[Tileset]")!=NULL)
+		{
+			//std::cout << "tileset" << std::endl;
+			
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Tileset]")==NULL)
+			{
+				probeTileset(buffer.c_str(), *tileset, *tileset_size);
+			}
+		}
+
+
+		else if(strstr(buffer.c_str(), "[Map]")!=NULL)
+		{
+			//std::cout << "map" << std::endl;
+			if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
+
+			if(!texture_load && !texture->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
+			else texture_load = true;
+
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Map]")==NULL)
+			{
+				probeMap(buffer.c_str(), *load_location_map);
+			}
+		}
 	}
 	file_to_load.close();
+
 	std::cout << "end" <<std::endl;
 
 	return 0;
@@ -164,37 +239,64 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 
 
-int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::string texture_name_file)
+int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size)
 {
 	std::ofstream file_to_save;
 
 	file_to_save.open("maps/"+name_file);
 	if(file_to_save.fail()) {std::cerr << "Une erreur est survenue lors de la tentative de création du fichier " << name_file << std::endl; file_to_save.close(); return -1; }
 
-	//Enregistrement du nom 
+	//Header
+	file_to_save << "[Header]" << std::endl;
+
+	////Enregistrement du nom 
 	file_to_save << "Name : " << name_map <<std::endl;
 
-	//Enregistrement de la taille d'une size
+	////Enregistrement de la taille d'une size
 	file_to_save << "Tile Size : " << map_to_save->getTileSize() << std::endl;
 
-	//Enregistrement de la Hauteur de la map
+	////Enregistrement de la Hauteur de la map
 	file_to_save << "Height : " << map_to_save->getHeight() << std::endl;
 
-	//Enregistrement de la taille de la map
+	////Enregistrement de la taille de la map
 	file_to_save << "X : " << map_to_save->getSize().x << std::endl;
 	file_to_save << "Y : " << map_to_save->getSize().y << std::endl;
 
-	//Enregistrement du nom du fichier de texture
+	////Enregistrement du nom du fichier de texture
 	file_to_save << "Texture File : " << texture_name_file << std::endl;
+
+	//End of Header
+	file_to_save << "[/Header]" << std::endl;
+
 
 	file_to_save << std::endl;
 
 
-	//Enregistrement de la map
-	file_to_save << "Map : " << std::endl;
+	//Tileset
+	file_to_save << "[Tileset]" << std::endl;
+
+	////Collisionable or not
+	file_to_save << "| " ;
+	for(int i=0; i < tileset_size; i++)
+	{
+		file_to_save << tileset[i].m_collisionable ;
+		if(i<tileset_size-1)
+			file_to_save << "/" ;
+	}
+	file_to_save << " |" << std::endl;
+
+	//End Tileset
+	file_to_save << "[/Tileset]" << std::endl;
+
+
+	file_to_save << std::endl;
+
+
+	//Map
+	file_to_save << "[Map]" << std::endl;
 	for(int h=0; h<map_to_save->getHeight(); h++)
 	{
-		file_to_save << "H" << h << ": " << std::endl;
+		file_to_save << "[H" << h << "]" << std::endl;
 		for (int i = 0; i < map_to_save->getSize().x; i++)
 		{
 			file_to_save << "| " ;
@@ -210,14 +312,14 @@ int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::
 					return -1; 
 				}
 				
-				file_to_save << "(" << tmp_tile.m_pos_text.x << "," << tmp_tile.m_pos_text.y << "-" << tmp_tile.m_collisionable << ") " ;
+				file_to_save << "(" << tmp_tile.m_pos_text.x/map_to_save->getTileSize() << "," << tmp_tile.m_pos_text.y/map_to_save->getTileSize() << "-" << tmp_tile.m_collisionable << ") " ;
 				
 			}
 			file_to_save << "|" << std::endl ;
 		}
-		file_to_save << "/H" << h << std::endl;
+		file_to_save << "[/H" << h << "]" << std::endl;
 	}
-	file_to_save << "/Map" << std::endl;
+	file_to_save << "[/Map]" << std::endl;
 
 	file_to_save.close();
 

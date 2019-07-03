@@ -1,6 +1,6 @@
 #include "tools.h"
 
-#define FONT_FILE "AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ void set_tile(sf::RenderWindow* window, sf::Texture *texture, Map* map, Tile til
 
 
 
-bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
+bool height_settings_command(sf::RenderWindow* window, Map* map, int* chosen_height)
 {	
 	static bool keyPressed_O = false, keyPressed_P = false, keyPressed_T = false, transparencydisplay=true;
 
@@ -177,7 +177,7 @@ bool height_settings(sf::RenderWindow* window, Map* map, int* chosen_height)
 }
 
 
-void save_map(Map* map_to_save, std::string texture_name)
+void save_map_command(Map* map_to_save, std::string texture_name, Tile* tileset, int tileset_size)
 {
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 	{
@@ -191,7 +191,7 @@ void save_map(Map* map_to_save, std::string texture_name)
 			file_name.erase(tmp_space,1);
 		file_name=file_name+".map";
 
-		if(saveMap(map_to_save, map_name, file_name, texture_name)<0)
+		if(saveMap(map_to_save, map_name, file_name, texture_name, tileset, tileset_size)<0)
 		{
 			std::cerr << "Une erreur a eu lieu durant la sauvegarde de la map..." << std::endl;
 		}
@@ -203,7 +203,7 @@ void save_map(Map* map_to_save, std::string texture_name)
 }
 
 
-int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* texture, Tile** available_tiles, int* nbr_tiles, bool fullscreen)
+int load_map_command(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* texture, Tile** tileset, int* tileset_size, bool fullscreen)
 {
 	// Pour le chargement de la map
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::L))
@@ -215,7 +215,7 @@ int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* text
 		std::string tmp_text_file;
 
 		// Chargement de la map
-		if(loadMap(map_to_load, map_name, &tmp_text_file)<0) 
+		if(loadMap(map_to_load, map_name, &tmp_text_file, texture, tileset, tileset_size)<0)
 		{ 
 			std::cerr << "Une erreur a eu lieu lors du chargement de la map." << std::endl; 
 			return -1;
@@ -223,8 +223,6 @@ int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* text
 		else
 		{
 			// Modification de la texture
-			texture->loadFromFile(tmp_text_file);
-
 			if( texture->loadFromFile(tmp_text_file) == false) { std::cerr << "Le fichier texture n'a pas pu être chargé." << std::endl; }
 			else (*map_to_load)->setTexture(texture);
 
@@ -240,7 +238,7 @@ int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* text
 			sf::View main_view(sf::Vector2f((*map_to_load)->getTileSize() * (*map_to_load)->getSize().x/2, (*map_to_load)->getTileSize() * (*map_to_load)->getSize().y/2), sf::Vector2f(main_window->getSize()));
 			main_window->setView(main_view);
 		
-
+/*
 			//Modification des tiles dispo:
 			*nbr_tiles=(texture->getSize().x/(*map_to_load)->getTileSize())*(texture->getSize().y/(*map_to_load)->getTileSize());
 
@@ -252,6 +250,7 @@ int load_map(sf::RenderWindow* main_window, Map** map_to_load, sf::Texture* text
 				(*available_tiles)[i].m_size_text = sf::Vector2f( (*map_to_load)->getTileSize(), (*map_to_load)->getTileSize() );
 				(*available_tiles)[i].m_collisionable = false;
 			}
+*/
 			return 1;
 		}
 	}

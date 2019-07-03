@@ -83,7 +83,7 @@ public:
 	//Constructeurs et Destructeurs
 	Character();
 	//Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
-	Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color, Map* map);
+	Character(sf::Texture* texture, Map* map);
 	~Character();
 
 	//Accesseurs
@@ -150,7 +150,7 @@ private:
 
 	//sf::RectangleShape m_sprite;
 	//AnimatedSprite* m_sprite2;
-	AnimatedSpriteInMap* m_sprite3;
+	AnimatedSpriteInMap* m_sprite;
 
 	sf::IntRect m_hitbox;
 

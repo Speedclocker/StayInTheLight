@@ -209,7 +209,7 @@ Character::Character()
 	m_type="Character";
 
 	m_actual_attack=NULL;
-	m_sprite3=NULL;
+	m_sprite=NULL;
 }
 
 
@@ -236,7 +236,7 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 }
 */
 
-Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color, Map* map)
+Character::Character(sf::Texture* texture, Map* map)
 {
 	m_type="Character";
 
@@ -251,8 +251,8 @@ Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color co
 	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30));
 	m_sprite2->setFPSQuotient(4);
 */
-	m_sprite3 = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
-	m_sprite3->setFPSQuotient(4);
+	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
+	m_sprite->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));
 	this->update();
@@ -267,8 +267,8 @@ Character::~Character()
 	//if(m_sprite2 != NULL)
 	//	delete m_sprite2;
 
-	if(m_sprite3 != NULL)
-		delete m_sprite3;
+	if(m_sprite != NULL)
+		delete m_sprite;
 
 	if(m_actual_attack != NULL)
 		delete m_actual_attack;
@@ -349,7 +349,7 @@ sf::Time Character::getLastTimeAttack()
 AnimatedSpriteInMap* Character::getSprite()
 {
 	// Renvoie un pointeur vers le sprite du personnage
-	return m_sprite3;
+	return m_sprite;
 }
 
 std::vector< Character* > Character::getAvTargets()
@@ -381,7 +381,7 @@ void Character::setPosition(sf::Vector2f position)
 	
 	//m_sprite2->setPosition(m_position);
 
-	m_sprite3->setPosition(m_position);
+	m_sprite->setPosition(m_position);
 
 }
 
@@ -488,41 +488,41 @@ void Character::update()
 	}	
 */
 
-	if(m_sprite3!=NULL)
+	if(m_sprite!=NULL)
 	{
 		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
 		if(this->getSense()==UP || this->getSense()==UP_RIGHT || this->getSense()==UP_LEFT)
 		{
 			if(this->getState()==MOVING)
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,29), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,29), 0);
 			else
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,29), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,29), 0);
 		}
 		else if(this->getSense()==DOWN || this->getSense()==DOWN_RIGHT || this->getSense()==DOWN_LEFT)
 		{
 			if(this->getState()==MOVING)
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,0), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,0), 0);
 			else
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,0), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,0), 0);
 		}
 		else if(this->getSense()==RIGHT)
 		{
 			if(this->getState()==MOVING)
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,88), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,88), 0);
 			else
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,88), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,88), 0);
 		}	
 		else
 		{
 			if(this->getState()==MOVING)
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,58), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,58), 0);
 			else
-				m_sprite3->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
+				m_sprite->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
 		}
 		
 		// Met à jour le sprite
-		m_sprite3->setPosition(m_position);
-		m_sprite3->update();
+		m_sprite->setPosition(m_position);
+		m_sprite->update();
 	}	
 }
 
@@ -554,8 +554,8 @@ void Character::move(sf::Vector2f movement)
 	//if(m_sprite2!=NULL)
 	//	m_sprite2->setPosition(m_position);
 	
-	if(m_sprite3!=NULL)
-		m_sprite3->setPosition(m_position);
+	if(m_sprite!=NULL)
+		m_sprite->setPosition(m_position);
 	
 }	
 
@@ -569,8 +569,8 @@ void Character::move(int mov_x, int mov_y)
 	//if(m_sprite2!=NULL)
 	//	m_sprite2->setPosition(m_position);
 
-	if(m_sprite3!=NULL)
-		m_sprite3->setPosition(m_position);
+	if(m_sprite!=NULL)
+		m_sprite->setPosition(m_position);
 	
 }	
 
@@ -611,8 +611,8 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	//if(m_sprite2!=NULL)
 		//target.draw(*m_sprite2, states);
 
-	if(m_sprite3!=NULL)
-		target.draw(*m_sprite3, states);
+	if(m_sprite!=NULL)
+		target.draw(*m_sprite, states);
 
 	if(this->getState()==ATTACKING)
 	{
@@ -625,12 +625,12 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Character::drawPart(sf::RenderWindow* window, unsigned int height)
 {
-	(*m_sprite3).drawPart(window, height);
+	(*m_sprite).drawPart(window, height);
 }
 
 
 
 void Character::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 {
-	(*m_sprite3).drawPartAndAbove(window, height);
+	(*m_sprite).drawPartAndAbove(window, height);
 }

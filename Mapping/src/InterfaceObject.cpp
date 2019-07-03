@@ -1,7 +1,7 @@
 #include "InterfaceObject.h"
 
 
-#define FONT_FILE "AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 
 
 

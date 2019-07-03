@@ -10,45 +10,41 @@
 int main()
 {
 
-	//Création de la fenêtre et paramétrage de framerate
-	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");
-	window.setFramerateLimit(60);
+	//Window creation and setting
+	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");	
+	window.setFramerateLimit(60);	// Framerate limit
+	window.setKeyRepeatEnabled(false);	// No repetition of key-event
+
+	bool space=false;	// State variable of attack key
 
 
 
-   	//Variable d'état de la touche d'attaque
-	bool space=false;
-
-	//Les évenements ne se répètent pas tant que la ou les touches restent appuyées
-	window.setKeyRepeatEnabled(false);
-
-
-	//Création de la map
+	//Map creation
 	Map* map=NULL;
-
 	sf::Texture texture_map;
-	std::string texture_file;
+	std::string texture_name_file;
 
-	if(loadMap(&map, "data/maps/PetiteMaison2.map", &texture_file)<0)
+	if(loadMap(&map, "data/maps/Test.map", &texture_name_file)<0)
 	{
-		std::cerr << "Erreur lors du chargement de la map" << std::endl;
+		std::cerr << "Error while loading of map" << std::endl;
 		return -1;
 	}
-	//std::cout << map->getTile(2, sf::Vector2i(1,1)).m_pos_text.x << std::endl;
-	texture_map.loadFromFile(texture_file);
+	
+	if(!texture_map.loadFromFile(texture_name_file)){ std::cerr << "Error while loading of texture \"texture_map\"" << std::endl; return -1; }
 
 	map->setTexture(&texture_map);
 
 
 
-	//Création et chargement de texture
+	//Texture creation and loading
 	sf::Texture texture_link;
 	texture_link.loadFromFile("data/imgs/linkmv.png");
 
 
-	//Création du personnage
+
+	//Character creation
 	/*personnage.getSize().y-10*/
-	Character personnage(&texture_link, sf::IntRect(0,0,30,30), sf::Color::Red, map);
+	Character personnage(&texture_link, map);
 	personnage.setSpeed(2);
 	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16));
 	personnage.setHealth(10);
@@ -56,32 +52,31 @@ int main()
 	personnage.setHeight(1);
 	map->addEntity(&personnage);
 
-	//Création du mob
-	Character mob(&texture_link, sf::IntRect(0,150,30,30), sf::Color::Blue, map);
+
+
+	//Mob creation
+	Character mob(&texture_link, map);
 	mob.setHealth(10);
 	mob.setHitbox(sf::IntRect(0, 5 , mob.getSize().x/1.5, 16 /*mob.getSize().y-10*/));
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
 	mob.setHeight(1);
 	map->addEntity(&mob);
 
-
-	//Ajout d'une cible potentielle d'attaque au héros 
-	personnage.addAvTarget(&mob);
-
+	//Add a potential attack target for hero
+	personnage.addAvTarget(&mob); 
 
 
 	
 	
-	//Boucle principale
+	//Main loop
 	while(window.isOpen())
 	{
 		window.clear();
 			
-		//Mise à jour de la map
-		map->update();
+		map->update(); // Update map
 
 
-        // Attente des évenements
+        // Waiting for events
 		sf::Event event;
 		while(window.pollEvent(event))
 		{
@@ -89,38 +84,42 @@ int main()
 				window.close();
 			if((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
 				space=true;
+
+			if (event.type == sf::Event::Resized)
+			{
+				sf::View main_view;
+
+				// Adapt the view if window has been resized
+				main_view.setSize(event.size.width, event.size.height);
+				main_view.setCenter(sf::Vector2f(map->getTileSize() * map->getSize().x/2, map->getTileSize() * map->getSize().y/2));
+				window.setView(main_view);
+			}
 		}
 		
 		
-		// Les entrées claviers permettent d'intéragir sur le personnage
+		// Keyboard input are associated to the hero
 		character_key_input(&personnage, &space);
 
 
-		// Mise à jour de l'attaque des personnages
+		// Update attack state of the hero
 		personnage.updateAttack();
 		mob.updateAttack();
 
 
-		// On applique la physique sur les objets liés à la map
+		// We apply physics on the objects associated with the current map
 		map->physics_entities();
 
 
-        // Mise à jour des personnages
+        // Characters updating
 		personnage.update();
 		mob.update();
 
 
-		// Dessin de la map
+		// Drawing the map
 		window.draw(*map);
 
 
-        // Dessin des personnages à l'écran
-        //window.draw(mob);
-        //personnage.drawPart(&window, 0);
-        //personnage.drawPart(&window, 1);
-
-
-		// Affichage des éléments
+		// Displaying the window
 		window.display();
 	}
 

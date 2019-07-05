@@ -9,6 +9,7 @@
 #include "Map.h"
 
 
+
 typedef struct
 {
 	sf::Vector2f size;
@@ -17,6 +18,9 @@ typedef struct
 	int spacing;
 
 } AnimationParameters;
+
+
+AnimationParameters animationParametersFromString(std::string string);
 
 
 class AnimatedSprite : public sf::Drawable

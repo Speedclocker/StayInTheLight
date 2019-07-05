@@ -10,7 +10,7 @@ OGAMEDIR= ../obj/
 SMAPDIR= src/
 OMAPDIR= obj/
 
-SOURCES_GAME:=$(filter-out $(SGAMEDIR)loadMap.cpp, $(wildcard $(SGAMEDIR)*.cpp))
+SOURCES_GAME:=$(filter-out $(SGAMEDIR)loadContent.cpp, $(wildcard $(SGAMEDIR)*.cpp))
 OBJECTS_GAME:=$(SOURCES_GAME:$(SGAMEDIR)%.cpp=$(OGAMEDIR)%.o)
 
 SOURCES_MAP:=$(wildcard $(SMAPDIR)*.cpp)

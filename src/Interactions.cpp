@@ -60,7 +60,7 @@ void character_key_input(Character* character, bool* attack)
 			character->move(sf::Vector2f(speed, 0));
 			character->setSense(RIGHT);
 			character->setState(Character::MOVING);
-		}/*
+		}
 		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::U))
 		{
 			character->setHeight(0);
@@ -80,7 +80,7 @@ void character_key_input(Character* character, bool* attack)
 		{
 			character->setHeight(3);
 			character->setState(Character::STANDING);
-		}*/
+		}
 		else
 			character->setState(Character::STANDING);
 	}

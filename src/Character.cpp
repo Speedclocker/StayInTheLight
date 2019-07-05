@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Character.h"
 
+#define LINE_SIZE 2000
 
 
 
@@ -192,20 +193,15 @@ bool Attack::update()
 
 
 
-
-
-
-
-
-
 // ------------------------------------------- Character -------------------------------------------------//
 
 
 
-
+// Constructors and Destructors
 
 Character::Character()
 {
+	/* Constructor */
 	m_type="Character";
 
 	m_actual_attack=NULL;
@@ -213,44 +209,14 @@ Character::Character()
 }
 
 
-/*
-Character::Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color)
-{
-	m_type="Character";
-
-	m_actual_attack=NULL;
-
-	m_sprite.setSize(sf::Vector2f(22, 28));
-	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
-	m_sprite.setFillColor(color);
-
-	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30) );
-	m_sprite2->setFPSQuotient(4);
-
-	this->setSize(sf::Vector2f(22, 28));
-	this->update();
-
-	this->setState(STANDING);
-	
-	this->setSense(DOWN);
-}
-*/
-
 Character::Character(sf::Texture* texture, Map* map)
 {
+	/* Constructor */
 	m_type="Character";
 
 	m_actual_attack=NULL;
 	m_ground_zone = 14;
 
-/*
-	m_sprite.setSize(sf::Vector2f(22, 28));
-	m_sprite.setPosition(rect_sprite.left, rect_sprite.top);
-	m_sprite.setFillColor(color);
-
-	m_sprite2 = new AnimatedSprite(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30));
-	m_sprite2->setFPSQuotient(4);
-*/
 	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
 	m_sprite->setFPSQuotient(4);
 
@@ -262,11 +228,10 @@ Character::Character(sf::Texture* texture, Map* map)
 	this->setSense(DOWN);
 }
 
+
 Character::~Character()
 {
-	//if(m_sprite2 != NULL)
-	//	delete m_sprite2;
-
+	/* Destructor */
 	if(m_sprite != NULL)
 		delete m_sprite;
 
@@ -275,72 +240,83 @@ Character::~Character()
 }
 
 
-//Accesseurs
 
+// Getters
 
 int Character::getHealth()
 {
-	// Renvoie la santé d'un personnage
+	/* Return health of the character */
 	return m_health;
 }
 
+
 int Character::getSpeed()
 {
-	// Renvoie la vitesse de déplacement d'un personnage
+	/* Return speed of the character */
 	return m_speed;
 }
 
+
 sf::IntRect Character::getHitbox()
 {
-	// Renvoie la hitbox (dont la taille diffère de celle du personnage) relative au personnage (la position est relative à celle du personnage)
+	/* Return hitbox relativly to the character (origin is the character) */
 	return m_hitbox;
 }
 
+
 sf::IntRect Character::getAbsHitbox()
 {
-	// Renvoie la hitbox absolue (la position est absolue)
+	/* Return hitbox in absolute coords */
 	return sf::IntRect(m_hitbox.left + m_position.x + m_size.x/2 - m_hitbox.width/2, m_hitbox.top + m_position.y + m_size.y/2 - m_hitbox.height/2, 
 		m_hitbox.width, m_hitbox.height);
 }
 
+
 Character::State Character::getState() const
 {
-	// Renvoie l'état du personnage
+	/* Return state of the character */
 	return m_state;
 }
 
-Sense Character::getSense()
-{
-	// Renvoie le sens du personnage
-	return m_sense;
-}
 
 sf::Clock Character::getClock()
 {
-	// Renvoie l'horloge du personnage
+	/* Return the clock of the character */
 	return m_clock;
 }
 
+
 sf::Time Character::getLastTimeAttack()
 {
-	// Renvoie le dernier temps où le personnage a attaqué
+	/* Return the last time when the character attacked */
 	return m_last_time_attack;
 }
 
 
 AnimatedSpriteInMap* Character::getSprite()
 {
-	// Renvoie un pointeur vers le sprite du personnage
+	/* Return a pointer to the sprite */
 	return m_sprite;
 }
 
+
 std::vector< Character* > Character::getAvTargets()
 {
-	// Renvoie les cibles potentielles pouvant être attaquées par le personnage
+	/* Return the potential targets of the character */
 	return m_av_targets;
 }
 
-//Modificateurs
+
+
+// Setters
+
+void Character::setTexture(sf::Texture* texture)
+{
+	Entity::setTexture(texture);
+
+	m_sprite->setTexture(m_texture);
+}
+
 
 void Character::setHealth(int health)
 {
@@ -352,31 +328,6 @@ void Character::setSpeed(int speed)
 {
 	// Modifie la vitesse de déplacement du personnage
 	m_speed = speed;
-}
-
-void Character::setPosition(sf::Vector2f position)
-{
-
-	//Modifie la position du personnage
-	m_position = position;
-	//m_sprite.setPosition(m_position);
-	
-	//m_sprite2->setPosition(m_position);
-
-	m_sprite->setPosition(m_position);
-
-}
-
-void Character::setHeight(int height)
-{
-	//Modifie la hauteur du personnage
-	m_height=height;
-}
-
-void Character::setSize(sf::Vector2f size)
-{	
-	//Modifie la taille du personnage
-	m_size = size;
 }
 
 void Character::setHitbox(sf::IntRect hitbox)
@@ -391,17 +342,13 @@ void Character::setState(State state)
 	m_state = state;	
 }
 
-void Character::setSense(Sense sense)
-{
-	// Modifie le sens du personnage en fonction du sens en paramètre
-	m_sense = sense;
-}
 
 void Character::setLastTimeAttack(sf::Time last_time_attack)
 {
 	// Modifie le temps de la dernière attaque
 	m_last_time_attack = last_time_attack;
 }
+
 
 void Character::addAvTarget(Character* target)
 {
@@ -419,57 +366,11 @@ void Character::addAvTarget(Character* target)
 
 
 
-
-
-//Méthodes
+// Methods
 
 void Character::update()
 {
-	//MAJ Position du sprite en fonction de l'entité Character
-	/*
-	m_sprite.setPosition(sf::Vector2f(this->getAbsHitbox().left, this->getAbsHitbox().top));
-	m_sprite.setSize(sf::Vector2f(this->getAbsHitbox().width, this->getAbsHitbox().height));
-
-
-
-	if(m_sprite2!=NULL)
-	{
-		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
-		if(this->getSense()==UP || this->getSense()==UP_RIGHT || this->getSense()==UP_LEFT)
-		{
-			if(this->getState()==MOVING)
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,29), 0);
-			else
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,29), 0);
-		}
-		else if(this->getSense()==DOWN || this->getSense()==DOWN_RIGHT || this->getSense()==DOWN_LEFT)
-		{
-			if(this->getState()==MOVING)
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,0), 0);
-			else
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,0), 0);
-		}
-		else if(this->getSense()==RIGHT)
-		{
-			if(this->getState()==MOVING)
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,88), 0);
-			else
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,88), 0);
-		}	
-		else
-		{
-			if(this->getState()==MOVING)
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 8, sf::Vector2f(0,58), 0);
-			else
-				this->getSprite()->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
-		}
-		
-		// Met à jour le sprite
-		m_sprite2->setPosition(m_position);
-		m_sprite2->update();
-	}	
-*/
-
+	/* Update sprite state and position depending on the character entity */
 	if(m_sprite!=NULL)
 	{
 		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
@@ -512,10 +413,10 @@ void Character::update()
 
 void Character::updateAttack()
 {
-	//Vérifie l'état de l'attaque et met à jour
+	/* Check the state of the attack and update it consequently */
 	if(m_state==ATTACKING && m_actual_attack!=NULL)
 	{
-		if(m_actual_attack->update()) // Si l'attaque est finie...
+		if(m_actual_attack->update()) // If the attack is finished
 		{
 			m_state=STANDING;
 			m_last_time_attack = m_clock.getElapsedTime();
@@ -527,44 +428,32 @@ void Character::updateAttack()
 }
 
 
-
 void Character::move(sf::Vector2f movement)
 {
-	// Déplace le personnage
+	/* Move the character */
 	m_position+=movement;
-	
-	//if(m_sprite2!=NULL)
-	//	m_sprite2->setPosition(m_position);
 	
 	if(m_sprite!=NULL)
 		m_sprite->setPosition(m_position);
-	
 }	
-
 
 
 void Character::move(int mov_x, int mov_y)
 {
-	// Déplace le personnage
+	/* Move the character */
 	m_position+=sf::Vector2f (mov_x, mov_y);
-
-	//if(m_sprite2!=NULL)
-	//	m_sprite2->setPosition(m_position);
 
 	if(m_sprite!=NULL)
 		m_sprite->setPosition(m_position);
-	
 }	
-
 
 
 void Character::attack()
 {
-	
-	// Lance une attaque si le personnage n'attaque déjà pas
+	/* Launch an attack if the character doesn't attack */
 	if(m_state!=ATTACKING && m_actual_attack==NULL && (m_clock.getElapsedTime().asMilliseconds() - m_last_time_attack.asMilliseconds() > 250 ) )
 	{
-		//Exemple d'attaque rectiligne
+		//Exemple with a linear attack
 		std::vector< sf::IntRect > test_rect;
 		for(int i=0; i<this->getSize().x; i+=4)
 		{
@@ -577,21 +466,17 @@ void Character::attack()
 	}
 }
 
+
 void Character::takeDamages(int damages)
 {
-	//Prends des dommages en fonction des dégâts en paramètres.
+	/* Take damages depending on the value in parameter */
 	m_health-=damages;
 }
-
 
 		
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	// Affiche le personnage
-	//target.draw(m_sprite, states);
-
-	//if(m_sprite2!=NULL)
-		//target.draw(*m_sprite2, states);
+	/* Draw the character */
 
 	if(m_sprite!=NULL)
 		target.draw(*m_sprite, states);
@@ -607,14 +492,61 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Character::drawPart(sf::RenderWindow* window, unsigned int height)
 {
+	/* Draw part of the character entity in the chosen height */
 	if(m_sprite != NULL)
 		m_sprite->drawPart(window, height);
 }
 
 
-
 void Character::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 {
+	/* Draw part of the character entity in the chosen height and everything above */
 	if(m_sprite != NULL)
 		m_sprite->drawPartAndAbove(window, height);
+}
+
+
+
+void Character::readFeaturesFromString(std::string string)
+{
+	char line[LINE_SIZE];
+	strcpy(line, string.c_str());
+
+	strtok(line, ": \n");
+	char* tag = strtok(NULL, ": \n");
+
+	// Hitbox feature
+	if(strstr(string.c_str(), "Hitbox : ")!=NULL && tag!=NULL)
+	{
+		// load from file the Hitbox
+		sf::IntRect hitbox = sf::IntRect(-1,-1,-1,-1);
+
+		tag=tag+1;
+		hitbox.left = atoi(tag=strtok(tag, " ,"));	
+		hitbox.top = atoi(tag=strtok(NULL, " ,"));
+		hitbox.width = atoi(tag=strtok(NULL, " ,"));	
+		hitbox.height = atoi(tag=strtok(NULL, " )"));
+
+		if(hitbox.left!=-1 && hitbox.top!=-1 && hitbox.width!=-1 && hitbox.height!=-1) this->setHitbox(hitbox);
+	}
+}
+
+
+void Character::readAnimationFromString(std::string string)
+{
+	char line[LINE_SIZE];
+	strcpy(line, string.c_str());
+
+	strtok(line, "{\n");
+	char* tag = strtok(NULL, "}\n");
+
+	// default
+	if(strstr(string.c_str(), "default : ")!=NULL && tag!=NULL)
+	{	
+		AnimationParameters anim_prmtrs = animationParametersFromString(std::string(tag));
+		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1)
+			{std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
+		
+		m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::DEFAULT_STATE, DEFAULT_SENSE), anim_prmtrs) );
+	}
 }

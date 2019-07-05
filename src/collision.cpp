@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "collision.h"
 #include "Character.h"
-
+#include "Collector.h"
 
 
 struct Interval
@@ -83,10 +83,44 @@ void physics_characters(Character* character_1, Character* character_2)
 				character_2->move(sf::Vector2f(-dec_x/2,0));
 			}
 		}
-	    
-
 	}
-	
+}
+
+
+void physics_character_collector(Character* character, Collector* collector)
+{
+    if(collision_rects(character->getAbsHitbox(), collector->getAbsHitbox()))
+    {
+        int dec_x=0, dec_y=0;
+
+        if(character->getAbsHitbox().left + character->getAbsHitbox().width/2 < collector->getAbsHitbox().left + collector->getAbsHitbox().width/2)
+            dec_x = ((character->getAbsHitbox().left + character->getAbsHitbox().width) - collector->getAbsHitbox().left);
+        else
+            dec_x = ((collector->getAbsHitbox().left + collector->getAbsHitbox().width) - character->getAbsHitbox().left);
+
+
+        if(character->getAbsHitbox().top + character->getAbsHitbox().height/2 < collector->getAbsHitbox().top + collector->getAbsHitbox().height/2)
+            dec_y = ((character->getAbsHitbox().top + character->getAbsHitbox().height) - collector->getAbsHitbox().top);
+        else
+            dec_y = ((collector->getAbsHitbox().top + collector->getAbsHitbox().height) - character->getAbsHitbox().top);
+
+
+
+        if(dec_x > dec_y)
+        {
+            if(character->getAbsHitbox().top + character->getAbsHitbox().height/2 < collector->getAbsHitbox().top + collector->getAbsHitbox().height/2)
+                character->move(sf::Vector2f(0,-dec_y));
+            else
+                character->move(sf::Vector2f(0,dec_y));
+        }
+        else
+        {
+            if(character->getAbsHitbox().left + character->getAbsHitbox().width/2 < collector->getAbsHitbox().left + collector->getAbsHitbox().width/2)
+                character->move(sf::Vector2f(-dec_x,0));
+            else
+                character->move(sf::Vector2f(dec_x,0));
+        }
+    }
 }
 
 

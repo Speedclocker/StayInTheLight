@@ -291,6 +291,11 @@ void Map::physics_entities()
 		{
 			if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Character")==0)
 				physics_characters((Character*)(*ent1), (Character*)(*ent2));
+			else if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Collector")==0)
+				physics_character_collector((Character*)(*ent1), (Collector*)(*ent2));
+			else if((*ent1)->getType().compare("Collector")==0 && (*ent2)->getType().compare("Character")==0)
+				physics_character_collector((Character*)(*ent2), (Collector*)(*ent1));
+
 		}
 
 		// Physics of entities with map tiles

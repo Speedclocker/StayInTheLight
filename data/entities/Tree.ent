@@ -3,13 +3,13 @@ Name : palm_01
 Type : Collector
 Texture : data/imgs/palm.png
 Size : (81,122)
-Hitbox : (0,100,81,22)
 [/Header]
 
 [Features]
-Collectible : 1
+Collectible : 10
+Hitbox : (0,55,10,10)
 [/Features]
 
-[Animation]
+[Animations]
 default : {(81,122),1,(0,0),0}
-[/Animation]
+[/Animations]

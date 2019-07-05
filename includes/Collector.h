@@ -19,7 +19,7 @@
 class Collector : public Entity
 {
 public:
-	enum State { MOVING, STANDING, DEFAULT };
+	enum State { MOVING, STANDING, DEFAULT_STATE };
 
 
 	// Constructors and destructors
@@ -35,26 +35,29 @@ public:
 	sf::IntRect getHitbox();
 	sf::IntRect getAbsHitbox();
 	State getState() const;
-	Sense getSense();
 	sf::Clock getClock();
 
 
 	// Setters 
+	void setTexture(sf::Texture* texture);
 	void setHealth(int health);
 	void setSpeed(int speed);
 	void setHitbox(sf::IntRect hitbox);
 	void setState(State state);
-	void setSense(Sense sense);
 
 
 	// Methodes
 	void update();
-	int loadFromFile(std::string file_name, sf::Texture* texture);
+	//int loadFromFile(std::string file_name, sf::Texture* texture);
 	void move(sf::Vector2f movement);
 	void move(int mov_x, int mov_y);
 	void takeDamages(int damages);
 	void drawPart(sf::RenderWindow* window, unsigned int height);
 	void drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
+
+protected:
+	virtual void readFeaturesFromString(std::string string);
+	virtual void readAnimationFromString(std::string string);
 
 
 private:
@@ -69,7 +72,6 @@ private:
 	std::map< std::pair<Collector::State, Sense> , AnimationParameters > 		m_animation_parameters;		// Animation parameters of an enitity collectors identified with the state and the sense of entity
 	sf::IntRect 																m_hitbox;					// Hitbox of the entity
 	Collector::State 															m_state;					// State of the entity
-	Sense 																		m_sense;					// Sense of the entity
 	sf::Clock 																	m_clock;					// Clock associated to the entity, to evaluate its time;
 };
 

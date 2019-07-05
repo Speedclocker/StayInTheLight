@@ -1,5 +1,8 @@
 #include "Entity.h"
 
+#define LINE_SIZE 2000
+
+
 
 Entity::Entity()
 {
@@ -14,6 +17,12 @@ Entity::~Entity()
 
 
 // Getters
+
+sf::Texture* Entity::getTexture()
+{
+	/* Return the pointer to the texture of the entity */
+	return m_texture;
+}
 
 std::string Entity::getType() const
 {
@@ -50,12 +59,26 @@ int Entity::getGroundZone() const
 }
 
 
+Sense Entity::getSense() const
+{
+	/* Return sense of the entity */
+	return m_sense;
+}
+
+
 
 // Setters
 
+void Entity::setTexture(sf::Texture* texture)
+{
+	/* Set the pointer to the texture of the entity */
+	m_texture = texture;
+}
+
+
 void Entity::setType(std::string type)
 {
-	/* Change the type of the entity */
+	/* Set the type of the entity */
 	m_type = type;
 }
 
@@ -88,8 +111,98 @@ void Entity::setGroundZone(int ground_zone)
 }
 
 
+void Entity::setSense(Sense sense)
+{
+	/* Change the sense of the entity according to the value in parameter */
+	m_sense = sense;
+}
+
+
 
 // Methods
+
+
+int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
+{
+	std::ifstream file_to_load;
+	file_to_load.open(file_name);
+	if(file_to_load.fail()) {std::cerr << "An error happened while opening the entity file" << file_name << std::endl; file_to_load.close(); return -1; }
+
+	std::string name="";
+	std::string type="";
+	sf::Vector2f size = sf::Vector2f(-1,-1);
+	std::string texture_file_name="";
+
+	std::string buffer="";
+
+
+	// Read the file until we reach the end
+	while(std::getline(file_to_load, buffer))
+	{
+		// Header Tag
+		if(strstr(buffer.c_str(), "[Header]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Header]")==NULL)
+			{
+				char line[LINE_SIZE];
+				strcpy(line, buffer.c_str());
+
+				strtok(line, ": \n");
+				char* tag = strtok(NULL, ": \n");
+
+				if(strstr(buffer.c_str(), "Name : ")!=NULL && tag!=NULL)			name = tag;
+				else if(strstr(buffer.c_str(), "Type : ")!=NULL && tag!=NULL)		type = tag;
+				else if(strstr(buffer.c_str(), "Texture : ")!=NULL && tag!=NULL)	texture_file_name = tag;
+				else if(strstr(buffer.c_str(), "Size : ")!=NULL && tag!=NULL)
+				{
+					// load from file the Size
+					tag=tag+1;
+					size.x = atoi(tag=strtok(tag, " ,"));	
+					size.y = atoi(tag=strtok(NULL, " )"));
+				}
+			}
+
+			//If an error is met
+			if(strcmp(name.c_str(), "")==0 || strcmp(type.c_str(), "")==0 || strcmp(texture_file_name.c_str(), "")==0){ std::cerr << "An error happened while setting the entity characteristics" << std::endl; file_to_load.close(); return -1; }
+			else if(strcmp(type.c_str(), this->getType().c_str())!=0){ std::cerr << "The entity is not a " << this->getType() << " entity" << std::endl; file_to_load.close(); return -1; }
+
+			// Set Characteristics
+			if(size.x!=-1 && size.y!=-1) {std::cout << "m : " << size.x << " , " << size.y << std::endl; this->setSize(size);}
+
+			// Texture loading
+			if(!texture->loadFromFile(texture_file_name)){ std::cerr << "Error while loading of texture " << texture_file_name << std::endl; return -1; }
+
+			this->setTexture(texture);
+
+		}
+
+		// Animation Tag
+		else if(strstr(buffer.c_str(), "[Features]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Features]")==NULL)
+			{
+				readFeaturesFromString(buffer);
+			}
+		}
+
+
+		// Animation Tag
+		else if(strstr(buffer.c_str(), "[Animations]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Animations]")==NULL)
+			{
+				readAnimationFromString(buffer)	;
+			}
+		}
+		
+	}
+
+
+	file_to_load.close();
+
+	return 0;
+}
+
 
 void Entity::drawPart(sf::RenderWindow* window, unsigned int height)
 {
@@ -104,4 +217,16 @@ void Entity::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 	/* For sub-class, draw all the sprite above a height */
 	(void)height;
 	(void)window;
+}
+
+
+void Entity::readFeaturesFromString(std::string string)
+{
+	(void)string;
+}
+
+
+void Entity::readAnimationFromString(std::string string)
+{
+	(void)string;
 }

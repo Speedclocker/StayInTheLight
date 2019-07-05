@@ -2,6 +2,50 @@
 #include <iostream>
 #include "Animation.h"
 
+#define STR_SIZE 300
+
+
+
+AnimationParameters animationParametersFromString(std::string string)
+{
+	/* Set Animation parameters from string. String format must be : (size.x,size.y),nbr_frames,(init_text_pos.x,init_text_pos.y),spacing */
+
+	sf::Vector2f size(-1,-1); 
+	int nbr_frames(-1); 
+	sf::Vector2f init_text_pos(-1, -1); 
+	int spacing(-1);
+
+	char string_chr[STR_SIZE];
+	if(string.c_str()[0]=='(') 	strcpy(string_chr, string.c_str()+1);
+	else 						strcpy(string_chr, string.c_str());
+
+	char* tmp_buffer;
+
+	if((tmp_buffer = strtok(string_chr, ","))!=NULL) 
+		size.x = atoi(tmp_buffer); 
+
+	if((tmp_buffer = strtok(NULL, "),"))!=NULL)
+		size.y = atoi(tmp_buffer); 
+
+	if((tmp_buffer = strtok(NULL, ",()"))!=NULL)
+		nbr_frames = atoi(tmp_buffer); 
+
+	if((tmp_buffer = strtok(NULL, ",()"))!=NULL)
+		init_text_pos.x = atoi(tmp_buffer);
+
+	if((tmp_buffer = strtok(NULL, ",()"))!=NULL)
+		init_text_pos.y = atoi(tmp_buffer);
+
+	if((tmp_buffer = strtok(NULL, ",()\n\0"))!=NULL)
+		spacing = atoi(tmp_buffer);
+
+	AnimationParameters animation_parameters = { size, nbr_frames, init_text_pos, spacing };
+
+	return animation_parameters;
+}
+
+
+
 
 //---------------------------------------------------- Animation -----------------------------------------------//
 

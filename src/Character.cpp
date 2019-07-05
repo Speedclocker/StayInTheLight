@@ -290,24 +290,6 @@ int Character::getSpeed()
 	return m_speed;
 }
 
-sf::Vector2f Character::getPosition()
-{
-	// Renvoie la position d'un personnage
-	return m_position;
-}
-
-int Character::getHeight()
-{
-	//Renvoie la hauteur du personnage
-	return m_height;
-}
-
-sf::Vector2f Character::getSize()
-{
-	// Renvoie un vecteur de 2 dimensions contenant la taille d'un personnage en largeur et en longueur
-	return m_size;
-}
-
 sf::IntRect Character::getHitbox()
 {
 	// Renvoie la hitbox (dont la taille diffère de celle du personnage) relative au personnage (la position est relative à celle du personnage)
@@ -321,7 +303,7 @@ sf::IntRect Character::getAbsHitbox()
 		m_hitbox.width, m_hitbox.height);
 }
 
-State Character::getState() const
+Character::State Character::getState() const
 {
 	// Renvoie l'état du personnage
 	return m_state;
@@ -625,12 +607,14 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Character::drawPart(sf::RenderWindow* window, unsigned int height)
 {
-	(*m_sprite).drawPart(window, height);
+	if(m_sprite != NULL)
+		m_sprite->drawPart(window, height);
 }
 
 
 
 void Character::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 {
-	(*m_sprite).drawPartAndAbove(window, height);
+	if(m_sprite != NULL)
+		m_sprite->drawPartAndAbove(window, height);
 }

@@ -15,20 +15,10 @@
 
 
 
-enum State
-{
-	ATTACKING, MOVING, STANDING
-};
-
-enum Sense
-{
-	UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
-};
-
-
 class Character;
 
 // Class Attack 
+
 class Attack
 {
 public:
@@ -70,16 +60,13 @@ private:
 
 
 
-
-
-
 // Class Character
-
-
 
 class Character : public Entity
 {
 public:
+	enum State { ATTACKING, MOVING, STANDING, DEFAULT };
+
 	//Constructeurs et Destructeurs
 	Character();
 	//Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
@@ -89,10 +76,6 @@ public:
 	//Accesseurs
 	int getHealth();
 	int getSpeed();
-
-	sf::Vector2f getPosition();
-	int getHeight();
-	sf::Vector2f getSize();
 
 	AnimatedSpriteInMap* getSprite();	
 	

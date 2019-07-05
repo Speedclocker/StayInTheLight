@@ -1,11 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <ctime>
 
-
 #include "Interactions.h"
 #include "Character.h"
+#include "Collector.h"
 #include "collision.h"
-#include "loadMap.h"
+#include "loadContent.h"
+
 
 int main()
 {
@@ -66,7 +67,17 @@ int main()
 	personnage.addAvTarget(&mob); 
 
 
-	
+	sf::Texture collectortext;
+
+	Collector tmp_coll(&texture_link, map);
+	tmp_coll.setSpeed(2);
+	tmp_coll.setHitbox(sf::IntRect(0, 0 , tmp_coll.getSize().x/1.5, 16));
+	tmp_coll.setHealth(10);
+	tmp_coll.setPosition(sf::Vector2f(window.getSize().x/2-tmp_coll.getSize().x/2, window.getSize().y/2-tmp_coll.getSize().y/2));
+	tmp_coll.setHeight(1);
+	tmp_coll.loadFromFile("data/entities/Tree.ent", &collectortext);
+
+	map->addEntity(&tmp_coll);
 	
 	//Main loop
 	while(window.isOpen())
@@ -105,14 +116,13 @@ int main()
 		personnage.updateAttack();
 		mob.updateAttack();
 
-
 		// We apply physics on the objects associated with the current map
 		map->physics_entities();
-
 
         // Characters updating
 		personnage.update();
 		mob.update();
+		tmp_coll.update();
 
 
 		// Drawing the map

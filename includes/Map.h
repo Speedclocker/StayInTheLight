@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Entity.h"
 
+
 typedef struct
 {
 	sf::Vector2f	m_pos_text;
@@ -12,11 +13,12 @@ typedef struct
 	bool 			m_collisionable;
 } Tile ;
 
+
 class Map : public sf::Drawable, public sf::Transformable
 {
 public:
 	// Constructors/Destructors
-	Map(void);
+	Map();
 	Map(sf::Vector2f size, int height, int tile_sz);
 	~Map();
 
@@ -44,17 +46,16 @@ public:
 	
 
 private:
-	//virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-	clock_t					m_time;
-	Tile*** 				m_map;
-	std::vector<Entity*>	m_entities;
-	sf::VertexArray 		m_vertex;
-	sf::Texture* 			m_texture;
-	int 					m_height;
-	sf::Vector2f 			m_size;
-	int						m_tile_sz;
+	clock_t					m_time;			
+	Tile*** 				m_tiles;		// Tiles of the map
+	std::vector<Entity*>	m_entities;		// All entities in map
+	sf::VertexArray 		m_vertex;		// Vertex used to draw the map tiles
+	sf::Texture* 			m_texture;		// Texture associated to the map
+	int 					m_height;		// Number of levels of height
+	sf::Vector2f 			m_size;			// Size of the map in number of tiles
+	int						m_tile_sz;		// Size of a tile in pixel
 };
 
 

@@ -3,8 +3,7 @@
 #include "Animation.h"
 
 
-
-
+//---------------------------------------------------- Animation -----------------------------------------------//
 
 AnimatedSprite::AnimatedSprite()
 {
@@ -119,6 +118,11 @@ int AnimatedSprite::getPhaseFToF()
 
 //Modificateurs
 
+void AnimatedSprite::setTexture(sf::Texture* texture)
+{
+	m_texture = texture;
+}
+
 void AnimatedSprite::setInitTxtPos(sf::Vector2f init_text_pos)
 {
 	// Modifie la position initiale de capture dans la texture
@@ -127,13 +131,15 @@ void AnimatedSprite::setInitTxtPos(sf::Vector2f init_text_pos)
 
 void AnimatedSprite::setParameters(sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing)
 {
-	//Modifie les paramètre de capture dans la texture
+	//Modifie les paramètres de capture dans la texture
 	m_size = size;
 	m_nbr_frames = nbr_frames;
 	m_init_txt_pos = init_text_pos;
 	m_spacing = spacing;
 
 }
+
+
 
 void AnimatedSprite::setPosition(sf::Vector2f position)
 {

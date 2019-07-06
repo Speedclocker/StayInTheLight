@@ -25,7 +25,7 @@ int main()
 	sf::Texture texture_map;
 	std::string texture_name_file;
 
-	if(loadMap(&map, "data/maps/Test.map", &texture_name_file)<0)
+	if(loadMap(&map, "data/maps/Maison.map", &texture_name_file)<0)
 	{
 		std::cerr << "Error while loading of map" << std::endl;
 		return -1;
@@ -43,22 +43,16 @@ int main()
 
 
 
+	
 	//Character creation
-	/*personnage.getSize().y-10*/
-	Character personnage(&texture_link, map);
-	personnage.setSpeed(2);
-	personnage.setHitbox(sf::IntRect(0, 5 , personnage.getSize().x/1.5, 16));
-	personnage.setHealth(10);
+	Character personnage("data/entities/Hero.ent", &texture_link, map);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	personnage.setHeight(1);
 	map->addEntity(&personnage);
 
 
-
 	//Mob creation
-	Character mob(&texture_link, map);
-	mob.setHealth(10);
-	mob.setHitbox(sf::IntRect(0, 5 , mob.getSize().x/1.5, 16 /*mob.getSize().y-10*/));
+	Character mob("data/entities/Hero.ent", &texture_link, map);
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
 	mob.setHeight(1);
 	map->addEntity(&mob);
@@ -67,17 +61,16 @@ int main()
 	personnage.addAvTarget(&mob); 
 
 
-	sf::Texture collectortext;
-
-	Collector tmp_coll(&texture_link, map);
-	tmp_coll.setSpeed(2);
-	tmp_coll.setHitbox(sf::IntRect(0, 0 , tmp_coll.getSize().x/1.5, 16));
-	tmp_coll.setHealth(10);
+	// Palm creation
+	sf::Texture texture_palm;
+	Collector tmp_coll("data/entities/Tree.ent",&texture_palm, map);
 	tmp_coll.setPosition(sf::Vector2f(window.getSize().x/2-tmp_coll.getSize().x/2, window.getSize().y/2-tmp_coll.getSize().y/2));
 	tmp_coll.setHeight(1);
-	tmp_coll.loadFromFile("data/entities/Tree.ent", &collectortext);
 
 	map->addEntity(&tmp_coll);
+	
+	
+
 	
 	//Main loop
 	while(window.isOpen())

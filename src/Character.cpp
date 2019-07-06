@@ -8,7 +8,6 @@
 
 
 
-
 // ------------------------------------------- Attack -------------------------------------------------//
 
 
@@ -221,11 +220,42 @@ Character::Character(sf::Texture* texture, Map* map)
 	m_sprite->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));
-	this->update();
 
 	this->setState(STANDING);
-	
 	this->setSense(DOWN);
+
+
+	this->update();
+}
+
+
+Character::Character(std::string file_name, sf::Texture* texture, Map* map)
+{
+	/* Constructor */
+	m_type="Character";
+
+	m_actual_attack=NULL;
+	m_sprite=NULL;
+
+	if(this->loadFromFile(file_name, texture) < 0) throw ("An error occured while loading from file the Character entity") ;
+
+	// Check if there is default animation parameters or not and create consequently the sprite
+	std::map<std::pair<Character::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
+	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
+	{
+		AnimationParameters def_param = ptr_animation_parameters->second;
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+	}
+	else
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+
+
+	m_sprite->setFPSQuotient(SITL_FPS_QUOTIENT);
+
+	this->setState(STANDING);
+	this->setSense(DOWN);
+
+	this->update();
 }
 
 
@@ -267,8 +297,7 @@ sf::IntRect Character::getHitbox()
 sf::IntRect Character::getAbsHitbox()
 {
 	/* Return hitbox in absolute coords */
-	return sf::IntRect(m_hitbox.left + m_position.x + m_size.x/2 - m_hitbox.width/2, m_hitbox.top + m_position.y + m_size.y/2 - m_hitbox.height/2, 
-		m_hitbox.width, m_hitbox.height);
+	return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
 }
 
 
@@ -312,9 +341,10 @@ std::vector< Character* > Character::getAvTargets()
 
 void Character::setTexture(sf::Texture* texture)
 {
-	Entity::setTexture(texture);
+	m_texture = texture;
 
-	m_sprite->setTexture(m_texture);
+	if(m_sprite != NULL)
+		m_sprite->setTexture(m_texture);
 }
 
 
@@ -374,6 +404,7 @@ void Character::update()
 	if(m_sprite!=NULL)
 	{
 		//Modifie l'animation du sprite du personnage en fonction de son sens et de son état
+		/*
 		if(this->getSense()==UP || this->getSense()==UP_RIGHT || this->getSense()==UP_LEFT)
 		{
 			if(this->getState()==MOVING)
@@ -402,6 +433,22 @@ void Character::update()
 			else
 				m_sprite->setParameters(sf::Vector2f(22, 28), 1, sf::Vector2f(0,58), 0);
 		}
+		*/
+		std::map<std::pair<Character::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
+
+		if(	(ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(this->getState(), this->getSense()))) != m_animation_parameters.end() )
+		{
+			// Change the sprite animation of the Collector entity depending on its sense and state
+			AnimationParameters parameter = ptr_animation_parameters->second;
+			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+		}
+		else if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
+		{
+			// Set the default animation if there is one
+			AnimationParameters parameter = ptr_animation_parameters->second;
+			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+		}
+
 		
 		// Met à jour le sprite
 		m_sprite->setPosition(m_position);
@@ -529,24 +576,98 @@ void Character::readFeaturesFromString(std::string string)
 
 		if(hitbox.left!=-1 && hitbox.top!=-1 && hitbox.width!=-1 && hitbox.height!=-1) this->setHitbox(hitbox);
 	}
+	else if(strstr(string.c_str(), "Speed : ")!=NULL && tag!=NULL) this->setSpeed(atoi(tag));
+	else if(strstr(string.c_str(), "Health : ")!=NULL && tag!=NULL) this->setHealth(atoi(tag));
+
 }
 
 
 void Character::readAnimationFromString(std::string string)
 {
+
 	char line[LINE_SIZE];
 	strcpy(line, string.c_str());
 
 	strtok(line, "{\n");
 	char* tag = strtok(NULL, "}\n");
+	
 
 	// default
-	if(strstr(string.c_str(), "default : ")!=NULL && tag!=NULL)
+	if(strstr(string.c_str(), "default")!=NULL && tag!=NULL)
 	{	
 		AnimationParameters anim_prmtrs = animationParametersFromString(std::string(tag));
-		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1)
-			{std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
+
+		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1) {std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
 		
 		m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::DEFAULT_STATE, DEFAULT_SENSE), anim_prmtrs) );
+	}
+	else if(strstr(string.c_str(), "moving")!=NULL && tag!=NULL)
+	{	
+		AnimationParameters anim_prmtrs = animationParametersFromString(std::string(tag));
+
+		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1) {std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
+
+		if(strstr(string.c_str(), "upleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, UP_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "upright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, UP_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, DOWN_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, DOWN_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "up")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, UP), anim_prmtrs) );
+		else if(strstr(string.c_str(), "down")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, DOWN), anim_prmtrs) );
+		else if(strstr(string.c_str(), "left")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "right")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::MOVING, RIGHT), anim_prmtrs) );
+	}
+	else if(strstr(string.c_str(), "standing")!=NULL && tag!=NULL)
+	{	
+		AnimationParameters anim_prmtrs = animationParametersFromString(std::string(tag));
+
+		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1) {std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
+		
+		if(strstr(string.c_str(), "upleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, UP_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "upright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, UP_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, DOWN_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, DOWN_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "up")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, UP), anim_prmtrs) );
+		else if(strstr(string.c_str(), "down")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, DOWN), anim_prmtrs) );
+		else if(strstr(string.c_str(), "left")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING, LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "right")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::STANDING , RIGHT), anim_prmtrs) );	
+	}
+	else if(strstr(string.c_str(), "attacking")!=NULL && tag!=NULL)
+	{	
+		AnimationParameters anim_prmtrs = animationParametersFromString(std::string(tag));
+
+		if(anim_prmtrs.size.x == -1 || anim_prmtrs.size.y == -1 || anim_prmtrs.init_text_pos.x == -1 || anim_prmtrs.init_text_pos.y == -1 || anim_prmtrs.spacing == -1 || anim_prmtrs.nbr_frames == -1) {std::cerr << "An error occured while loading animation parameters" << std::endl; return;}
+		
+		if(strstr(string.c_str(), "upleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, UP_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "upright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, UP_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downleft")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, DOWN_LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "downright")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, DOWN_RIGHT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "up")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, UP), anim_prmtrs) );
+		else if(strstr(string.c_str(), "down")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, DOWN), anim_prmtrs) );
+		else if(strstr(string.c_str(), "left")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING, LEFT), anim_prmtrs) );
+		else if(strstr(string.c_str(), "right")!=NULL)
+			m_animation_parameters.insert( std::pair< std::pair< Character::State, Sense > , AnimationParameters > ( std::pair< Character::State, Sense >(Character::ATTACKING , RIGHT), anim_prmtrs) );	
 	}
 }

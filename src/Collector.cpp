@@ -38,6 +38,36 @@ Collector::Collector(sf::Texture* texture, Map* map)
 }
 
 
+Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
+{
+	/* Constructor */
+	m_type="Collector";
+
+	m_sprite=NULL;
+
+	if(this->loadFromFile(file_name, texture) < 0) throw ("An error occured while loading from file the Collector entity") ;
+
+	// Check if there is default animation parameters or not and create consequently the sprite
+	std::map<std::pair<Collector::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
+	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Collector::State, Sense>(Collector::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
+	{
+		AnimationParameters def_param = ptr_animation_parameters->second;
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+	}
+	else
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+
+
+	m_sprite->setFPSQuotient(SITL_FPS_QUOTIENT);
+
+	this->setState(STANDING);
+	this->setSense(DOWN);
+
+	this->update();
+}
+
+
+
 Collector::~Collector()
 {
 	if(m_sprite != NULL)
@@ -69,8 +99,8 @@ sf::IntRect Collector::getHitbox()
 sf::IntRect Collector::getAbsHitbox()
 {
 	// Renvoie la hitbox absolue (la position est absolue)
-	return sf::IntRect(m_hitbox.left + m_position.x + m_size.x/2 - m_hitbox.width/2, m_hitbox.top + m_position.y + m_size.y/2 - m_hitbox.height/2, 
-		m_hitbox.width, m_hitbox.height);
+	return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
+
 }
 
 Collector::State Collector::getState() const
@@ -99,8 +129,9 @@ AnimatedSpriteInMap* Collector::getSprite()
 void Collector::setTexture(sf::Texture* texture)
 {
 	m_texture = texture;	
-
-	m_sprite->setTexture(m_texture);
+	
+	if(m_sprite != NULL)
+		m_sprite->setTexture(m_texture);
 }
 
 
@@ -239,16 +270,13 @@ void Collector::readFeaturesFromString(std::string string)
 		tag=tag+1;
 		hitbox.left = atoi(tag=strtok(tag, " ,"));	
 		hitbox.top = atoi(tag=strtok(NULL, " ,"));
-		hitbox.width = atoi(tag=strtok(NULL, " ,"));	
+		hitbox.width = atoi(tag=strtok(NULL, " ,"));
 		hitbox.height = atoi(tag=strtok(NULL, " )"));
 
 		if(hitbox.left!=-1 && hitbox.top!=-1 && hitbox.width!=-1 && hitbox.height!=-1) this->setHitbox(hitbox);
 	}
 	// Collectible feature
 	else if(strstr(string.c_str(), "Collectible : ")!=NULL && tag!=NULL)	m_collectible = atoi(tag);
-
-	std::cout << m_collectible << std::endl;
-
 }
 
 

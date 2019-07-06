@@ -9,7 +9,7 @@
 #include "tools.h"
 #include "functionTabs.h"	
 
-#define FULLSCREEN true
+#define FULLSCREEN false
 
 
 std::string* PTR_EVENT_TEXT_ENTERED;

@@ -152,6 +152,7 @@ void physics_character_map(Character* character, Map* map, int height)
     {
         if( collision_rects(character->getAbsHitbox(), *hit1) )
         {
+
             if(hit1->top+hit1->height/2<character->getAbsHitbox().top+character->getAbsHitbox().height/2)
             {
                 temp_vertical1.a=character->getAbsHitbox().top;

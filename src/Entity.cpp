@@ -131,6 +131,7 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 	std::string name="";
 	std::string type="";
 	sf::Vector2f size = sf::Vector2f(-1,-1);
+	int ground_zone=-1;
 	std::string texture_file_name="";
 
 	std::string buffer="";
@@ -160,6 +161,8 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 					size.x = atoi(tag=strtok(tag, " ,"));	
 					size.y = atoi(tag=strtok(NULL, " )"));
 				}
+				else if(strstr(buffer.c_str(), "GroundZone : ")!=NULL && tag!=NULL)	ground_zone = atoi(tag);
+
 			}
 
 			//If an error is met
@@ -167,7 +170,8 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 			else if(strcmp(type.c_str(), this->getType().c_str())!=0){ std::cerr << "The entity is not a " << this->getType() << " entity" << std::endl; file_to_load.close(); return -1; }
 
 			// Set Characteristics
-			if(size.x!=-1 && size.y!=-1) {std::cout << "m : " << size.x << " , " << size.y << std::endl; this->setSize(size);}
+			if(size.x!=-1 && size.y!=-1) this->setSize(size);
+			if(ground_zone!=-1) this->setGroundZone(ground_zone);
 
 			// Texture loading
 			if(!texture->loadFromFile(texture_file_name)){ std::cerr << "Error while loading of texture " << texture_file_name << std::endl; return -1; }

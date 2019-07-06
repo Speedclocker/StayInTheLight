@@ -25,6 +25,8 @@ public:
 	// Constructors and destructors
 	Collector();
 	Collector(sf::Texture* texture, Map* map);
+	Collector(std::string file_name, sf::Texture* texture, Map* map);
+
 	~Collector();
 
 

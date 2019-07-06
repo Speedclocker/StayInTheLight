@@ -69,8 +69,9 @@ public:
 
 	//Constructeurs et Destructeurs
 	Character();
-	//Character(sf::Texture* texture, sf::IntRect rect_sprite, sf::Color color);
 	Character(sf::Texture* texture, Map* map);
+	Character(std::string file_name, sf::Texture* texture, Map* map);
+
 	~Character();
 
 	//Getters

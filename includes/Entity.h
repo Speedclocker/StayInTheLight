@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstring>
 
+#define SITL_FPS_QUOTIENT 4
 
 
 enum Sense { UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, DEFAULT_SENSE };

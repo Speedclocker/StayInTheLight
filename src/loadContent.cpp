@@ -60,6 +60,7 @@ void probeMap(const char* raw_line, Map* load_location_map)
 			tile.m_pos_text.y = atoi(buffer)*load_location_map->getTileSize();
 
 			buffer=strtok(NULL, "\n");
+
 			tile.m_collisionable = atoi(buffer);
 
 			tile.m_size_text=sf::Vector2f(load_location_map->getTileSize(), load_location_map->getTileSize());

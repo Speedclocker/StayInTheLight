@@ -300,7 +300,9 @@ void Map::physics_entities()
 
 		// Physics of entities with map tiles
 		if((*ent1)->getType().compare("Character")==0)
-			physics_character_map((Character*)(*ent1), this, 0);
+		{
+			physics_character_map((Character*)(*ent1), this, (*ent1)->getHeight());
+		}
 		
 	}
 }

@@ -1,6 +1,8 @@
 #include "saveMap.h"
+#include "Character.h"
+#include "Collector.h"
 
-
+#define LINE_SIZE 1000
 
 void probeTileset(const char* raw_line, Tile* tileset, int tileset_size)
 {
@@ -322,6 +324,83 @@ int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::
 	file_to_save << "[/Map]" << std::endl;
 
 	file_to_save.close();
+
+	return 0;
+}
+
+
+
+
+
+int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_load, Map* entity_location)
+{
+	if(*entity_to_load!=NULL) {std::cerr << "An error happened while loading entity : entity in parameters has to be NULL" << std::endl; return -1; }
+
+	std::ifstream file_to_load;
+	file_to_load.open(file_name);
+	if(file_to_load.fail()) {std::cerr << "An error happened while opening the entity file" << file_name << std::endl; file_to_load.close(); return -1; }
+
+	std::string type="";
+
+	std::string buffer="";
+
+
+	// Read the file until we reach the end
+	while(std::getline(file_to_load, buffer))
+	{
+		// Header Tag
+		if(strstr(buffer.c_str(), "[Header]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Header]")==NULL)
+			{
+				char line[LINE_SIZE];
+				strcpy(line, buffer.c_str());
+
+				strtok(line, ": \n");
+				char* tag = strtok(NULL, ": \n");
+
+				
+				if(strstr(buffer.c_str(), "Type : ")!=NULL && tag!=NULL)
+					type = tag;
+				
+
+			}
+		}
+	}
+
+	file_to_load.close();
+
+	std::cout << "SPOT1.1 : " << type<< std::endl;
+
+	if(strcmp(type.c_str(), "")==0) {std::cerr << "An error happened while loading entity : type is unknown" << std::endl; return -1; }
+
+
+
+
+	// --------- Entity loading ----------
+
+	try
+	{
+		if(strcmp(type.c_str(), "Character")==0)
+		{
+			*entity_to_load = new Character(file_name, texture, entity_location);
+		}	
+		else if(strcmp(type.c_str(), "Collector")==0)
+		{
+			*entity_to_load = new Collector(file_name, texture, entity_location);
+		}
+	}
+	catch(const std::string & e)
+	{
+		// If an error occured while loading the entity
+		if(*entity_to_load != NULL)
+		{
+			delete *entity_to_load;
+			*entity_to_load = NULL;
+		}
+	}
+	
+
 
 	return 0;
 }

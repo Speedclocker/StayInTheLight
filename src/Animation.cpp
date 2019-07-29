@@ -273,6 +273,10 @@ void AnimatedSpriteInMap::update()
 	if(m_phase_f_to_f == 0) 
 		m_actual_frame = (m_actual_frame+1)%m_nbr_frames;
 
+
+	m_sprite.setTextureRect( sf::IntRect(m_init_txt_pos.x + m_actual_frame*(m_size.x + m_spacing), m_init_txt_pos.y, m_size.x, m_size.y) );
+	m_sprite.setPosition(m_position);
+
 	m_vertex_arrays.clear();
 
 	m_vertex_arrays.push_back(sf::VertexArray(sf::Quads));
@@ -332,10 +336,13 @@ void AnimatedSpriteInMap::draw(sf::RenderTarget &target, sf::RenderStates states
 {
 	states.texture = m_texture;
 	
+	/*
 	for(std::vector<sf::VertexArray>::const_iterator it = m_vertex_arrays.begin(); it!=m_vertex_arrays.end(); it++)
 	{
 		target.draw((*it), states);
 	}
+	*/
+	target.draw(m_sprite, states);
 }
 
 void AnimatedSpriteInMap::drawPart(sf::RenderWindow* window, unsigned int height)

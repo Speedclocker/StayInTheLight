@@ -25,16 +25,41 @@ typedef struct
 
 
 
-//////////// 				//////////////
+
+
+/////////////// Info Tab ///////////////
 
 // Function
-//void InfoWindow(Tab* tab, ArgTab* argtab);
+void InfoWindow(Tab* tab, ArgTab* argtab);
 
 // Argument Structure
-/*
+
 typedef struct
 {
-	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE] = {0};
+	Map*				map;
+	uint8_t 			__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(Map*)] = {0};
 } ArgInfoWindow;
-*/
+
+
+
+
+
+
+/////////////// Entities Tab ///////////////
+
+// Function
+void EntitiesWindow(Tab* tab, ArgTab* argtab);
+
+// Argument Structure
+
+typedef struct
+{
+	std::vector<std::string>* 	ptr_list_entities;
+	Entity**					current_entity;
+	Map*						map;
+	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(std::vector<std::string>*) - sizeof(Entity**) - sizeof(Map*)] = {0};
+} ArgEntitiesWindow;
+
+
+
 #endif

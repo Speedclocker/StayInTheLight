@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "Animation.h"
 
 #define LINE_SIZE 2000
 
@@ -9,11 +10,14 @@ Entity::Entity()
 
 }
 
+/*
 Entity::~Entity()
 {
-
+	std::cout << "Scurt" << std::endl;
+	if(m_sprite != NULL)
+		delete m_sprite;
 }
-
+*/
 
 
 // Getters
@@ -63,6 +67,19 @@ Sense Entity::getSense() const
 {
 	/* Return sense of the entity */
 	return m_sense;
+}
+
+
+AnimatedSprite* Entity::getSprite()
+{
+	/* Return a pointer to the sprite */
+	return m_sprite;
+}
+
+
+bool Entity::isAffiliatedToMap()
+{
+	return m_affiliated_to_map;
 }
 
 
@@ -205,6 +222,12 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 	file_to_load.close();
 
 	return 0;
+}
+
+
+void Entity::update()
+{
+	
 }
 
 

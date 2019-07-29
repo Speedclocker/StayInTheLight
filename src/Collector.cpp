@@ -16,6 +16,8 @@ Collector::Collector()
 	m_type="Collector";
 
 	m_sprite=NULL;
+
+	m_affiliated_to_map = false;
 }
 
 
@@ -26,6 +28,9 @@ Collector::Collector(sf::Texture* texture, Map* map)
 	m_ground_zone = 14;
 
 	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
+
+	m_affiliated_to_map = true;
+
 	m_sprite->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));
@@ -45,7 +50,7 @@ Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
 
 	m_sprite=NULL;
 
-	if(this->loadFromFile(file_name, texture) < 0) throw ("An error occured while loading from file the Collector entity") ;
+	if(this->loadFromFile(file_name, texture) < 0) throw std::string("An error occured while loading from file the Collector entity");
 
 	// Check if there is default animation parameters or not and create consequently the sprite
 	std::map<std::pair<Collector::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
@@ -57,6 +62,7 @@ Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
 	else
 		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
 
+	m_affiliated_to_map = true;
 
 	m_sprite->setFPSQuotient(SITL_FPS_QUOTIENT);
 
@@ -70,8 +76,14 @@ Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
 
 Collector::~Collector()
 {
-	if(m_sprite != NULL)
-		delete m_sprite;
+	std::cout << "Del Collector" << std::endl;
+	if(m_sprite !=NULL)
+	{
+		if(this->isAffiliatedToMap())
+			delete ((AnimatedSpriteInMap*)(m_sprite));
+		else
+			delete m_sprite;
+	}
 }
 
 
@@ -113,13 +125,6 @@ sf::Clock Collector::getClock()
 {
 	// Renvoie l'horloge du personnage
 	return m_clock;
-}
-
-
-AnimatedSpriteInMap* Collector::getSprite()
-{
-	// Renvoie un pointeur vers le sprite du personnage
-	return m_sprite;
 }
 
 
@@ -189,7 +194,11 @@ void Collector::update()
 
 		// Update the sprite position
 		m_sprite->setPosition(m_position);
-		m_sprite->update();
+
+		if(this->isAffiliatedToMap())
+			((AnimatedSpriteInMap*)(m_sprite))->update();
+		else
+			m_sprite->update();
 	}	
 }
 
@@ -228,16 +237,16 @@ void Collector::takeDamages(int damages)
 void Collector::drawPart(sf::RenderWindow* window, unsigned int height)
 {
 	// Draw a part of the entity designed by the chosen height in parameter
-	if(m_sprite!=NULL)
-		m_sprite->drawPart(window, height);
+	if(m_sprite!=NULL && this->isAffiliatedToMap())
+		((AnimatedSpriteInMap*)(m_sprite))->drawPart(window, height);
 }
 
 
 
 void Collector::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 {
-	if(m_sprite!=NULL)
-		m_sprite->drawPartAndAbove(window, height);
+	if(m_sprite!=NULL && this->isAffiliatedToMap())
+		((AnimatedSpriteInMap*)(m_sprite))->drawPartAndAbove(window, height);
 }
 
 
@@ -245,10 +254,8 @@ void Collector::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 void Collector::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Draw the Collector entity
-
 	if(m_sprite!=NULL)
 		target.draw(*m_sprite, states);
-
 }
 
 

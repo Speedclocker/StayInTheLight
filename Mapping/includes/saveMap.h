@@ -22,6 +22,7 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size);
 
+int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_load, Map* entity_location);
 
 
 

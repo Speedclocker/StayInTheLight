@@ -2,8 +2,31 @@
 
 #define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 
+#define ENTITIES_FOLDER "entities"
+#define CHARACTER_SIZE_HEIGHT 20
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void list_entities(std::vector<std::string>* entities_files)
+{
+	entities_files->clear();
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(ENTITIES_FOLDER);
+	if(d)
+	{
+		while((dir = readdir(d)) != NULL)
+		{
+			if(strstr(dir->d_name, ".ent\0"))
+	        	entities_files->push_back(std::string(dir->d_name));
+		}
+
+        closedir(d);
+	}
+}
+
 
 void control_view(sf::RenderWindow* window, sf::View* view, Map* map) 
 {
@@ -164,7 +187,7 @@ bool height_settings_command(sf::RenderWindow* window, Map* map, int* chosen_hei
 	height_font.loadFromFile(FONT_FILE);
 
 	sf::Text height_text(height_str,height_font);
-	height_text.setCharacterSize(18);
+	height_text.setCharacterSize(CHARACTER_SIZE_HEIGHT);
 	height_text.setFillColor(sf::Color::White);
 	height_text.setOutlineColor(sf::Color::Black);
 	height_text.setOutlineThickness(1);

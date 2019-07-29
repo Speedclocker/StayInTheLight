@@ -1,8 +1,9 @@
 #include "InterfaceObject.h"
-
+#include "Animation.h"
 
 #define FONT_FILE "../data/fonts/AldoTheApache.ttf"
-
+#define SCROLLINGLIST_HEIGHT_COEFF 1.5
+#define SCROLLINGLIST_WIDTH_COEFF 1.3
 
 
 
@@ -791,6 +792,7 @@ SlideBar::SlideBar(std::string id, float minValue, float maxValue)
 		m_maxValue = m_minValue + 1;
 
 	m_currentValue = minValue;
+	m_ratio_cursor_bar=-1;
 }
 
 
@@ -805,28 +807,28 @@ SlideBar::~SlideBar()
 
 // Getters
 
-float SlideBar::getMinValue()
+float SlideBar::getMinValue() const
 {
 	/* Return the minimum value allowed by the slidebar*/
 
 	return m_minValue;
 }
 
-float SlideBar::getMaxValue()
+float SlideBar::getMaxValue() const
 {
 	/* Return the maximum value allowed by the slidebar*/
 
 	return m_maxValue;
 }
 
-float SlideBar::getCurrentValue()
+float SlideBar::getCurrentValue() const
 {
 	/* Return the current value of the slidebar*/
 
 	return m_currentValue;
 }
 
-SlideBar::Type SlideBar::getType()
+SlideBar::Type SlideBar::getType() const
 {
 	/* Return the current value of the slidebar*/
 
@@ -878,6 +880,12 @@ void SlideBar::setCurrentValueFromPos(sf::Vector2f clickPos)
 		this->update();
 	}
 }
+
+void SlideBar::setRatioCursorBar(float ratio_cursor_bar)
+{
+	m_ratio_cursor_bar = ratio_cursor_bar;
+}
+
 
 void SlideBar::setType(Type type)
 {
@@ -948,12 +956,20 @@ void SlideBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	if(m_type==HORIZONTAL)
 	{
-		sliding_bar.setSize(sf::Vector2f(m_size.x * coeff_size, m_size.y));
+		if(m_ratio_cursor_bar==-1)
+			sliding_bar.setSize(sf::Vector2f(m_size.x * coeff_size, m_size.y));
+		else
+			sliding_bar.setSize(sf::Vector2f(m_size.x * m_ratio_cursor_bar, m_size.y));
+
 		sliding_bar.setPosition(m_position.x + (m_size.x - sliding_bar.getSize().x)*(m_currentValue - m_minValue)/(m_maxValue - m_minValue), m_position.y);
 	}
 	else
 	{
-		sliding_bar.setSize(sf::Vector2f(m_size.x, m_size.y*coeff_size));
+		if(m_ratio_cursor_bar==-1)
+			sliding_bar.setSize(sf::Vector2f(m_size.x, m_size.y * coeff_size));
+		else
+			sliding_bar.setSize(sf::Vector2f(m_size.x, m_size.y * m_ratio_cursor_bar));
+
 		sliding_bar.setPosition(m_position.x , m_position.y + (m_size.y - sliding_bar.getSize().y)*(m_currentValue - m_minValue)/(m_maxValue - m_minValue));
 	}
 
@@ -962,4 +978,515 @@ void SlideBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 
 
+
+
+
+
+//////////////////////////////////////////////////////////// ScrollingList //////////////////////////////////////////////////////////
+
+
+
+ScrollingList::ScrollingList()
+{
+	/* Constructeur de l'objet */
+}
+
+
+ScrollingList::ScrollingList(std::string id, int font_height, int unrollList_height, int width)
+{
+	/* Constructeur de l'objet */
+	m_id = id;
+	m_font_height = font_height;
+	m_unrollList_height = unrollList_height;
+	m_width = width;
+
+	m_nbrValues = 0;
+	m_currentValue = "";
+	m_scrollingBar.setType(SlideBar::VERTICAL);
+	m_scrollingBar.setCurrentValue(0);
+
+
+	m_unroll = false;
+	m_size = sf::Vector2f(m_width, m_font_height * SCROLLINGLIST_HEIGHT_COEFF);
+
+
+	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
+	else
+	{
+		sf::Text tmp_char("ScrollingListInitialisation", m_font, m_font_height);		
+	}
+}
+
+
+ScrollingList::~ScrollingList()
+{
+	/* Destructeur de l'objet */
+
+}
+
+
+
+
+// Getters
+
+int ScrollingList::getWidth()
+{
+	return m_width;
+}
+
+
+int ScrollingList::getFontHeight()
+{
+	return m_font_height;
+}
+
+
+std::string ScrollingList::getCurrentValue()
+{
+	/* Return the current value of the slidebar*/
+
+	return m_currentValue;
+}
+
+
+int ScrollingList::getNbrValues()
+{
+	return m_nbrValues;
+}
+
+
+bool ScrollingList::isUnroll()
+{
+	return m_unroll;
+}
+
+
+
+
+
+
+//Setters
+
+
+void ScrollingList::setWidth(int width)
+{
+	m_width = width;
+}
+
+
+void ScrollingList::setFontHeight(int font_height)
+{
+	m_font_height = font_height;
+}
+
+
+void ScrollingList::setCurrentValue(std::string currentValue)
+{	
+	/* Set the current value of the slidebar*/
+
+	m_currentValue = currentValue;
+}
+
+
+//Methods
+
+void ScrollingList::addValue(std::string value)
+{
+	m_values.push_back(ScrollingList::Option{value, ScrollingList::NONE});
+	m_nbrValues++;
+	m_texture.create(m_width, m_nbrValues * m_font_height * SCROLLINGLIST_HEIGHT_COEFF);
+
+	m_scrollingBar.setMinValue(0);
+	m_scrollingBar.setMaxValue(m_nbrValues * m_font_height * SCROLLINGLIST_HEIGHT_COEFF - m_unrollList_height);
+	m_scrollingBar.update();
+}
+
+
+void ScrollingList::clearList()
+{
+	/* Function to clear list of values */
+
+	m_values.clear();
+}
+
+
+
+void ScrollingList::interactsWithUser(sf::RenderWindow* window)
+{
+	/* Function to interact with the user*/
+	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
+
+	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), sf::Vector2f(m_width, m_font_height * SCROLLINGLIST_HEIGHT_COEFF)).contains(mousePos))
+		m_state = HOVER;
+	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		m_state = NONE;
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
+	{
+		m_state = CLICK;
+		m_unroll^=true;
+	}
+
+	//if(m_state!=CLICK)
+	//	m_isClick = false;
+
+	if(m_unroll)
+	{
+		sf::Rect<float> options_zone;
+		if(m_unrollList_height < m_font_height * SCROLLINGLIST_HEIGHT_COEFF * m_nbrValues)
+		{
+			options_zone = sf::Rect<float>(this->getPosition()+sf::Vector2f(0, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)), sf::Vector2f(m_width - m_scrollingBar.getSize().x, m_unrollList_height));
+			m_scrollingBar.interactsWithUser(window);
+		}
+		else
+			options_zone = sf::Rect<float>(this->getPosition()+sf::Vector2f(0, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)), sf::Vector2f(m_width, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF) * m_nbrValues));
+
+		
+		int i = m_position.y + (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF);
+		for(std::vector<struct Option>::iterator it=m_values.begin(); it != m_values.end(); it++)
+		{
+			if(options_zone.contains(mousePos))
+			{
+				if(mousePos.y + m_scrollingBar.getCurrentValue() >= i && mousePos.y + m_scrollingBar.getCurrentValue() < i +  (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF))
+				{
+					if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					{
+						if(it->state == ScrollingList::CLICK)
+						{
+							m_currentValue = it->value;
+							m_unroll = false;
+						}
+
+						it->state = ScrollingList::HOVER;
+					}
+					else if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+						it->state = ScrollingList::CLICK;
+				}
+				else
+				{
+					it->state = ScrollingList::NONE;
+				}
+				
+				i += (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF);
+			}
+			else
+				it->state = ScrollingList::NONE;
+		}
+		
+	}
+}
+
+
+void ScrollingList::update()
+{
+	m_texture.clear(sf::Color(0,0,0,0));
+
+	int pos_value_bar=0;
+	for(std::vector<struct Option>::iterator it = m_values.begin(); it != m_values.end(); it++)
+	{
+		sf::Text value_text(it->value, m_font, m_font_height);
+		sf::RectangleShape value_bar(sf::Vector2f(m_width,  (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)));
+		
+		if(it->state==ScrollingList::CLICK)
+			value_bar.setFillColor(sf::Color(80, 80, 80, 80));
+		else if(it->state==ScrollingList::HOVER)
+			value_bar.setFillColor(sf::Color(110, 110, 110, 150));
+		else
+			value_bar.setFillColor(sf::Color(150, 150, 150, 150));
+
+
+		value_text.setOrigin(value_text.getLocalBounds().left, value_text.getLocalBounds().top);
+		value_bar.setPosition(sf::Vector2f(0, pos_value_bar));
+		value_text.setPosition((int)(value_bar.getPosition().x + value_bar.getSize().x/2 - value_text.getLocalBounds().width/2), (int)(value_bar.getPosition().y + value_bar.getSize().y/2 - value_text.getLocalBounds().height/2));
+
+		m_texture.draw(value_bar);
+		m_texture.draw(value_text);
+		pos_value_bar += value_bar.getSize().y;
+	}
+
+	m_texture.display();
+
+	m_scrollingBar.setSize(sf::Vector2f(20, m_unrollList_height));
+	m_scrollingBar.setPosition(sf::Vector2f(m_position.x + m_width - m_scrollingBar.getSize().x, m_position.y +  (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)));
+	m_scrollingBar.setRatioCursorBar((float)m_unrollList_height/(float)(m_texture.getTexture().getSize().y));
+	m_scrollingBar.update();
+}
+
+
+
+void ScrollingList::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	sf::Text value_text(m_currentValue, m_font, m_font_height);
+	sf::RectangleShape value_bar(sf::Vector2f(m_width, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)));
+	
+	value_bar.setOutlineThickness(1);
+	value_bar.setOutlineColor(sf::Color(245, 245, 245, 245));
+	value_bar.setFillColor(sf::Color(110, 110, 110, 200));
+	value_bar.setPosition(m_position);
+
+	value_text.setOrigin(value_text.getLocalBounds().left, value_text.getLocalBounds().top);
+	value_text.setPosition((int)(value_bar.getPosition().x + value_bar.getSize().x/2 - value_text.getLocalBounds().width/2), (int)(value_bar.getPosition().y + value_bar.getSize().y/2 - value_text.getLocalBounds().height/2));
+
+
+	if(m_unroll)
+	{
+		value_bar.setFillColor(sf::Color(150, 150, 150, 200));
+
+		sf::Sprite list_to_draw_sprite(m_texture.getTexture());
+		list_to_draw_sprite.setPosition(sf::Vector2f(m_position.x, m_position.y + value_bar.getSize().y));
+
+		if(m_unrollList_height >= (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF) * m_nbrValues)
+		{
+			list_to_draw_sprite.setTextureRect(sf::IntRect(0, m_scrollingBar.getCurrentValue(), m_width, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF) * m_nbrValues));
+			target.draw(list_to_draw_sprite, states);
+		}
+		else
+		{
+			list_to_draw_sprite.setTextureRect(sf::IntRect(0, m_scrollingBar.getCurrentValue(), m_width, m_unrollList_height));
+			target.draw(list_to_draw_sprite, states);
+			target.draw(m_scrollingBar, states);
+		}
+	}
+
+
+	target.draw(value_bar, states);
+	target.draw(value_text, states);
+}
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////// TextZone //////////////////////////////////////////////////////////
+
+
+//Constructors/Destructors
+
+TextZone::TextZone()
+{
+
+}
+
+
+TextZone::~TextZone()
+{
+
+}
+
+
+TextZone::TextZone(std::string id, int font_size, std::string text, bool background)
+{
+	m_id = id;
+	m_font_size = font_size;
+	m_text_string = text;
+	m_background = background;
+
+
+	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
+	
+	m_text.setFont(m_font);
+	m_text.setString(m_text_string);
+	m_text.setCharacterSize(m_font_size);
+	m_text.setOrigin(m_text.getLocalBounds().left, m_text.getLocalBounds().top);
+	m_size = sf::Vector2f(m_text.getLocalBounds().width, m_text.getLocalBounds().height);
+}
+
+
+
+//Getters
+
+int TextZone::getFontSize()
+{
+	return m_font_size;
+}
+
+
+std::string TextZone::getText()
+{
+	return m_text_string;
+}
+
+
+bool TextZone::hasBackground()
+{
+	return m_background;
+}
+
+
+
+
+//Setters
+
+void TextZone::setFontSize(int font_size)
+{
+	m_font_size = font_size;
+}
+
+
+void TextZone::setText(std::string text)
+{
+	m_text_string = text;
+}
+
+
+void TextZone::setBackground(bool background)
+{
+	m_background = background;
+}
+
+
+
+
+//Methods
+
+void TextZone::update()
+{
+	m_text.setPosition(m_position + sf::Vector2f(5,5));
+	m_text.setString(m_text_string);
+	m_text.setCharacterSize(m_font_size);
+}
+
+
+void TextZone::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	if(m_background)
+	{
+		sf::RectangleShape rect_background(m_size + sf::Vector2f(2,2));
+		rect_background.setPosition(m_position);
+		rect_background.setFillColor(sf::Color(180,180,180,200));
+		target.draw(rect_background);
+		rect_background.setSize(m_size);
+		rect_background.setFillColor(sf::Color(100,100,100,200));
+		target.draw(rect_background);
+	}
+	
+	target.draw(m_text, states);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////// EntityDisplayer //////////////////////////////////////////////////////////
+
+
+
+//Constructors/Destructors
+
+EntityDisplayer::EntityDisplayer()
+{
+
+}
+
+
+EntityDisplayer::~EntityDisplayer()
+{
+	if(m_sprite != NULL)
+		delete m_sprite;
+}
+
+
+EntityDisplayer::EntityDisplayer(std::string id, bool background)
+{
+	m_id = id;
+	m_background = background;
+
+	m_entity = NULL;
+	m_sprite = NULL;
+}
+
+
+//Getters
+
+bool EntityDisplayer::hasBackground()
+{
+	return m_background;
+}
+
+Entity* EntityDisplayer::getEntity()
+{
+	return m_entity;
+}
+
+
+
+//Setters
+
+void EntityDisplayer::setBackground(bool background)
+{	
+	m_background = background;
+}
+
+
+void EntityDisplayer::setEntity(Entity* entity)
+{
+	m_entity = entity;
+
+	if(m_sprite != NULL)
+	{
+		delete m_sprite;
+		m_sprite = NULL;
+	}
+
+	if(m_entity!=NULL)
+	{
+		
+		if(m_entity->isAffiliatedToMap())
+			m_sprite = new AnimatedSpriteInMap();
+		else
+			m_sprite = new AnimatedSprite();
+		
+		*m_sprite = *(m_entity->getSprite());
+	}
+}
+
+
+//Methods
+
+void EntityDisplayer::update()
+{
+	if(m_sprite!=NULL)
+	{
+		m_sprite->setPosition(sf::Vector2f((2*m_position.x + m_size.x)/2 - m_sprite->getSize().x/2 , (2*m_position.y + m_size.y)/2 - m_sprite->getSize().y/2));
+		m_sprite->update();
+	}
+}
+
+
+void EntityDisplayer::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	if(m_background)
+	{
+		sf::RectangleShape rect_background(m_size + sf::Vector2f(2,2));
+		rect_background.setPosition(m_position);
+		rect_background.setFillColor(sf::Color(180,180,180,200));
+		target.draw(rect_background);
+		rect_background.setSize(m_size);
+		rect_background.setFillColor(sf::Color(100,100,100,200));
+		target.draw(rect_background);
+
+		sf::VertexArray grid(sf::Lines);
+		grid.resize(4);
+		grid[0].position = sf::Vector2f(m_position.x + m_size.x/2, m_position.y); grid[1].position = sf::Vector2f(m_position.x + m_size.x/2, m_position.y + m_size.y);
+		grid[2].position = sf::Vector2f(m_position.x, m_position.y + m_size.y/2); grid[3].position = sf::Vector2f(m_position.x + m_size.x, m_position.y + m_size.y/2);
+		grid[0].color = sf::Color(200,200,200,200);	grid[1].color = sf::Color(200,200,200,200);	grid[2].color = sf::Color(200,200,200,200);	grid[3].color = sf::Color(200,200,200,200);
+		target.draw(grid);
+		
+	}
+
+	if(m_sprite!=NULL)
+	{
+		target.draw(*m_sprite, states);
+	}
+}
 

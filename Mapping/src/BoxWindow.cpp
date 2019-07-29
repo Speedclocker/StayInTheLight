@@ -5,7 +5,7 @@
 #define WIDTH_TITLETAB_COEFF 1.3
 
 
-int BOXWINDOW_SIZE_CHARACTER = 15;
+#define BOXWINDOW_SIZE_CHARACTER 16
 
 
 BoxWindow* BOXWINDOW_FOCUS_WINDOW;
@@ -538,9 +538,10 @@ void BoxWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
 			
 			titlebar.setFillColor(sf::Color(20, 45, 85, 200));
 
+			title_char.setOrigin(title_char.getLocalBounds().left, title_char.getLocalBounds().top);
 
 			titlebar.setPosition(m_position + sf::Vector2f((*it)->getXOffset(), 0));
-			title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2 - 2));
+			title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2));
 
 			target.draw(titlebar, states);
 			target.draw(title_char, states);
@@ -559,8 +560,10 @@ void BoxWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		
 		titlebar.setFillColor(sf::Color(50, 75, 135, 200));
 
+		title_char.setOrigin(title_char.getLocalBounds().left, title_char.getLocalBounds().top);
+
 		titlebar.setPosition(m_position + sf::Vector2f(m_focus_tab->getXOffset(), 0));
-		title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2 - 2));
+		title_char.setPosition((int)(titlebar.getPosition().x + titlebar.getSize().x/2 - title_char.getLocalBounds().width/2), (int)(titlebar.getPosition().y + titlebar.getSize().y/2 - title_char.getLocalBounds().height/2));
 
 		target.draw(titlebar, states);
 		target.draw(title_char, states);

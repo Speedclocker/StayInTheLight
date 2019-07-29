@@ -8,6 +8,10 @@
 #include "Map.h"
 
 
+class AnimatedSprite;
+
+
+
 // Le pointeur qui redigera les entrées claviers
 extern std::string* PTR_EVENT_TEXT_ENTERED;
 
@@ -230,10 +234,10 @@ public:
 
 
 	//Getters
-	float			getMinValue();
-	float			getMaxValue();
-	float			getCurrentValue();	
-	Type 			getType();
+	float			getMinValue() const;
+	float			getMaxValue() const;
+	float			getCurrentValue() const;	
+	Type 			getType() const;
 
 
 	//Setters
@@ -241,7 +245,7 @@ public:
 	void			setMaxValue(float maxValue);
 	void			setCurrentValue(float currentValue);
 	void 			setCurrentValueFromPos(sf::Vector2f clickPos);
-
+	void 			setRatioCursorBar(float ratio_cursor_bar);
 	void 			setType(Type type);
 
 
@@ -253,6 +257,7 @@ public:
 
 private:
 	float				m_minValue, m_maxValue, m_currentValue;
+	float				m_ratio_cursor_bar;
 	Type				m_type;
 
 	enum State {NONE, HOVER, CLICK};
@@ -261,4 +266,161 @@ private:
 
 
 
+
+
+/////////////////////////// Scrolling List /////////////////////////////////
+/* Child class building a scrolling list */
+
+
+class ScrollingList : public InterfaceObject
+{
+public: 
+	//Constructors/Destructors
+	ScrollingList();
+	~ScrollingList();
+	ScrollingList(std::string id, int font_height, int unrollList_height, int width);
+
+
+
+	//Getters
+	int 			getWidth();
+	int 			getFontHeight();
+	std::string		getCurrentValue();	
+	int 			getNbrValues();
+	bool 			isUnroll();
+
+
+	//Setters
+	void 			setWidth(int width);
+	void 			setFontHeight(int font_height);
+	void			setCurrentValue(std::string currentValue);
+
+
+	//Methods
+	void			addValue(std::string value);
+	void 			clearList();
+	void 			interactsWithUser(sf::RenderWindow* window);
+	void 			update();
+	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+
+private:
+	enum State {NONE, HOVER, CLICK};
+	struct Option {std::string value; ScrollingList::State state;};
+
+	State 						m_state;
+	int 						m_width;
+	int 						m_unrollList_height;
+	int 						m_font_height;
+	int 						m_nbrValues;
+	std::vector<struct Option>	m_values;
+	std::string					m_currentValue;
+	sf::Font 					m_font;
+	SlideBar 					m_scrollingBar;
+	bool 						m_unroll;
+	sf::RenderTexture			m_texture;
+
+};
+
+
+
+
+/////////////////////////// TextZone /////////////////////////////////
+/* Child class building a text zone */
+
+
+class TextZone : public InterfaceObject
+{
+public: 
+	//Constructors/Destructors
+	TextZone();
+	~TextZone();
+	TextZone(std::string id, int font_size, std::string text, bool background);
+
+
+	//Getters
+	int 			getFontSize();
+	std::string 	getText();
+	bool 			hasBackground();
+
+
+	//Setters
+	void 			setFontSize(int font_size);
+	void 			setText(std::string text);
+	void 			setBackground(bool background);
+
+
+	//Methods
+	void 			update();
+	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+
+private:
+	int 							m_font_size;
+	std::string 					m_text_string;
+	bool 							m_background;
+	sf::Text 						m_text;
+	sf::Font 						m_font;
+};
+
+
+
+
+
+
+
+
+
+/////////////////////////// EntityDisplayer /////////////////////////////////
+/* Child class building a zone displaying entity */
+
+
+class EntityDisplayer : public InterfaceObject
+{
+public: 
+	//Constructors/Destructors
+	EntityDisplayer();
+	~EntityDisplayer();
+	EntityDisplayer(std::string id, bool background);
+
+
+	//Getters
+	bool 				hasBackground();
+	Entity* 			getEntity();
+
+
+	//Setters
+	void 				setBackground(bool background);
+	void 				setEntity(Entity* entity);
+
+
+	//Methods
+	void 				update();
+	void 				draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+
+private:
+	bool 							m_background;
+	Entity* 						m_entity;
+	AnimatedSprite* 				m_sprite;
+
+};
+
+
+
+
+
+
+
+
 #endif
+
+
+
+
+
+
+
+
+
+

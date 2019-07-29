@@ -72,55 +72,54 @@ public:
 	Character(sf::Texture* texture, Map* map);
 	Character(std::string file_name, sf::Texture* texture, Map* map);
 
-	~Character();
+	virtual ~Character();
 
 	//Getters
 	int 						getHealth();
 	int 						getSpeed();
-	AnimatedSpriteInMap* 		getSprite();	
 	sf::IntRect 				getHitbox();
 	sf::IntRect 				getAbsHitbox();
 	State 						getState() const;
 	sf::Clock 					getClock();
 	sf::Time 					getLastTimeAttack();
 	std::vector< Character* > 	getAvTargets();
-
+	//bool 						isAffiliatedToMap();
 
 	// Setters
-	void setTexture(sf::Texture* texture);
-	void setHealth(int health);
-	void setSpeed(int speed);
-	void setHitbox(sf::IntRect hitbox);
-	void setState(State state);
-	void setLastTimeAttack(sf::Time last_time_attack);
-	void addAvTarget(Character* target);
+	void 						setTexture(sf::Texture* texture);
+	void 						setHealth(int health);
+	void 						setSpeed(int speed);
+	void 						setHitbox(sf::IntRect hitbox);
+	void 						setState(State state);
+	void 						setLastTimeAttack(sf::Time last_time_attack);
+	void 						addAvTarget(Character* target);
 
 
 	// Methods
-	void update();
-	void updateAttack();
-	void getDrawn(sf::RenderWindow* window);
-	void move(sf::Vector2f movement);
-	void move(int mov_x, int mov_y);
-	void attack();
-	void takeDamages(int damages);
-	void drawPart(sf::RenderWindow* window, unsigned int height);
-	void drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
+	void 						update();
+	void 						updateAttack();
+	void 						getDrawn(sf::RenderWindow* window);
+	void 						move(sf::Vector2f movement);
+	void 						move(int mov_x, int mov_y);
+	void 						attack();
+	void 						takeDamages(int damages);
+	void 						drawPart(sf::RenderWindow* window, unsigned int height);
+	void 						drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
 
 
 protected:
-	virtual void readFeaturesFromString(std::string string);
-	virtual void readAnimationFromString(std::string string);
+	virtual void 				readFeaturesFromString(std::string string);
+	virtual void 				readAnimationFromString(std::string string);
 
 
 private:
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	virtual void 				draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 	
-	int 																		m_health;
-	int 																		m_speed;
-	AnimatedSpriteInMap* 														m_sprite;
-	std::map< std::pair<Character::State, Sense> , AnimationParameters > 		m_animation_parameters;		// Animation parameters of an enitity collectors identified with the state and the sense of entity
+	int 																		m_health;					// Health of a character entity
+	int 																		m_speed;					// Speed of a character entity
+	//bool 																		m_affiliated_to_map; 		// If the sprite is affiliated to a map, return true;
+	std::map< std::pair<Character::State, Sense> , AnimationParameters > 		m_animation_parameters;		// Animation parameters of a character entity identified with the state and the sense of entity
 	sf::IntRect 																m_hitbox;
 	State 																		m_state;
 	sf::Clock 																	m_clock;

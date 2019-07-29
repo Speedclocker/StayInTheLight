@@ -9,13 +9,12 @@
 #include "tools.h"
 #include "functionTabs.h"	
 
-#define FULLSCREEN false
+#define FULLSCREEN true
 
 
 std::string* PTR_EVENT_TEXT_ENTERED;
 
-
-void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile** tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile)
+void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile** tiles, int* nbr_avail_tiles, int* size_tile, Tile* target_tile, Map* map, Entity** current_entity)
 {
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
@@ -28,6 +27,9 @@ void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile**
 	static const BoxWindow* mouse_click = NULL;
 
 	static std::vector<BoxWindow*> box_windows; 
+
+	static std::vector<std::string> entities_name;
+
 
 	if(!initialized)
 	{
@@ -43,7 +45,9 @@ void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile**
 		editWindow.focusTab(tab);
 
 		// Initialization tab Entities
-		Tab* tab2= new Tab("Entities", window, NULL, NULL, sizeof(NULL));
+		list_entities(&entities_name);
+		ArgEntitiesWindow arg_entities_window = ArgEntitiesWindow{&entities_name, current_entity, map};
+		Tab* tab2= new Tab("Entities", window, EntitiesWindow, (ArgTab*)&arg_entities_window, sizeof(ArgEntitiesWindow));
 		editWindow.addTab(tab2);
 		
 		editWindow.update();
@@ -54,19 +58,19 @@ void windowInside(sf::RenderWindow* window, sf::Texture* texture_tileset, Tile**
 
 
 		// -- Initialization infoWindow --
-		/*
+		
 		infoWindow.setPositionWindow(sf::Vector2f(window->getView().getSize().x - editWindow.getSize().x - 300, 100));
 		infoWindow.setMinSize(sf::Vector2f(200, 200));
 		infoWindow.setMaxSize(sf::Vector2f(200, 200));
 
-		Tab* tab3= new Tab("Infos", window, NULL, NULL, sizeof(NULL));
+		ArgInfoWindow arg_info_window = ArgInfoWindow{map};
+		Tab* tab3= new Tab("Infos", window, InfoWindow, (ArgTab*)&arg_info_window, sizeof(ArgInfoWindow));
 		infoWindow.addTab(tab3);
 		infoWindow.focusTab(tab3);
 
 		infoWindow.update();
 
 		box_windows.push_back(&infoWindow);
-		*/
 
 		initialized = true;
 	}
@@ -151,6 +155,7 @@ int main(int argc, char* argv[])
 	std::string texture_file_name = argv[5];
 
 	sf::Texture texture_file;
+	std::vector<sf::Texture> entities_texture;
 	
 	if( texture_file.loadFromFile(texture_file_name) == false)
 	{
@@ -174,7 +179,7 @@ int main(int argc, char* argv[])
 	//Création de la fenêtre principale
 	sf::RenderWindow window( ( (FULLSCREEN) ? sf::VideoMode(size_tile*size_x, size_tile*size_y) : sf::VideoMode((size_tile*size_x<1200) ? size_tile*size_x : 1200 , (size_tile*size_y<720) ? size_tile*size_y : 720)),
 							  "MapCreator", ( (FULLSCREEN) ? sf::Style::Fullscreen : sf::Style::Default ) );
-	window.setFramerateLimit(120);
+	window.setFramerateLimit(30);
 
 	//Pointeur qui stocke les entrées texte
 	PTR_EVENT_TEXT_ENTERED=NULL;
@@ -210,9 +215,13 @@ int main(int argc, char* argv[])
 	map_zone.setOutlineColor(sf::Color::Red);
 	int chosen_height=0;
 
-
 	
 	bool transparency=false;
+
+
+	// Entity to choose
+	Entity* current_entity = NULL;
+
 
 	//Main Loop
 	while(window.isOpen())
@@ -309,13 +318,14 @@ int main(int argc, char* argv[])
 		// Affichage des éléments
 
 		// BoxWindows
-		windowInside(&window, &texture_file, &available_tiles, &nbr_tiles, &size_tile, &buff_tile);
+		windowInside(&window, &texture_file, &available_tiles, &nbr_tiles, &size_tile, &buff_tile, custom_map, &current_entity);
 
 		window.display();
 
 	}
 
 	delete custom_map;
+	delete current_entity;
 
 	free(available_tiles);
 

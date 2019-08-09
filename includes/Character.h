@@ -69,8 +69,9 @@ public:
 
 	//Constructeurs et Destructeurs
 	Character();
-	Character(sf::Texture* texture, Map* map);
-	Character(std::string file_name, sf::Texture* texture, Map* map);
+	Character(std::string id, sf::Texture* texture, Map* map);
+	Character(std::string id, std::string file_name, sf::Texture* texture, Map* map);
+	Character(std::string id, std::string file_name, ResourcesManager* resources_manager, Map* map);
 
 	virtual ~Character();
 

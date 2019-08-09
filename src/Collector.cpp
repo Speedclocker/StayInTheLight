@@ -21,8 +21,11 @@ Collector::Collector()
 }
 
 
-Collector::Collector(sf::Texture* texture, Map* map)
+Collector::Collector(std::string id, sf::Texture* texture, Map* map)
 {
+	/* Constructor */
+
+	m_id = id;
 	m_type="Collector";
 
 	m_ground_zone = 14;
@@ -43,9 +46,11 @@ Collector::Collector(sf::Texture* texture, Map* map)
 }
 
 
-Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
+Collector::Collector(std::string id, std::string file_name, sf::Texture* texture, Map* map)
 {
 	/* Constructor */
+
+	m_id = id;
 	m_type="Collector";
 
 	m_sprite=NULL;
@@ -74,9 +79,41 @@ Collector::Collector(std::string file_name, sf::Texture* texture, Map* map)
 
 
 
+
+Collector::Collector(std::string id, std::string file_name, ResourcesManager* resources_manager, Map* map)
+{
+	/* Constructor */
+
+	m_id = id;
+	m_type="Collector";
+
+	m_sprite=NULL;
+
+	if(this->loadFromFile(file_name, resources_manager) < 0) throw std::string("An error occured while loading from file the Collector entity");
+
+	// Check if there is default animation parameters or not and create consequently the sprite
+	std::map<std::pair<Collector::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
+	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Collector::State, Sense>(Collector::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
+	{
+		AnimationParameters def_param = ptr_animation_parameters->second;
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+	}
+	else
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+
+	m_affiliated_to_map = true;
+
+	m_sprite->setFPSQuotient(SITL_FPS_QUOTIENT);
+
+	this->setState(STANDING);
+	this->setSense(DOWN);
+
+	this->update();
+}
+
+
 Collector::~Collector()
 {
-	std::cout << "Del Collector" << std::endl;
 	if(m_sprite !=NULL)
 	{
 		if(this->isAffiliatedToMap())

@@ -210,9 +210,11 @@ Character::Character()
 }
 
 
-Character::Character(sf::Texture* texture, Map* map)
+Character::Character(std::string id, sf::Texture* texture, Map* map)
 {
 	/* Constructor */
+
+	m_id = id;
 	m_type="Character";
 
 	m_actual_attack=NULL;
@@ -233,9 +235,11 @@ Character::Character(sf::Texture* texture, Map* map)
 }
 
 
-Character::Character(std::string file_name, sf::Texture* texture, Map* map)
+Character::Character(std::string id, std::string file_name, sf::Texture* texture, Map* map)
 {
 	/* Constructor */
+
+	m_id = id;
 	m_type="Character";
 
 	m_actual_attack=NULL;
@@ -267,9 +271,45 @@ Character::Character(std::string file_name, sf::Texture* texture, Map* map)
 }
 
 
+Character::Character(std::string id, std::string file_name, ResourcesManager* resources_manager, Map* map)
+{
+	/* Constructor */
+
+	m_id = id;
+	m_type="Character";
+
+	m_actual_attack=NULL;
+	m_sprite=NULL;
+
+	if(this->loadFromFile(file_name, resources_manager) < 0) throw std::string("An error occured while loading from file the Character entity") ;
+
+
+	// Check if there is default animation parameters or not and create consequently the sprite
+	std::map<std::pair<Character::State, Sense>, AnimationParameters>::iterator ptr_animation_parameters;
+	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
+	{
+		AnimationParameters def_param = ptr_animation_parameters->second;
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+	}
+	else
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+
+
+	m_affiliated_to_map = true;
+
+
+	m_sprite->setFPSQuotient(SITL_FPS_QUOTIENT);
+
+	this->setState(STANDING);
+	this->setSense(DOWN);
+
+	this->update();
+}
+
+
+
 Character::~Character()
 {
-	std::cout << "Del Character" << std::endl;
 	/* Destructor */
 	if(m_sprite != NULL)
 	{
@@ -526,6 +566,7 @@ void Character::drawPart(sf::RenderWindow* window, unsigned int height)
 
 void Character::drawPartAndAbove(sf::RenderWindow* window, unsigned int height)
 {
+
 	/* Draw part of the character entity in the chosen height and everything above */
 	if(m_sprite != NULL && this->isAffiliatedToMap())
 		((AnimatedSpriteInMap*)(m_sprite))->drawPartAndAbove(window, height);

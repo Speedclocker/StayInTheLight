@@ -4,6 +4,32 @@
 
 #define LINE_SIZE 1000
 
+
+void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load_location_map)
+{
+	char line[BUFF_SIZE];
+	strcpy(line, raw_line);
+
+	char* buffer=NULL;
+	std::string entity_model_name;
+	int height;
+	sf::Vector2f position;
+
+
+	
+	buffer = strtok(line, " :\n");
+	entity_model_name = buffer;
+
+	buffer = strtok(NULL, " (,:\n");
+	std::cout << "Height : " << buffer << std::endl;
+	buffer = strtok(NULL, " (,:\n");
+	std::cout << "Pos x : " << buffer << std::endl;
+	buffer = strtok(NULL, " )(,:\n");
+	std::cout << "Pos y : " << buffer << std::endl;
+
+}
+
+
 void probeTileset(const char* raw_line, Tile* tileset, int tileset_size)
 {
 	char line[BUFF_SIZE];
@@ -151,7 +177,7 @@ void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, 
 }
 
 
-int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::string* name_texture_file, sf::Texture* texture, Tile** tileset, int* tileset_size)
+int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std::string name_file_map_to_load, std::string* name_texture_file, sf::Texture* texture, Tile** tileset, int* tileset_size)
 {
 	std::ifstream file_to_load;
 	file_to_load.open("maps/"+name_file_map_to_load);
@@ -193,7 +219,7 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 			*load_location_map = new Map(size_map, height_map, tile_sz_map);
 			
 
-			//Modification des tiles dispo:
+			// Change of available tiles
 			*tileset_size=(texture->getSize().x/tile_sz_map)*(texture->getSize().y/tile_sz_map);
 			*tileset=(Tile*)realloc((*tileset),(*tileset_size)*sizeof(Tile));
 
@@ -208,9 +234,7 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 
 		else if(strstr(buffer.c_str(), "[Tileset]")!=NULL)
-		{
-			//std::cout << "tileset" << std::endl;
-			
+		{			
 			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Tileset]")==NULL)
 			{
 				probeTileset(buffer.c_str(), *tileset, *tileset_size);
@@ -220,7 +244,6 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 		else if(strstr(buffer.c_str(), "[Map]")!=NULL)
 		{
-			//std::cout << "map" << std::endl;
 			if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
 
 			if(!texture_load && !texture->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
@@ -231,6 +254,16 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 				probeMap(buffer.c_str(), *load_location_map);
 			}
 		}
+
+		else if(strstr(buffer.c_str(), "[Entities]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Entities]")==NULL)
+			{
+				probeEntity(buffer.c_str(), entities_to_load, *load_location_map);
+			}
+		}
+
+
 	}
 	file_to_load.close();
 
@@ -241,7 +274,7 @@ int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::str
 
 
 
-int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size)
+int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size)
 {
 	std::ofstream file_to_save;
 
@@ -323,6 +356,20 @@ int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::
 	}
 	file_to_save << "[/Map]" << std::endl;
 
+	file_to_save << std::endl;
+
+
+	// Entities
+	file_to_save << "[Entities]" << std::endl;
+	for(std::vector<Entity*>::iterator ent = entities_to_save.begin(); ent != entities_to_save.end(); ent++)
+	{
+		if((*ent)!=NULL)
+		{
+			file_to_save << (*ent)->getModelName() << " : (" << (*ent)->getHeight() << "," << (*ent)->getPosition().x << "," << (*ent)->getPosition().y << ")" << std::endl;
+		}
+	}
+	file_to_save << "[/Entities]" << std::endl;
+
 	file_to_save.close();
 
 	return 0;
@@ -332,7 +379,7 @@ int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::
 
 
 
-int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_load, Map* entity_location)
+int loadEntity(std::string file_name, ResourcesManager* resources_manager, Entity** entity_to_load, Map* entity_location)
 {
 	if(*entity_to_load!=NULL) {std::cerr << "An error happened while loading entity : entity in parameters has to be NULL" << std::endl; return -1; }
 
@@ -363,14 +410,11 @@ int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_l
 				if(strstr(buffer.c_str(), "Type : ")!=NULL && tag!=NULL)
 					type = tag;
 				
-
 			}
 		}
 	}
 
 	file_to_load.close();
-
-	std::cout << "SPOT1.1 : " << type<< std::endl;
 
 	if(strcmp(type.c_str(), "")==0) {std::cerr << "An error happened while loading entity : type is unknown" << std::endl; return -1; }
 
@@ -383,11 +427,11 @@ int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_l
 	{
 		if(strcmp(type.c_str(), "Character")==0)
 		{
-			*entity_to_load = new Character(file_name, texture, entity_location);
+			*entity_to_load = new Character("chosen_entity", file_name, resources_manager, entity_location);
 		}	
 		else if(strcmp(type.c_str(), "Collector")==0)
 		{
-			*entity_to_load = new Collector(file_name, texture, entity_location);
+			*entity_to_load = new Collector("chosen_entity", file_name, resources_manager, entity_location);
 		}
 	}
 	catch(const std::string & e)

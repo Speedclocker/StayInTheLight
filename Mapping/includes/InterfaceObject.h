@@ -63,7 +63,7 @@ public:
 	//Constructors/Destructors
 	InputBar();
 	~InputBar();
-	InputBar(std::string id, int size_font, int size_long, InputBar::Type type);
+	InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated);
 
 
 	//Getters
@@ -88,9 +88,10 @@ public:
 
 
 private:
+	std::string** 	m_ptr_event_txt_entered_associated;
 	int 			m_size_font;
 
-	std::string		m_buff;
+	std::string*	m_buff;
 	sf::Font		m_font;
 
 	clock_t 		m_time;

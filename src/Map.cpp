@@ -339,6 +339,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 			// Check for each entity 		
 			for(std::vector<Entity*>::const_iterator it=m_entities.begin(); it!=m_entities.end(); it++)
 			{	
+
 				// If the part of the entity is already drawn
 				bool obj_already_drawn=false;
 
@@ -350,16 +351,31 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 				
 				// If the entity is not drawn and it's behind tiles line
 				int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
-				if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
-				{
-					// Draw the part of the entity in the same level of height
-					if(h<this->getHeight()-1)
-						(*it)->drawPart((sf::RenderWindow*)&target, h-(*it)->getHeight());
-					else
-						(*it)->drawPartAndAbove((sf::RenderWindow*)&target, h-(*it)->getHeight());
 
-					//target.draw(*(*it));
-					obj_drawn.push_back(*it);
+				if((*it)->isAffiliatedToMap())
+				{
+					if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
+					{
+						// Draw the part of the entity in the same level of height
+						if(h<this->getHeight()-1)
+							(*it)->drawPart((sf::RenderWindow*)&target, h-(*it)->getHeight());
+						else
+							(*it)->drawPartAndAbove((sf::RenderWindow*)&target, h-(*it)->getHeight());
+
+						//target.draw(*(*it));
+						obj_drawn.push_back(*it);
+					}
+				}
+				else
+				{
+					if(!obj_already_drawn && (*it)->getHeight() == h)
+					{
+						// Draw 
+			
+						target.draw(*(*it));
+
+						obj_drawn.push_back(*it);
+					}
 				}
 			}
 			

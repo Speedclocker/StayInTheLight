@@ -10,6 +10,8 @@
 #define SITL_FPS_QUOTIENT 4
 
 class AnimatedSprite;
+class ResourcesManager;
+
 
 enum Sense { UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, DEFAULT_SENSE };
 
@@ -24,8 +26,10 @@ public:
 
 
 	// Getters
-	sf::Texture* 					getTexture();
+	std::string 					getID();
+	std::string 					getModelName();
 	std::string 					getType() const;
+	sf::Texture* 					getTexture();
 	sf::Vector2f 					getPosition() const;
 	sf::Vector2f 					getSize() const;
 	int 							getHeight() const;
@@ -36,8 +40,9 @@ public:
 
 
 	// Setters
-	virtual void 					setTexture(sf::Texture* texture);
+	void 							setModelName(std::string name);
 	void 							setType(std::string type);
+	virtual void 					setTexture(sf::Texture* texture);
 	void 							setPosition(sf::Vector2f position);
 	void 							setHeight(int height);
 	void 							setSize(sf::Vector2f size);
@@ -47,6 +52,7 @@ public:
 
 	// Methods
 	int 							loadFromFile(std::string file_name, sf::Texture* texture);
+	int 							loadFromFile(std::string file_name, ResourcesManager* resources_manager);
 	virtual void 					update();
 	virtual void 					drawPart(sf::RenderWindow* window, unsigned int height);
 	virtual void 					drawPartAndAbove(sf::RenderWindow* window, unsigned int height);
@@ -57,7 +63,8 @@ protected:
 	virtual void 					readAnimationFromString(std::string string);
 
 
-	std::string 			m_name; 			// The name of the entity
+	std::string 			m_id; 				// The id of the entity
+	std::string 			m_model_name; 		// The model of entity (is it a palm? a car?)
 	AnimatedSprite* 		m_sprite;			// Sprite of a character entity
 	bool 					m_affiliated_to_map;// If the sprite is affiliated to a map, return true;
 	sf::Texture* 			m_texture;			// Texture associated with the entity

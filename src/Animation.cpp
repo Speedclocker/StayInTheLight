@@ -216,6 +216,7 @@ void AnimatedSprite::update()
 void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Dessine le sprite
+
 	target.draw(m_sprite, states);
 }
 
@@ -334,19 +335,14 @@ void AnimatedSpriteInMap::update()
 
 void AnimatedSpriteInMap::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
+
 	states.texture = m_texture;
-	
-	/*
-	for(std::vector<sf::VertexArray>::const_iterator it = m_vertex_arrays.begin(); it!=m_vertex_arrays.end(); it++)
-	{
-		target.draw((*it), states);
-	}
-	*/
+
 	target.draw(m_sprite, states);
 }
 
 void AnimatedSpriteInMap::drawPart(sf::RenderWindow* window, unsigned int height)
-{
+{	
 	if(height < m_vertex_arrays.size())
 		window->draw(m_vertex_arrays[height], m_texture);
 }

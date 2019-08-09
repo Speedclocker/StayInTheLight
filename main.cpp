@@ -45,14 +45,14 @@ int main()
 
 	
 	//Character creation
-	Character personnage("data/entities/Hero.ent", &texture_link, map);
+	Character personnage("hero", "data/entities/Hero.ent", &texture_link, map);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	personnage.setHeight(1);
 	map->addEntity(&personnage);
 
 
 	//Mob creation
-	Character mob("data/entities/Hero.ent", &texture_link, map);
+	Character mob("enemy", "data/entities/Hero.ent", &texture_link, map);
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
 	mob.setHeight(1);
 	map->addEntity(&mob);
@@ -63,7 +63,7 @@ int main()
 
 	// Palm creation
 	sf::Texture texture_palm;
-	Collector tmp_coll("data/entities/Tree.ent",&texture_palm, map);
+	Collector tmp_coll("palm", "data/entities/Tree.ent",&texture_palm, map);
 	tmp_coll.setPosition(sf::Vector2f(window.getSize().x/2-tmp_coll.getSize().x/2, window.getSize().y/2-tmp_coll.getSize().y/2));
 	tmp_coll.setHeight(1);
 

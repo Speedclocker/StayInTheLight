@@ -1,5 +1,8 @@
 #include "Entity.h"
 #include "Animation.h"
+#include "ResourcesManagement.h"
+
+
 
 #define LINE_SIZE 2000
 
@@ -21,6 +24,18 @@ Entity::~Entity()
 
 
 // Getters
+
+std::string Entity::getID()
+{
+	/* Return the pointer to the texture of the entity */
+	return m_id;
+}
+
+std::string Entity::getModelName()
+{
+	/* Return the model name of the entity */
+	return m_model_name;
+}
 
 sf::Texture* Entity::getTexture()
 {
@@ -86,6 +101,12 @@ bool Entity::isAffiliatedToMap()
 
 // Setters
 
+
+void Entity::setModelName(std::string name)
+{
+	m_model_name = name;
+}
+
 void Entity::setTexture(sf::Texture* texture)
 {
 	/* Set the pointer to the texture of the entity */
@@ -139,11 +160,12 @@ void Entity::setSense(Sense sense)
 // Methods
 
 
+
 int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 {
 	std::ifstream file_to_load;
 	file_to_load.open(file_name);
-	if(file_to_load.fail()) {std::cerr << "An error happened while opening the entity file" << file_name << std::endl; file_to_load.close(); return -1; }
+	if(file_to_load.fail()) {std::cerr << "An error occured while opening the entity file " << file_name << std::endl; file_to_load.close(); return -1; }
 
 	std::string name="";
 	std::string type="";
@@ -183,10 +205,11 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 			}
 
 			//If an error is met
-			if(strcmp(name.c_str(), "")==0 || strcmp(type.c_str(), "")==0 || strcmp(texture_file_name.c_str(), "")==0){ std::cerr << "An error happened while setting the entity characteristics" << std::endl; file_to_load.close(); return -1; }
+			if(strcmp(name.c_str(), "")==0 || strcmp(type.c_str(), "")==0 || strcmp(texture_file_name.c_str(), "")==0){ std::cerr << "An error occured while setting the entity characteristics" << std::endl; file_to_load.close(); return -1; }
 			else if(strcmp(type.c_str(), this->getType().c_str())!=0){ std::cerr << "The entity is not a " << this->getType() << " entity" << std::endl; file_to_load.close(); return -1; }
 
 			// Set Characteristics
+			if(strcmp(name.c_str(), "") != 0) this->setModelName(name);
 			if(size.x!=-1 && size.y!=-1) this->setSize(size);
 			if(ground_zone!=-1) this->setGroundZone(ground_zone);
 
@@ -225,9 +248,98 @@ int Entity::loadFromFile(std::string file_name, sf::Texture* texture)
 }
 
 
+
+
+
+
+int Entity::loadFromFile(std::string file_name, ResourcesManager* resources_manager)
+{
+	std::ifstream file_to_load;
+	file_to_load.open(file_name);
+	if(file_to_load.fail()) {std::cerr << "An error occured while opening the entity file " << file_name << std::endl; file_to_load.close(); return -1; }
+
+	std::string name="";
+	std::string type="";
+	sf::Vector2f size = sf::Vector2f(-1,-1);
+	int ground_zone=-1;
+	std::string texture_file_name="";
+
+	std::string buffer="";
+
+
+	// Read the file until we reach the end
+	while(std::getline(file_to_load, buffer))
+	{
+		// Header Tag
+		if(strstr(buffer.c_str(), "[Header]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Header]")==NULL)
+			{
+				char line[LINE_SIZE];
+				strcpy(line, buffer.c_str());
+
+				strtok(line, ": \n");
+				char* tag = strtok(NULL, ": \n");
+
+				if(strstr(buffer.c_str(), "Name : ")!=NULL && tag!=NULL)			name = tag;
+				else if(strstr(buffer.c_str(), "Type : ")!=NULL && tag!=NULL)		type = tag;
+				else if(strstr(buffer.c_str(), "Texture : ")!=NULL && tag!=NULL)	texture_file_name = tag;
+				else if(strstr(buffer.c_str(), "Size : ")!=NULL && tag!=NULL)
+				{
+					// load from file the Size
+					tag=tag+1;
+					size.x = atoi(tag=strtok(tag, " ,"));	
+					size.y = atoi(tag=strtok(NULL, " )"));
+				}
+				else if(strstr(buffer.c_str(), "GroundZone : ")!=NULL && tag!=NULL)	ground_zone = atoi(tag);
+
+			}
+
+			//If an error is met
+			if(strcmp(name.c_str(), "")==0 || strcmp(type.c_str(), "")==0 || strcmp(texture_file_name.c_str(), "")==0){ std::cerr << "An error occured while setting the entity characteristics" << std::endl; file_to_load.close(); return -1; }
+			else if(strcmp(type.c_str(), this->getType().c_str())!=0){ std::cerr << "The entity is not a " << this->getType() << " entity" << std::endl; file_to_load.close(); return -1; }
+
+			// Set Characteristics
+			if(strcmp(name.c_str(), "") != 0) this->setModelName(name);
+			if(size.x!=-1 && size.y!=-1) this->setSize(size);
+			if(ground_zone!=-1) this->setGroundZone(ground_zone);
+
+			if((m_texture = resources_manager->getOrAddTexture(texture_file_name)) == NULL) { std::cout << "Texture file can't be load." << std::endl; return -1; }
+		}
+
+		// Animation Tag
+		else if(strstr(buffer.c_str(), "[Features]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Features]")==NULL)
+			{
+				readFeaturesFromString(buffer);
+			}
+		}
+
+
+		// Animation Tag
+		else if(strstr(buffer.c_str(), "[Animations]")!=NULL)
+		{
+			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Animations]")==NULL)
+			{
+				readAnimationFromString(buffer)	;
+			}
+		}
+		
+	}
+
+
+	file_to_load.close();
+
+	return 0;
+}
+
+
+
+
 void Entity::update()
 {
-	
+
 }
 
 

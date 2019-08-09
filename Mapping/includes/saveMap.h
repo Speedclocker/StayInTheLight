@@ -12,17 +12,19 @@
 
 #define BUFF_SIZE 30000
 
+void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load_location_map);
+
 void probeTileset(const char* raw_line, Tile* tileset, int tileset_size);
 
 void probeMap(const char* raw_line, Map* load_location_map);
 
 void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, int* tile_sz_map, char texture_name_file[BUFF_SIZE]);
 
-int loadMap(Map** load_location_map, std::string name_file_map_to_load, std::string* name_texture, sf::Texture* texture, Tile** tileset, int* tileset_size);
+int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std::string name_file_map_to_load, std::string* name_texture, sf::Texture* texture, Tile** tileset, int* tileset_size);
 
-int saveMap(Map* map_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size);
+int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size);
 
-int loadEntity(std::string file_name, sf::Texture* texture, Entity** entity_to_load, Map* entity_location);
+int loadEntity(std::string file_name, ResourcesManager* resources_manager, Entity** entity_to_load, Map* entity_location);
 
 
 

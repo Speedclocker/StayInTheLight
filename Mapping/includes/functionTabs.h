@@ -9,19 +9,22 @@
 
 ////////////// Tileset Tab ////////////
 
+class ResourcesManager;
+
 // Function
-void TilesetWindow(Tab* tab, ArgTab* argtab);
+void TilesetTab(Tab* tab, ArgTab* argtab);
 
 // Argument Structure
 typedef struct
 {
 	sf::Texture* texture; 
 	Tile** tiles; 
-	int* nbr_avail_tiles;
-	int* size_tile;
+	const int* nbr_avail_tiles;
+	const int* size_tile;
 	Tile* target_tile;
-	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(sf::Texture*) - sizeof(Tile**) - sizeof(int*) - sizeof(int*) - sizeof(Tile*)] = { 0 };
-} ArgTilesetWindow;
+	std::string** text_event_location;
+	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(sf::Texture*) - sizeof(Tile**) - sizeof(const int*) - sizeof(const int*) - sizeof(Tile*) - sizeof(std::string**)] = { 0 };
+} ArgTilesetTab;
 
 
 
@@ -30,15 +33,16 @@ typedef struct
 /////////////// Info Tab ///////////////
 
 // Function
-void InfoWindow(Tab* tab, ArgTab* argtab);
+void InfoTab(Tab* tab, ArgTab* argtab);
 
 // Argument Structure
 
 typedef struct
 {
-	Map*				map;
-	uint8_t 			__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(Map*)] = {0};
-} ArgInfoWindow;
+	Map**					ptr_map;
+	std::vector<Entity*>*	entities;
+	uint8_t 				__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(Map**) - sizeof(std::vector<Entity*>*)] = {0};
+} ArgInfoTab;
 
 
 
@@ -48,7 +52,7 @@ typedef struct
 /////////////// Entities Tab ///////////////
 
 // Function
-void EntitiesWindow(Tab* tab, ArgTab* argtab);
+void EntitiesTab(Tab* tab, ArgTab* argtab);
 
 // Argument Structure
 
@@ -56,9 +60,11 @@ typedef struct
 {
 	std::vector<std::string>* 	ptr_list_entities;
 	Entity**					current_entity;
+	std::string* 				current_entity_file_name;
 	Map*						map;
-	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(std::vector<std::string>*) - sizeof(Entity**) - sizeof(Map*)] = {0};
-} ArgEntitiesWindow;
+	ResourcesManager* 			resources_manager;
+	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(std::vector<std::string>*) - sizeof(Entity**) - sizeof(std::string*) - sizeof(Map*) - sizeof(ResourcesManager*)] = {0};
+} ArgEntitiesTab;
 
 
 

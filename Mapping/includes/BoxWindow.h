@@ -14,6 +14,7 @@
 
 typedef struct{uint8_t val[ARG_TAB_BUFF_SIZE];} ArgTab;
 
+/////////////////////////////////////////////////////////////////////////////// Tab /////////////////////////////////////////////////////////////////////////////////////////
 
 /* Classes permettant de construire les fenêtres applications, avec les différents onglets contenant le tileset, les entités à ajouter, les paramètres etc ... */
 
@@ -72,6 +73,7 @@ private:
 
 
 
+/////////////////////////////////////////////////////////////////////////////// BoxWindow /////////////////////////////////////////////////////////////////////////////////////////
 
 
 class BoxWindow : public sf::Drawable
@@ -85,11 +87,13 @@ public:
 
 	//Accesseurs
 	Tab*				getTab(int index);
+	Tab* 				getFocusTab();
 	sf::Vector2f 		getSize();
 	sf::Vector2f 		getPosition();
 	sf::Vector2f		getMinSize();
 	sf::Vector2f		getMaxSize();
 	float				getTabTitleSize();
+	bool				isInteractable();
 
 
 	//Modificateurs
@@ -101,10 +105,11 @@ public:
 	void				setTabTitleSize(float tabtitle_size);
 
 	//Méthodes
-	void 				setFocus();
-	bool				hasFocus();
+	void 				setInteractable();
+	void 				unInteractable();
 	void  				focusTab(Tab* tab);
 	void 				addTab(Tab* tab);
+	void 				newTab(std::string tab_name, void (*function)(Tab*, ArgTab*), ArgTab* function_arg, size_t function_arg_size);
 	void				move_resize();
 	void				interactsWithUser();
 
@@ -113,34 +118,70 @@ public:
 	void 				draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 private:
-	std::vector<Tab*>	m_tabs;
-	Tab* 				m_focus_tab;
-
-	sf::Vector2f		m_position;	
-	sf::Vector2f		m_position_window; // Il s'agit de la position relative à la View de la RenderWindow prise en paramètre et non des coordonnées absolues
-
-	sf::Vector2f		m_size;
-	sf::Vector2f		m_minSize, m_maxSize;
-	float				m_tabtitle_size;
-
-	bool 				m_focus;
-
-	sf::Font 			m_font;
+	//std::map<std::string, Tab*>		m_tabs1;
+	std::vector<Tab*>				m_tabs;
+	Tab* 							m_focus_tab;
+	sf::Vector2f					m_position;	
+	sf::Vector2f					m_position_window; // Il s'agit de la position relative à la View de la RenderWindow prise en paramètre et non des coordonnées absolues
+	sf::Vector2f					m_size;
+	sf::Vector2f					m_minSize, m_maxSize;
+	float							m_tabtitle_size;
+	bool 							m_interactable;
+	sf::Font 						m_font;
 
 	enum State {NONE, LEFT, RIGHT, BOTTOM, TOP};
-	State 				m_state_hover;
-	State 				m_state_click;
-	sf::Vector2f 		m_click_move_window;
-	sf::RenderWindow	*m_window;
+	State 							m_state_hover;
+	State 							m_state_click;
+	sf::Vector2f 					m_click_move_window;
+	sf::RenderWindow*				m_window;
 };
 
 
 
-extern BoxWindow* BOXWINDOW_FOCUS_WINDOW;
 
 
-void unFocus_boxwindow();
-bool noFocus_boxwindow();
+
+/////////////////////////////////////////////////////////////////////////////// BoxWindowsManager /////////////////////////////////////////////////////////////////////////////////////////
+
+class BWManager
+{
+public:
+	BWManager();
+	~BWManager();
+	BWManager(sf::RenderWindow* window);
+
+
+	//Getters
+	sf::RenderWindow*							getWindow(void);
+	BoxWindow* 									getBoxWindow(std::string window_name);
+	BoxWindow* 									getFocusBoxWindow();
+
+
+	//Setters
+	void 										setWindow(sf::RenderWindow* window);
+
+
+	//Methods
+	void 										newBoxWindow(std::string boxwindow_name, sf::Vector2f size);
+	void 										deleteBoxWindow(std::string boxwindow_name);
+	void 										clearBoxWindows();
+	void 										interactionsManagement();
+	void 										update();
+	void 										unFocusBoxWindow();
+	void 										drawWindows();
+	void 										manage();
+
+
+private:
+	sf::RenderWindow*							m_window;
+	std::map<std::string, BoxWindow*> 			m_box_windows;
+	std::vector<BoxWindow*>						m_order_box_windows;
+
+	const BoxWindow* 							m_window_hover;
+	const BoxWindow* 							m_window_click;
+	BoxWindow* 									m_focus_window;
+
+};
 
 
 

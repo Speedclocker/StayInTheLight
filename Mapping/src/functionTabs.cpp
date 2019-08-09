@@ -3,17 +3,18 @@
 
 
 #define FONT_FILE "../data/fonts/AldoTheApache.ttf"
-#define ENTITIES_FOLDER "entities"
+#define ENTITIES_FOLDER "entities/"
 #define BOXWINDOW_SIZE_CHARACTER 16
 
 
-void TilesetWindow(Tab* tab, ArgTab* argtab)
+void TilesetTab(Tab* tab, ArgTab* argtab)
 {
-	sf::Texture* texture = ((ArgTilesetWindow*)(argtab))->texture;
-	Tile** tiles = ((ArgTilesetWindow*)(argtab))->tiles;
-	int* nbr_avail_tiles= ((ArgTilesetWindow*)(argtab))->nbr_avail_tiles;
-	int* size_tile = ((ArgTilesetWindow*)(argtab))->size_tile;
-	Tile* target_tile = ((ArgTilesetWindow*)(argtab))->target_tile;
+	sf::Texture* texture = ((ArgTilesetTab*)(argtab))->texture;
+	Tile** tiles = ((ArgTilesetTab*)(argtab))->tiles;
+	const int* nbr_avail_tiles= ((ArgTilesetTab*)(argtab))->nbr_avail_tiles;
+	const int* size_tile = ((ArgTilesetTab*)(argtab))->size_tile;
+	Tile* target_tile = ((ArgTilesetTab*)(argtab))->target_tile;
+	std::string** ptr_text_event = ((ArgTilesetTab*)(argtab))->text_event_location;
 
 	sf::Rect<float> zone_tileset(sf::Vector2f(0, 0), sf::Vector2f(tab->getSize().x - 10, texture->getSize().y )); // Fait dépendre la taille du tileset de la fenêtre
 
@@ -23,8 +24,8 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 		SlideBar *ptr_slide;
 		TilesetSelect *ptr_tileset;
 		Button *ptr_button;
-		InputBar *ptr_inputbar;
-		ScrollingList *ptr_scrollinglist;
+		InputBar *ptr_inputbar1;
+		InputBar *ptr_inputbar2;
 
 
 		//Initialisation du tileset
@@ -41,24 +42,23 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 
 
 		//Initialisation InputBar
-		ptr_inputbar = new InputBar("inputbar1", 16, 100, InputBar::NUMERICAL);
-		ptr_inputbar->setPosition(ptr_slide->getPosition() + sf::Vector2f(0, ptr_slide->getSize().y + 10));
-
+		ptr_inputbar1 = new InputBar("inputbar1", 16, 100, InputBar::NUMERICAL, ptr_text_event);
+		ptr_inputbar1->setPosition(ptr_slide->getPosition() + sf::Vector2f(0, ptr_slide->getSize().y + 10));
+		
+		ptr_inputbar2 = new InputBar("inputbar2", 16, 100, InputBar::NUMERICAL, ptr_text_event);
+		ptr_inputbar2->setPosition(ptr_inputbar1->getPosition() + sf::Vector2f(0, ptr_inputbar1->getSize().y + 10));
 
 		//Initialisation Button
 		ptr_button = new Button("button1", "Change", 16);
-		ptr_button->setPosition(ptr_inputbar->getPosition() + sf::Vector2f(ptr_inputbar->getSize().x + 30, 0));
+		ptr_button->setPosition(ptr_inputbar1->getPosition() + sf::Vector2f(ptr_inputbar1->getSize().x + 30, 0));
 
-		//Initialisation ScrollingList
-		ptr_scrollinglist = new ScrollingList("scrollinglist1", 16, 50, ptr_slide->getSize().x);
-		ptr_scrollinglist->setPosition(sf::Vector2f(ptr_tileset->getPosition().x , ptr_button->getPosition().y + ptr_button->getSize().y + 5) );
 
 		//Ajout des objets à l'onglet
 		tab->addObject(ptr_slide);
 		tab->addObject(ptr_tileset);
-		tab->addObject(ptr_inputbar);
+		tab->addObject(ptr_inputbar1);
+		tab->addObject(ptr_inputbar2);
 		tab->addObject(ptr_button);
-		tab->addObject(ptr_scrollinglist);
 
 		tab->initialized = true;
 	}
@@ -69,8 +69,8 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 		TilesetSelect* tileset = dynamic_cast<TilesetSelect*>(tab->getObject("tileset"));
 		SlideBar* slidebar1 = dynamic_cast<SlideBar*>(tab->getObject("slidebar1"));
 		InputBar* inputbar1 = dynamic_cast<InputBar*>(tab->getObject("inputbar1"));
+		InputBar* inputbar2 = dynamic_cast<InputBar*>(tab->getObject("inputbar2"));
 		Button* button1 = dynamic_cast<Button*>(tab->getObject("button1"));
-		ScrollingList* scrollinglist1 = dynamic_cast<ScrollingList*>(tab->getObject("scrollinglist1"));
 
 
 		//Paramétrage du tileset
@@ -88,14 +88,11 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 
 		//Paramétrage du InputBar
 		inputbar1->setPosition(slidebar1->getPosition() + sf::Vector2f(0, slidebar1->getSize().y + 10));
-
+		inputbar2->setPosition(inputbar1->getPosition() + sf::Vector2f(0, inputbar1->getSize().y + 10));
 
 		//Paramétrage du button
 		button1->setPosition(inputbar1->getPosition() + sf::Vector2f(inputbar1->getSize().x + 30, 0));
 
-
-		//Paramétrage de la scrolling list
-		scrollinglist1->setPosition(sf::Vector2f(tileset->getPosition().x , button1->getPosition().y + button1->getSize().y + 5) );
 
 		//Stocke la valeur du tile cible
 		*target_tile = tileset->getChosenTile();
@@ -111,15 +108,16 @@ void TilesetWindow(Tab* tab, ArgTab* argtab)
 
 
 
-void InfoWindow(Tab* tab, ArgTab* argtab)
+void InfoTab(Tab* tab, ArgTab* argtab)
 {
-	Map* map = ((ArgInfoWindow*)(argtab))->map;
+	Map** ptr_map = ((ArgInfoTab*)(argtab))->ptr_map;
+	std::vector<Entity*>* entities = ((ArgInfoTab*)(argtab))->entities;
 
 	std::string all_titles="Size \nHeight \nEntities \n";
-	std::string size = ((map!=NULL)?std::to_string((int)map->getSize().x):"X") + " * " + ((map!=NULL)?std::to_string((int)map->getSize().y):"X") + " \n";
-	std::string height = ((map!=NULL)?std::to_string((int)map->getHeight()):"X") +" \n";
+	std::string size = (((*ptr_map)!=NULL)?std::to_string((int)(*ptr_map)->getSize().x):"X") + " * " + (((*ptr_map)!=NULL)?std::to_string((int)(*ptr_map)->getSize().y):"X") + " \n";
+	std::string height = (((*ptr_map)!=NULL)?std::to_string((int)(*ptr_map)->getHeight()):"X") +" \n";
 	//std::string texture = "Texture : " + map->getHeight() + " \n";
-	std::string nbr_entities = "X \n";
+	std::string nbr_entities = ((entities!=NULL)?std::to_string(entities->size()):"X") +" \n";
 
 
 	std::string all_values = size + height + nbr_entities;
@@ -166,11 +164,13 @@ void InfoWindow(Tab* tab, ArgTab* argtab)
 
 
 
-void EntitiesWindow(Tab* tab, ArgTab* argtab)
+void EntitiesTab(Tab* tab, ArgTab* argtab)
 {
-	Map* map = (((ArgEntitiesWindow*)(argtab))->map);
-	Entity** current_entity = (((ArgEntitiesWindow*)(argtab))->current_entity);
-	std::vector<std::string> list_entities = *(((ArgEntitiesWindow*)(argtab))->ptr_list_entities);
+	Map* map = (((ArgEntitiesTab*)(argtab))->map);
+	Entity** current_entity = (((ArgEntitiesTab*)(argtab))->current_entity);
+	std::string* current_entity_file_name = (((ArgEntitiesTab*)(argtab))->current_entity_file_name);
+	std::vector<std::string> list_entities = *(((ArgEntitiesTab*)(argtab))->ptr_list_entities);
+	ResourcesManager* resources_manager = (((ArgEntitiesTab*)(argtab))->resources_manager);
 
 
 	EntityDisplayer *ptr_spritedisplayer;
@@ -187,7 +187,6 @@ void EntitiesWindow(Tab* tab, ArgTab* argtab)
 		ptr_spritedisplayer = new EntityDisplayer("spritedisplayer", true);
 		ptr_spritedisplayer->setSize(sf::Vector2f(tab->getSize().x - 20, tab->getSize().x - 20));
 		ptr_spritedisplayer->setPosition(sf::Vector2f(tab->getPosition().x + 10, tab->getPosition().y + tab->getTitleSize() + 10));
-
 
 
 		//Initialization ScrollingList
@@ -230,9 +229,16 @@ void EntitiesWindow(Tab* tab, ArgTab* argtab)
 				*current_entity = NULL;
 			}
 
-			loadEntity(std::string(ENTITIES_FOLDER) + std::string("/") + scrollinglist_entities->getCurrentValue(), &texture, current_entity, map);
+			loadEntity(std::string(ENTITIES_FOLDER) + scrollinglist_entities->getCurrentValue(), resources_manager, current_entity, map);
 
 			chosen_entity_string = scrollinglist_entities->getCurrentValue();
+
+			if(*current_entity != NULL)
+				*current_entity_file_name = std::string(ENTITIES_FOLDER) + scrollinglist_entities->getCurrentValue();
+			else
+				*current_entity_file_name = "";
+
+
 
 			spritedisplayer->setEntity(*current_entity);
 		}

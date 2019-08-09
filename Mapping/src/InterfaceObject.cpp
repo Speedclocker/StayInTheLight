@@ -89,23 +89,32 @@ InputBar::InputBar()
 InputBar::~InputBar()
 {
 	/* Destructor of the object */
+	if(m_ptr_event_txt_entered_associated != NULL && *m_ptr_event_txt_entered_associated == m_buff)
+		m_ptr_event_txt_entered_associated = NULL;
+
+	delete m_buff;
+
 }
 
-InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type type)
+InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated)
 {
 	/* Constructor of the object */
 
 	m_id = id;
 	m_size_font = size_font;
 	m_type = type;
-	m_buff = "";
+	m_buff = new std::string("");
 	m_size = sf::Vector2f(10,10);
 	m_focus = false;
 	m_time = clock();
 	m_typing_cursor = true;
 
-	m_size = sf::Vector2f(size_long, m_size_font*1.5);
+	m_ptr_event_txt_entered_associated = ptr_event_txt_entered_associated;
+	
+	
 
+
+	m_size = sf::Vector2f(size_long, m_size_font*1.5);
 
 	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
 
@@ -142,7 +151,7 @@ InputBar::State InputBar::getState()
 std::string InputBar::getValue()
 {
 	/* Return the value of the buffer */
-	return m_buff;
+	return *m_buff;
 }
 
 
@@ -180,14 +189,13 @@ void  InputBar::setValue(std::string buff)
 {
 	/* Set a value (string) to the buffer */
 
-
-	m_buff = buff;
+	*m_buff = buff;
 	if(this->getType() == InputBar::NUMERICAL)
 	{
-		for(std::string::iterator it = m_buff.end()-1; it >= m_buff.begin(); it++)
+		for(std::string::iterator it = m_buff->end()-1; it >= m_buff->begin(); it++)
 		{
-			if((m_buff[it-m_buff.begin()] < 48 || m_buff[it-m_buff.begin()] > 57) ) 
-				m_buff.erase(it);
+			if(((*m_buff)[it-m_buff->begin()] < 48 || (*m_buff)[it-m_buff->begin()] > 57) ) 
+				m_buff->erase(it);
 		}
 	}
 }
@@ -230,16 +238,17 @@ void InputBar::update()
 	
 	// Set the TextEnter event pointer
 	if(this->hasFocus())
-		PTR_EVENT_TEXT_ENTERED = &m_buff;
-	else
-		PTR_EVENT_TEXT_ENTERED = NULL;
+	{
+		if(m_ptr_event_txt_entered_associated != NULL)
+			*m_ptr_event_txt_entered_associated = m_buff;
+	}
 
 
 	// Check the type 
 	if(this->getType()==InputBar::NUMERICAL)
 	{
-		if( m_buff.length() > 0 && (m_buff[m_buff.length()-1] < 48 || m_buff[m_buff.length()-1] > 57) ) 
-			m_buff.erase(m_buff.end()-1);
+		if( m_buff->length() > 0 && ((*m_buff)[m_buff->length()-1] < 48 || (*m_buff)[m_buff->length()-1] > 57) ) 
+			m_buff->erase(m_buff->end()-1);
 	}
 
 	// Blinking the typing cursor
@@ -263,7 +272,7 @@ void InputBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(appearance_input, states);
 
 	// Draw the text
-	sf::Text text_input(m_buff, m_font, m_size_font);
+	sf::Text text_input(*m_buff, m_font, m_size_font);
 	text_input.setPosition((int)(m_position.x + m_size.x/2 - text_input.getLocalBounds().width/2), (int)(m_position.y  + m_size.y/2 - m_size_font/2 - 3 ));
 	target.draw(text_input, states);
 

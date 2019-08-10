@@ -348,36 +348,6 @@ void MappingGUI::setEntity()
 				(*m_map)->addEntity(entity_to_set);
 			}
 
-/*	
-			unsigned int tmp_size = m_entities->size();
-
-			try
-			{
-				if(strcmp(m_chosen_entity->getType().c_str(), "Character")==0)
-					m_entities->push_back(new Character(name, m_chosen_entity_file_name, m_resources_manager, (*m_map)));
-
-				else if(strcmp(m_chosen_entity->getType().c_str(), "Collector")==0)
-					m_entities->push_back(new Collector(name, m_chosen_entity_file_name, m_resources_manager, (*m_map)));
-			}
-			catch(const std::string & e)
-			{
-				// If an error occured while loading the entity
-				if(m_entities->size()>=1 && (*m_entities)[m_entities->size()-1]!=NULL)
-					delete (*m_entities)[m_entities->size()-1];
-				
-				if(tmp_size != m_entities->size())
-					m_entities->erase(m_entities->begin() + m_entities->size()-1);
-
-			}
-		
-
-			if(tmp_size != m_entities->size())
-			{
-				(*m_entities)[m_entities->size()-1]->setPosition(sf::Vector2f((int)(mousePos.x - (*m_entities)[m_entities->size()-1]->getSize().x/2), (int)(mousePos.y - (*m_entities)[m_entities->size()-1]->getSize().y/2)));
-				(*m_entities)[m_entities->size()-1]->setHeight(m_chosen_height);
-				(*m_map)->addEntity((*m_entities)[m_entities->size()-1]);
-			}
-*/
 
 			set_entity_click = false;
 		}

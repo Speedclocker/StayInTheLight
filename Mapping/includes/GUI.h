@@ -15,7 +15,7 @@ public:
 	MappingGUI();
 	~MappingGUI();
 	MappingGUI(sf::RenderWindow* window);
-	MappingGUI(sf::RenderWindow* window, Map* map, std::vector<Entity*>* entities, ResourcesManager* resources_manager, std::string tileset_texture_file_name);
+	MappingGUI(sf::RenderWindow* window, Map** map, std::vector<Entity*>* entities, ResourcesManager* resources_manager, std::string tileset_texture_file_name);
 
 
 	//Getters
@@ -26,7 +26,7 @@ public:
 	//Setters
 	void 										setWindow(sf::RenderWindow* window);
 	int 										setTilesetTexture(sf::Texture* tileset_texture);
-	int											setMap(Map* map);
+	int											setMap(Map** map);
 
 
 	//Methods
@@ -45,7 +45,7 @@ private:
 	BWManager* 									m_windows_manager;
 	ResourcesManager* 							m_resources_manager;
 	sf::Font 									m_font;
-	Map* 										m_map;
+	Map** 										m_map;
 	std::vector<Entity*>* 						m_entities;
 	int 										m_tile_size;
 	sf::Texture*								m_tileset_texture;

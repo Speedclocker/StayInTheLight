@@ -99,12 +99,13 @@ MappingGUI::MappingGUI(sf::RenderWindow* window)
 
 
 
-MappingGUI::MappingGUI(sf::RenderWindow* window, Map* map, std::vector<Entity*>* entities, ResourcesManager* resources_manager, std::string tileset_texture_file_name)
+MappingGUI::MappingGUI(sf::RenderWindow* window, Map** map, std::vector<Entity*>* entities, ResourcesManager* resources_manager, std::string tileset_texture_file_name)
 {
 	/* Constructor */
 
 	m_window = window;
 	m_windows_manager = new BWManager(window);
+	m_tileset_texture = NULL;
 	m_resources_manager = resources_manager;
 	m_map = map;
 	m_tileset_texture_file_name = tileset_texture_file_name; 
@@ -118,18 +119,19 @@ MappingGUI::MappingGUI(sf::RenderWindow* window, Map* map, std::vector<Entity*>*
 	m_transparency_map = false;
 	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "An error occured while loading the font from a file, name of font may be incorrect." << std::endl;
 
-	if((m_tileset_texture = m_resources_manager->getOrAddTexture(m_tileset_texture_file_name)) == NULL) throw "Texture file cannot be load.";
+	if(m_resources_manager != NULL && (m_tileset_texture = m_resources_manager->getOrAddTexture(m_tileset_texture_file_name)) == NULL) throw std::string("Texture file cannot be load.");
+
 
 	if(setTilesetTexture(m_tileset_texture) < 0) throw "An error occured while setting texture for tileset.";
 
-	if(m_map != NULL)
+	if((*m_map) != NULL && m_tileset_texture != NULL && m_windows_manager != NULL)
 	{
-		m_map->setTexture(m_tileset_texture);
-		m_tile_size = m_map->getTileSize();
-		//initializeGUI_BoxWindows(m_windows_manager, m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, &m_tile_size, &m_chosen_tile, m_map, &m_chosen_entity, &m_chosen_entity_file_name, &m_ptr_event_txt_entered, m_resources_manager);
+		(*m_map)->setTexture(m_tileset_texture);
+		m_tile_size = (*m_map)->getTileSize();
 		this->initializeBoxWindows();
 
 	}
+
 
 	// Setting Tile
 	multiple_setting_tile_click = false;
@@ -185,9 +187,9 @@ int MappingGUI::setTilesetTexture(sf::Texture* tileset_texture)
 	/* Set a texture for the tileset and reallocating the available tiles */
 
 	m_tileset_texture = tileset_texture;
-	if(m_tileset_texture != NULL && m_map != NULL)
+	if(m_tileset_texture != NULL && (*m_map) != NULL)
 	{
-		m_tile_size = m_map->getTileSize();
+		m_tile_size = (*m_map)->getTileSize();
 
 		if(m_available_tiles!=NULL)
 			free(m_available_tiles);
@@ -206,7 +208,7 @@ int MappingGUI::setTilesetTexture(sf::Texture* tileset_texture)
 		}
 		m_chosen_tile = m_available_tiles[0];
 
-		m_map->setTexture(m_tileset_texture);
+		(*m_map)->setTexture(m_tileset_texture);
 
 		return 1;
 	}
@@ -215,13 +217,13 @@ int MappingGUI::setTilesetTexture(sf::Texture* tileset_texture)
 }
 
 
-int MappingGUI::setMap(Map* map)
+int MappingGUI::setMap(Map** map)
 {
 	m_map = map;
 
-	if(m_tileset_texture != NULL && m_map != NULL)
+	if(m_tileset_texture != NULL && (*m_map) != NULL)
 	{
-		m_tile_size = m_map->getTileSize();
+		m_tile_size = (*m_map)->getTileSize();
 		free(m_available_tiles);
 
 		m_nbr_available_tiles = (m_tileset_texture->getSize().x/m_tile_size)*(m_tileset_texture->getSize().y/m_tile_size);
@@ -238,7 +240,7 @@ int MappingGUI::setMap(Map* map)
 		}
 		m_chosen_tile = m_available_tiles[0];
 
-		m_map->setTexture(m_tileset_texture);
+		(*m_map)->setTexture(m_tileset_texture);
 
 		return 1;
 	}
@@ -256,11 +258,11 @@ void MappingGUI::setTile()
 
 	sf::Vector2f mousePos = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
 
-	if(mousePos.x >=0 && mousePos.x < m_map->getSize().x*m_map->getTileSize()
-	&& mousePos.y >=0 && mousePos.y < m_map->getSize().y*m_map->getTileSize() )
+	if(mousePos.x >=0 && mousePos.x < (*m_map)->getSize().x*(*m_map)->getTileSize()
+	&& mousePos.y >=0 && mousePos.y < (*m_map)->getSize().y*(*m_map)->getTileSize() )
 	{
 
-		sf::Vector2f positionTile((int)(mousePos.x/m_map->getTileSize())*m_map->getTileSize(), (int)(mousePos.y/m_map->getTileSize())*m_map->getTileSize());
+		sf::Vector2f positionTile((int)(mousePos.x/(*m_map)->getTileSize())*(*m_map)->getTileSize(), (int)(mousePos.y/(*m_map)->getTileSize())*(*m_map)->getTileSize());
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && m_window->hasFocus())
 		{
@@ -278,7 +280,7 @@ void MappingGUI::setTile()
 				{
 					for(int j=set_tile_origin_click.y; (set_tile_origin_click.y<=set_tile_corner_click.y)? j <= set_tile_corner_click.y : j >= set_tile_corner_click.y; (set_tile_origin_click.y<=set_tile_corner_click.y)? j+=m_chosen_tile.m_size_text.y : j-=m_chosen_tile.m_size_text.y)
 					{	
-						m_map->setTile(m_chosen_tile, sf::Vector2i(i, j)/m_map->getTileSize(), m_chosen_height);
+						(*m_map)->setTile(m_chosen_tile, sf::Vector2i(i, j)/(*m_map)->getTileSize(), m_chosen_height);
 					}
 				}
 
@@ -292,7 +294,7 @@ void MappingGUI::setTile()
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_window->hasFocus())
 			{
 				set_tile_origin_click = positionTile;
-				m_map->setTile(m_chosen_tile, (sf::Vector2i)positionTile/m_map->getTileSize(), m_chosen_height);
+				(*m_map)->setTile(m_chosen_tile, (sf::Vector2i)positionTile/(*m_map)->getTileSize(), m_chosen_height);
 			}
 		}
 	}
@@ -308,8 +310,8 @@ void MappingGUI::setEntity()
 
 	sf::Vector2f mousePos = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
 
-	if(mousePos.x >=0 && mousePos.x < m_map->getSize().x*m_map->getTileSize()
-	&& mousePos.y >=0 && mousePos.y < m_map->getSize().y*m_map->getTileSize() && m_chosen_entity!=NULL && m_window->hasFocus())
+	if(mousePos.x >=0 && mousePos.x < (*m_map)->getSize().x*(*m_map)->getTileSize()
+	&& mousePos.y >=0 && mousePos.y < (*m_map)->getSize().y*(*m_map)->getTileSize() && m_chosen_entity!=NULL && m_window->hasFocus())
 	{
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			set_entity_click = true;
@@ -336,19 +338,26 @@ void MappingGUI::setEntity()
 
 			} while(!name_not_taken);
 
+			Entity* entity_to_set = NULL;
 
+			if(loadEntity(name, m_chosen_entity_file_name, m_resources_manager, &entity_to_set, *m_map) >= 0)
+			{
+				entity_to_set->setPosition(sf::Vector2f((int)(mousePos.x - entity_to_set->getSize().x/2), (int)(mousePos.y - entity_to_set->getSize().y/2)));
+				entity_to_set->setHeight(m_chosen_height);
+				m_entities->push_back(entity_to_set);
+				(*m_map)->addEntity(entity_to_set);
+			}
 
-
-
+/*	
 			unsigned int tmp_size = m_entities->size();
 
 			try
 			{
 				if(strcmp(m_chosen_entity->getType().c_str(), "Character")==0)
-					m_entities->push_back(new Character(name, m_chosen_entity_file_name, m_resources_manager, m_map));
+					m_entities->push_back(new Character(name, m_chosen_entity_file_name, m_resources_manager, (*m_map)));
 
 				else if(strcmp(m_chosen_entity->getType().c_str(), "Collector")==0)
-					m_entities->push_back(new Collector(name, m_chosen_entity_file_name, m_resources_manager, m_map));
+					m_entities->push_back(new Collector(name, m_chosen_entity_file_name, m_resources_manager, (*m_map)));
 			}
 			catch(const std::string & e)
 			{
@@ -366,9 +375,9 @@ void MappingGUI::setEntity()
 			{
 				(*m_entities)[m_entities->size()-1]->setPosition(sf::Vector2f((int)(mousePos.x - (*m_entities)[m_entities->size()-1]->getSize().x/2), (int)(mousePos.y - (*m_entities)[m_entities->size()-1]->getSize().y/2)));
 				(*m_entities)[m_entities->size()-1]->setHeight(m_chosen_height);
-				m_map->addEntity((*m_entities)[m_entities->size()-1]);
+				(*m_map)->addEntity((*m_entities)[m_entities->size()-1]);
 			}
-
+*/
 
 			set_entity_click = false;
 		}
@@ -402,7 +411,7 @@ void MappingGUI::initializeBoxWindows()
 		// Initialization tab Entities
 
 	list_entities(&entities_file_name_list);
-	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, m_map, m_resources_manager};
+	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, (*m_map), m_resources_manager};
 	tmp_boxwindow->newTab("Entities", EntitiesTab, (ArgTab*)&arg_entities_tab, sizeof(ArgEntitiesTab));
 
 	tmp_boxwindow->update();
@@ -418,7 +427,7 @@ void MappingGUI::initializeBoxWindows()
 
 		// Initialization tab Info
 
-	ArgInfoTab arg_info_tab = ArgInfoTab{&m_map, m_entities};
+	ArgInfoTab arg_info_tab = ArgInfoTab{m_map, m_entities};
 	tmp_boxwindow->newTab("Info", InfoTab, (ArgTab*)&arg_info_tab, sizeof(ArgInfoTab));
 
 	tmp_boxwindow->update();
@@ -440,7 +449,7 @@ void MappingGUI::controlView()
 	if (!move_view_click && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && sf::Mouse::isButtonPressed(sf::Mouse::Right))
 	{
 		move_view_origin_click = mousePos;
-		view.setCenter((m_map->getSize().x) * m_map->getTileSize()/2, (m_map->getSize().y) * m_map->getTileSize()/2);
+		view.setCenter(((*m_map)->getSize().x) * (*m_map)->getTileSize()/2, ((*m_map)->getSize().y) * (*m_map)->getTileSize()/2);
 	}
 	else if(!move_view_click && sf::Mouse::isButtonPressed(sf::Mouse::Right))
 	{
@@ -453,8 +462,8 @@ void MappingGUI::controlView()
 		refPos = sf::Vector2f((view.getCenter().x + move_view_origin_click.x - mousePos.x > 0 && view.getCenter().x + move_view_origin_click.x - mousePos.x > 0)? mousePos.x : refPos.x,
 							  (view.getCenter().y + move_view_origin_click.y - mousePos.y > 0 && view.getCenter().y + move_view_origin_click.y - mousePos.y > 0)? mousePos.y : refPos.y);
 
-		view.move( ( (view.getCenter().x + move_view_origin_click.x - refPos.x > 0) && (view.getCenter().x + move_view_origin_click.x - refPos.x < m_map->getSize().x * m_map->getTileSize()) )  ? move_view_origin_click.x - refPos.x : 0,
-					( (view.getCenter().y + move_view_origin_click.y - refPos.y > 0) && (view.getCenter().y + move_view_origin_click.y - refPos.y < m_map->getSize().y * m_map->getTileSize()) )  ? move_view_origin_click.y - refPos.y : 0);
+		view.move( ( (view.getCenter().x + move_view_origin_click.x - refPos.x > 0) && (view.getCenter().x + move_view_origin_click.x - refPos.x < (*m_map)->getSize().x * (*m_map)->getTileSize()) )  ? move_view_origin_click.x - refPos.x : 0,
+					( (view.getCenter().y + move_view_origin_click.y - refPos.y > 0) && (view.getCenter().y + move_view_origin_click.y - refPos.y < (*m_map)->getSize().y * (*m_map)->getTileSize()) )  ? move_view_origin_click.y - refPos.y : 0);
 	}
 	else
 		move_view_click=false;
@@ -488,7 +497,7 @@ void MappingGUI::heightLevelCommand()
 	else if(keyPressed_higher_layer)
 	{
 		keyPressed_higher_layer = false;
-		if(m_chosen_height < m_map->getHeight()-1 ) (m_chosen_height)++;
+		if(m_chosen_height < (*m_map)->getHeight()-1 ) (m_chosen_height)++;
 	}
 
 	// Transparency mode
@@ -508,8 +517,9 @@ void MappingGUI::interactWithUser()
 {
 	if(m_window->hasFocus())
 	{
-		saveMapCommand(m_map, *m_entities, m_tileset_texture_file_name, m_available_tiles, m_nbr_available_tiles);
-		loadMapCommand(m_window, &m_map, m_entities, m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, FULLSCREEN);
+		saveMapCommand((*m_map), *m_entities, m_tileset_texture_file_name, m_available_tiles, m_nbr_available_tiles);
+		if(loadMapCommand(m_window, m_map, m_entities, &m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, m_resources_manager, FULLSCREEN) > 0)
+			this->setTilesetTexture(m_tileset_texture);
 
 		this->heightLevelCommand(); // To change height level
 		this->controlView();		// To control the view
@@ -530,14 +540,14 @@ void MappingGUI::interactWithUser()
 
 void MappingGUI::update()
 {
-	if(m_map != NULL)
-		m_tile_size = m_map->getTileSize();
+	if((*m_map) != NULL)
+		m_tile_size = (*m_map)->getTileSize();
 
 
 	if(m_transparency_map)
-		m_map->update_transparency(m_chosen_height);
+		(*m_map)->update_transparency(m_chosen_height);
 	else
-		m_map->update();
+		(*m_map)->update();
 
 
 	if(m_chosen_entity != NULL)
@@ -563,17 +573,17 @@ void MappingGUI::draw()
 {
 	//-------------------------------
 	// Map and Rectangle Zone Map
-	if(m_map != NULL)
+	if((*m_map) != NULL)
 	{
 		// Zone Map
-		sf::RectangleShape map_zone(sf::Vector2f(m_map->getSize().x*m_map->getTileSize(), m_map->getSize().y*m_map->getTileSize()));
+		sf::RectangleShape map_zone(sf::Vector2f((*m_map)->getSize().x*(*m_map)->getTileSize(), (*m_map)->getSize().y*(*m_map)->getTileSize()));
 		map_zone.setFillColor(sf::Color(0,0,0,0));
 		map_zone.setOutlineThickness(3);
 		map_zone.setOutlineColor(sf::Color::Red);
 		m_window->draw(map_zone);
 
 		// Map
-		m_window->draw(*m_map);
+		m_window->draw(**m_map);
 	}
 
 
@@ -602,12 +612,12 @@ void MappingGUI::draw()
 	// Setting Tile
 	if( m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && strcmp(m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getTitle().c_str(), "Tileset")==0 )
 	{
-		if( mousePos.x >=0 && mousePos.x < m_map->getSize().x*m_map->getTileSize()
-		&& mousePos.y >=0 && mousePos.y < m_map->getSize().y*m_map->getTileSize() )
+		if( mousePos.x >=0 && mousePos.x < (*m_map)->getSize().x*(*m_map)->getTileSize()
+		&& mousePos.y >=0 && mousePos.y < (*m_map)->getSize().y*(*m_map)->getTileSize() )
 		{
 			sf::Sprite ghost_tile(*m_tileset_texture, sf::IntRect((sf::Vector2i)m_chosen_tile.m_pos_text, (sf::Vector2i)m_chosen_tile.m_size_text));
 			ghost_tile.setColor(sf::Color(255,255,255,100));
-			ghost_tile.setPosition((int)(mousePos.x/m_map->getTileSize())*m_map->getTileSize(), (int)(mousePos.y/m_map->getTileSize())*m_map->getTileSize());
+			ghost_tile.setPosition((int)(mousePos.x/(*m_map)->getTileSize())*(*m_map)->getTileSize(), (int)(mousePos.y/(*m_map)->getTileSize())*(*m_map)->getTileSize());
 
 			m_window->draw(ghost_tile);
 		}
@@ -615,7 +625,7 @@ void MappingGUI::draw()
 		{
 			sf::Sprite ghost_tile(*m_tileset_texture, sf::IntRect((sf::Vector2i)m_chosen_tile.m_pos_text, (sf::Vector2i)m_chosen_tile.m_size_text));
 			ghost_tile.setColor(sf::Color(255,255,255,100));
-			ghost_tile.setPosition((int)(mousePos.x/m_map->getTileSize())*m_map->getTileSize(), (int)(mousePos.y/m_map->getTileSize())*m_map->getTileSize());
+			ghost_tile.setPosition((int)(mousePos.x/(*m_map)->getTileSize())*(*m_map)->getTileSize(), (int)(mousePos.y/(*m_map)->getTileSize())*(*m_map)->getTileSize());
 
 			for(int i=set_tile_origin_click.x; (set_tile_origin_click.x<=set_tile_corner_click.x)? i <= set_tile_corner_click.x : i >= set_tile_corner_click.x; (set_tile_origin_click.x<=set_tile_corner_click.x)? i+=m_chosen_tile.m_size_text.x : i-=m_chosen_tile.m_size_text.x)
 			{
@@ -635,8 +645,8 @@ void MappingGUI::draw()
 	// Setting Entity
 	if( m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && strcmp(m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getTitle().c_str(), "Entities")==0 )
 	{
-		if( mousePos.x >=0 && mousePos.x < m_map->getSize().x*m_map->getTileSize()
-		&& mousePos.y >=0 && mousePos.y < m_map->getSize().y*m_map->getTileSize() )
+		if( mousePos.x >=0 && mousePos.x < (*m_map)->getSize().x*(*m_map)->getTileSize()
+		&& mousePos.y >=0 && mousePos.y < (*m_map)->getSize().y*(*m_map)->getTileSize() )
 		{
 			if(m_chosen_entity!=NULL)
 			{

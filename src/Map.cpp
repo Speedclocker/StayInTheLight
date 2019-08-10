@@ -4,6 +4,7 @@
 #include "Collector.h"
 
 
+
 Map::Map()
 {
 	/* Constructor */
@@ -43,6 +44,7 @@ Map::Map(sf::Vector2f size, int height, int tile_sz)
 Map::~Map()
 {
 	/* Destructor */
+
 	for(int h=0; h<this->getHeight(); h++)
 	{
 		for(int i=0; i<this->getSize().x; i++)

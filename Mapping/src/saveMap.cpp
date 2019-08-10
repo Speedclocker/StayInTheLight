@@ -1,31 +1,85 @@
 #include "saveMap.h"
 #include "Character.h"
 #include "Collector.h"
+#include "ResourcesManagement.h"
 
 #define LINE_SIZE 1000
 
+#define ENTITIES_FOLDER "entities"
 
-void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load_location_map)
+
+void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load_location_map, ResourcesManager* resources_manager)
 {
 	char line[BUFF_SIZE];
 	strcpy(line, raw_line);
 
 	char* buffer=NULL;
 	std::string entity_model_name;
-	int height;
-	sf::Vector2f position;
-
+	int height = 0;
+	sf::Vector2f position = sf::Vector2f(0,0);
 
 	
 	buffer = strtok(line, " :\n");
-	entity_model_name = buffer;
+	if(buffer != NULL)
+	{
+		entity_model_name = buffer;
+		std::cout << "Model Name : " << buffer << std::endl;
+	}
 
 	buffer = strtok(NULL, " (,:\n");
-	std::cout << "Height : " << buffer << std::endl;
+	if(buffer != NULL)
+	{
+		height = atoi(buffer);
+		std::cout << "Height : " << buffer << std::endl;
+	}
+
 	buffer = strtok(NULL, " (,:\n");
-	std::cout << "Pos x : " << buffer << std::endl;
+	if(buffer != NULL)
+	{
+		position.x = atof(buffer);
+		std::cout << "Pos x : " << buffer << std::endl;
+	}
+
 	buffer = strtok(NULL, " )(,:\n");
-	std::cout << "Pos y : " << buffer << std::endl;
+	if(buffer != NULL)
+	{
+		position.y = atof(buffer);
+		std::cout << "Pos y : " << buffer << std::endl;
+	}
+
+	Entity* entity_to_load = NULL;
+
+	// Set an id and check if it is already in vector
+	int index = 1;
+	bool name_not_taken = true;
+	std::string name; 
+	std::string index_str;
+	do
+	{
+		name_not_taken = true;
+		index_str = ((index < 10)?"0":"") + std::to_string(index);
+		name = entity_model_name + "_" + index_str;
+
+		for(std::vector<Entity*>::iterator it = entities->begin(); it != entities->end() && name_not_taken; it++)
+		{
+			if(strcmp((*it)->getID().c_str(),name.c_str())==0)
+				name_not_taken = false;
+		}
+
+		index++;
+
+	} while(!name_not_taken);
+	//////////////
+
+	std::string entity_file_name =  ENTITIES_FOLDER + std::string("/") + entity_model_name + std::string(".ent");
+
+	if(loadEntity(name, entity_file_name, resources_manager, &entity_to_load, load_location_map) >= 0)
+	{
+		entity_to_load->setPosition(sf::Vector2f(position.x, position.y));
+		entity_to_load->setHeight(height);
+		entities->push_back(entity_to_load);
+		load_location_map->addEntity(entity_to_load);
+	}
 
 }
 
@@ -177,7 +231,7 @@ void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, 
 }
 
 
-int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std::string name_file_map_to_load, std::string* name_texture_file, sf::Texture* texture, Tile** tileset, int* tileset_size)
+int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std::string name_file_map_to_load, std::string* name_texture_file, sf::Texture** texture, Tile** tileset, int* tileset_size, ResourcesManager* resources_manager)
 {
 	std::ifstream file_to_load;
 	file_to_load.open("maps/"+name_file_map_to_load);
@@ -204,7 +258,8 @@ int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std
 
 			//En cas d'erreur
 			if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
-			if(!texture->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
+			//if(!(*texture)->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
+			if(((*texture)=resources_manager->getOrAddTexture(*name_texture_file)) == NULL){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
 			else texture_load = true;
 
 			// If no error during map loading, we free the map
@@ -215,18 +270,24 @@ int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std
 			}
 
 
+			// Clear entities
+			for(std::vector<Entity*>::iterator it = entities_to_load->begin(); it != entities_to_load->end(); it++)
+				delete (*it);
+			entities_to_load->clear();
+
+
 			// Creation of the map
 			*load_location_map = new Map(size_map, height_map, tile_sz_map);
 			
 
 			// Change of available tiles
-			*tileset_size=(texture->getSize().x/tile_sz_map)*(texture->getSize().y/tile_sz_map);
+			*tileset_size=((*texture)->getSize().x/tile_sz_map)*((*texture)->getSize().y/tile_sz_map);
 			*tileset=(Tile*)realloc((*tileset),(*tileset_size)*sizeof(Tile));
 
 
 			for(int i=0; i<*tileset_size;i++)
 			{
-				(*tileset)[i].m_pos_text = sf::Vector2f( (i%(texture->getSize().x/tile_sz_map))*tile_sz_map,  (i/(texture->getSize().x/tile_sz_map))*tile_sz_map );
+				(*tileset)[i].m_pos_text = sf::Vector2f( (i%((*texture)->getSize().x/tile_sz_map))*tile_sz_map,  (i/((*texture)->getSize().x/tile_sz_map))*tile_sz_map );
 				(*tileset)[i].m_size_text = sf::Vector2f( tile_sz_map, tile_sz_map );
 				(*tileset)[i].m_collisionable = false;
 			}
@@ -246,7 +307,7 @@ int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std
 		{
 			if(size_map==sf::Vector2f(-1,-1) || height_map==-1 || tile_sz_map==-1){ std::cerr << "Une erreur a eu lieu lors de la lecture d'un des paramètres" << std::endl; file_to_load.close(); return -1; }
 
-			if(!texture_load && !texture->loadFromFile(*name_texture_file)){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
+			if(!texture_load && ((*texture)=resources_manager->getOrAddTexture(*name_texture_file)) == NULL){ std::cerr << "Une erreur lors du chargement de texture" << std::endl; file_to_load.close(); return -1; }
 			else texture_load = true;
 
 			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Map]")==NULL)
@@ -259,7 +320,7 @@ int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std
 		{
 			while(std::getline(file_to_load, buffer) && strstr(buffer.c_str(), "[/Entities]")==NULL)
 			{
-				probeEntity(buffer.c_str(), entities_to_load, *load_location_map);
+				probeEntity(buffer.c_str(), entities_to_load, *load_location_map, resources_manager);
 			}
 		}
 
@@ -379,7 +440,7 @@ int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string
 
 
 
-int loadEntity(std::string file_name, ResourcesManager* resources_manager, Entity** entity_to_load, Map* entity_location)
+int loadEntity(std::string entity_id, std::string file_name, ResourcesManager* resources_manager, Entity** entity_to_load, Map* entity_location)
 {
 	if(*entity_to_load!=NULL) {std::cerr << "An error happened while loading entity : entity in parameters has to be NULL" << std::endl; return -1; }
 
@@ -427,11 +488,11 @@ int loadEntity(std::string file_name, ResourcesManager* resources_manager, Entit
 	{
 		if(strcmp(type.c_str(), "Character")==0)
 		{
-			*entity_to_load = new Character("chosen_entity", file_name, resources_manager, entity_location);
+			*entity_to_load = new Character(entity_id, file_name, resources_manager, entity_location);
 		}	
 		else if(strcmp(type.c_str(), "Collector")==0)
 		{
-			*entity_to_load = new Collector("chosen_entity", file_name, resources_manager, entity_location);
+			*entity_to_load = new Collector(entity_id, file_name, resources_manager, entity_location);
 		}
 	}
 	catch(const std::string & e)
@@ -442,6 +503,7 @@ int loadEntity(std::string file_name, ResourcesManager* resources_manager, Entit
 			delete *entity_to_load;
 			*entity_to_load = NULL;
 		}
+		return -1;
 	}
 	
 

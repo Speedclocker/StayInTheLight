@@ -54,7 +54,7 @@ void saveMapCommand(Map* map_to_save, std::vector<Entity*> entities_to_save, std
 }
 
 
-int loadMapCommand(sf::RenderWindow* main_window, Map** map_to_load, std::vector<Entity*>* entities_to_load, sf::Texture* texture, Tile** tileset, int* tileset_size, bool fullscreen)
+int loadMapCommand(sf::RenderWindow* main_window, Map** map_to_load, std::vector<Entity*>* entities_to_load, sf::Texture** texture, Tile** tileset, int* tileset_size, ResourcesManager* resources_manager, bool fullscreen)
 {
 	// Pour le chargement de la map
 	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) && sf::Keyboard::isKeyPressed(sf::Keyboard::L))
@@ -66,7 +66,7 @@ int loadMapCommand(sf::RenderWindow* main_window, Map** map_to_load, std::vector
 		std::string tmp_text_file;
 
 		// Chargement de la map
-		if(loadMap(map_to_load, entities_to_load, map_name, &tmp_text_file, texture, tileset, tileset_size)<0)
+		if(loadMap(map_to_load, entities_to_load, map_name, &tmp_text_file, texture, tileset, tileset_size, resources_manager)<0)
 		{ 
 			std::cerr << "Une erreur a eu lieu lors du chargement de la map." << std::endl; 
 			return -1;
@@ -74,8 +74,8 @@ int loadMapCommand(sf::RenderWindow* main_window, Map** map_to_load, std::vector
 		else
 		{
 			// Modification de la texture
-			if( texture->loadFromFile(tmp_text_file) == false) { std::cerr << "Le fichier texture n'a pas pu être chargé." << std::endl; }
-			else (*map_to_load)->setTexture(texture);
+			//if( texture->loadFromFile(tmp_text_file) == false) { std::cerr << "Le fichier texture n'a pas pu être chargé." << std::endl; }
+			(*map_to_load)->setTexture(*texture);
 
 			if(!fullscreen)
 			{

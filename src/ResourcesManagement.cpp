@@ -10,8 +10,6 @@ ResourcesManager::ResourcesManager()
 
 ResourcesManager::~ResourcesManager()
 {
-
-	std::cout << "del" << std::endl;
 	for(std::map<std::string, sf::Texture*>::iterator it = m_textures.begin(); it != m_textures.end(); it++)
 	{
 		delete it->second;

@@ -229,7 +229,7 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 				*current_entity = NULL;
 			}
 
-			loadEntity(std::string(ENTITIES_FOLDER) + scrollinglist_entities->getCurrentValue(), resources_manager, current_entity, map);
+			loadEntity("chosen_entity", std::string(ENTITIES_FOLDER) + scrollinglist_entities->getCurrentValue(), resources_manager, current_entity, map);
 
 			chosen_entity_string = scrollinglist_entities->getCurrentValue();
 

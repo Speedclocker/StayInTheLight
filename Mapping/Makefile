@@ -27,11 +27,11 @@ MapCreator.o: MapCreator.cpp
 
 $(OBJECTS_GAME): $(OGAMEDIR)%.o : $(SGAMEDIR)%.cpp
 	@if [ ! -d $(OGAMEDIR) ]; then mkdir $(OGAMEDIR); fi
-	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IGAMEDIR) $(CFLAGS)
+	$(CC) -c $< -o $@ $(SFMLDIR) $(IGAMEDIR) $(CFLAGS)
 
 $(OBJECTS_MAP): $(OMAPDIR)%.o : $(SMAPDIR)%.cpp
 	@if [ ! -d $(OMAPDIR) ]; then mkdir $(OMAPDIR); fi
-	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IGAMEDIR) $(IMAPDIR) $(CFLAGS)
+	$(CC) -c $< -o $@ $(SFMLDIR) $(IGAMEDIR) $(IMAPDIR) $(CFLAGS)
 
 
 .PHONY: clean

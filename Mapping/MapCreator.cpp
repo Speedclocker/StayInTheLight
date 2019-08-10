@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
 
 	// Creation of the map
-	Map* custom_map=new Map(sf::Vector2f(size_x, size_y), size_h, size_tile);
+	Map* custom_map = new Map(sf::Vector2f(size_x, size_y), size_h, size_tile);
 
 
 	// Vector of entities
@@ -52,7 +52,9 @@ int main(int argc, char* argv[])
 
 
 	// Creation of the user interface and all interactions
-	MappingGUI* mappingGUI = new MappingGUI(&window, custom_map, &entities, &resources_manager, texture_file_name);
+	MappingGUI* mappingGUI;
+	try { mappingGUI = new MappingGUI(&window, &custom_map, &entities, &resources_manager, texture_file_name); }
+	catch (std::string s) { std::cerr << "MappingGUI error" << std::endl; mappingGUI = NULL; }
 
 
 	// Information text to display at the beginning
@@ -70,6 +72,7 @@ int main(int argc, char* argv[])
 		{
 			if(event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
 				window.close();
+			
 			else if( (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space) )
 			{
 				custom_map->setSize(custom_map->getSize().x + 1, custom_map->getSize().y - 1);
@@ -93,6 +96,7 @@ int main(int argc, char* argv[])
 	        			*mappingGUI->getStringPtrToTextEvent() += event.text.unicode;
 				}
 			}
+			
 		}
 	
 		// Set interaction with user, update and draw
@@ -103,16 +107,14 @@ int main(int argc, char* argv[])
 		window.display();
 
 	}
-
+	
 
 	delete mappingGUI;
 	delete custom_map;
 
+
 	for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
-	{
 		delete (*it);
-		//entities.erase(it);
-	}
 
 	return 0;
 }

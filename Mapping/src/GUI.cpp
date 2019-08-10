@@ -129,7 +129,6 @@ MappingGUI::MappingGUI(sf::RenderWindow* window, Map** map, std::vector<Entity*>
 		(*m_map)->setTexture(m_tileset_texture);
 		m_tile_size = (*m_map)->getTileSize();
 		this->initializeBoxWindows();
-
 	}
 
 
@@ -317,6 +316,13 @@ void MappingGUI::setEntity()
 			set_entity_click = true;
 		else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && set_entity_click)
 		{
+			// Set an id and check if the id is already taken by an entity
+			std::string id_base = m_chosen_entity->getModelName();
+			if(m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getObject("entity_id_inputbar") != NULL)
+				id_base = ((InputBar*)m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getObject("entity_id_inputbar"))->getValue();
+			if(strcmp(id_base.c_str(), "")==0)
+				id_base = m_chosen_entity->getModelName();
+
 			int index = 1;
 			bool name_not_taken = true;
 			std::string name; // = m_chosen_entity->getModelName();
@@ -326,7 +332,7 @@ void MappingGUI::setEntity()
 			{
 				name_not_taken = true;
 				index_str = ((index < 10)?"0":"") + std::to_string(index);
-				name = m_chosen_entity->getModelName() + "_" + index_str;
+				name = id_base + "_" + index_str;
 
 				for(std::vector<Entity*>::iterator it = m_entities->begin(); it != m_entities->end() && name_not_taken; it++)
 				{
@@ -337,6 +343,7 @@ void MappingGUI::setEntity()
 				index++;
 
 			} while(!name_not_taken);
+			///////////////
 
 			Entity* entity_to_set = NULL;
 
@@ -381,7 +388,7 @@ void MappingGUI::initializeBoxWindows()
 		// Initialization tab Entities
 
 	list_entities(&entities_file_name_list);
-	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, (*m_map), m_resources_manager};
+	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, (*m_map), m_resources_manager, &m_ptr_event_txt_entered};
 	tmp_boxwindow->newTab("Entities", EntitiesTab, (ArgTab*)&arg_entities_tab, sizeof(ArgEntitiesTab));
 
 	tmp_boxwindow->update();

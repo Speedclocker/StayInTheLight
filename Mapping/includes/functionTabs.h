@@ -63,7 +63,8 @@ typedef struct
 	std::string* 				current_entity_file_name;
 	Map*						map;
 	ResourcesManager* 			resources_manager;
-	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(std::vector<std::string>*) - sizeof(Entity**) - sizeof(std::string*) - sizeof(Map*) - sizeof(ResourcesManager*)] = {0};
+	std::string** 				text_event_location;
+	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(std::vector<std::string>*) - sizeof(Entity**) - sizeof(std::string*) - sizeof(Map*) - sizeof(ResourcesManager*) - sizeof(std::string**)] = {0};
 } ArgEntitiesTab;
 
 

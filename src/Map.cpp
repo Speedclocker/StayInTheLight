@@ -411,5 +411,11 @@ bool comparePosY(Entity* ent1, Entity* ent2)
 	int val1 = (dyn_char1 != nullptr) ? dyn_char1->getAbsHitbox().top + dyn_char1->getAbsHitbox().height : ent1->getPosition().y + ent1->getSize().y;
 	int val2 = (dyn_char2 != nullptr) ? dyn_char2->getAbsHitbox().top + dyn_char2->getAbsHitbox().height : ent2->getPosition().y + ent2->getSize().y;
 
+	if(val1 == val2)
+	{
+		val1 = (dyn_char1 != nullptr) ? dyn_char1->getAbsHitbox().left : ent1->getPosition().x;
+		val2 = (dyn_char2 != nullptr) ? dyn_char2->getAbsHitbox().left : ent2->getPosition().x;
+	}
+
 	return val1 < val2;
 }

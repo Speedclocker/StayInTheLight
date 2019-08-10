@@ -171,10 +171,12 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 	std::string* current_entity_file_name = (((ArgEntitiesTab*)(argtab))->current_entity_file_name);
 	std::vector<std::string> list_entities = *(((ArgEntitiesTab*)(argtab))->ptr_list_entities);
 	ResourcesManager* resources_manager = (((ArgEntitiesTab*)(argtab))->resources_manager);
+	std::string** ptr_text_event = ((ArgEntitiesTab*)(argtab))->text_event_location;
 
 
 	EntityDisplayer *ptr_spritedisplayer;
 	ScrollingList *ptr_scrollinglist_entities;
+	InputBar *ptr_entity_id_inputbar;
 
 	static std::string chosen_entity_string;
 
@@ -193,6 +195,11 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 		ptr_scrollinglist_entities = new ScrollingList("scrollinglist_entities", BOXWINDOW_SIZE_CHARACTER, 100, tab->getSize().x - 20);
 		ptr_scrollinglist_entities->setPosition(sf::Vector2f(ptr_spritedisplayer->getPosition().x , ptr_spritedisplayer->getPosition().y + ptr_spritedisplayer->getSize().y + 10) );
 
+
+		//Initialization EntityIdInputbar
+		ptr_entity_id_inputbar = new InputBar("entity_id_inputbar", 16, tab->getSize().x - 20, InputBar::ALPHANUMERICAL, ptr_text_event);
+
+
 		// Adding all values to the ScrollingList
 		for(std::vector<std::string>::iterator it=list_entities.begin(); it!=list_entities.end(); it++)
 			ptr_scrollinglist_entities->addValue(*it);
@@ -201,6 +208,7 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 		// Add object to the tab
 		tab->addObject(ptr_spritedisplayer);
 		tab->addObject(ptr_scrollinglist_entities);
+		tab->addObject(ptr_entity_id_inputbar);
 
 
 		chosen_entity_string = ptr_scrollinglist_entities->getCurrentValue();
@@ -214,6 +222,7 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 	{
 		EntityDisplayer* spritedisplayer = dynamic_cast<EntityDisplayer*>(tab->getObject("spritedisplayer"));
 		ScrollingList* scrollinglist_entities = dynamic_cast<ScrollingList*>(tab->getObject("scrollinglist_entities"));
+		InputBar* entity_id_inputbar = dynamic_cast<InputBar*>(tab->getObject("entity_id_inputbar"));
 
 		// Set sprite displayer position
 		spritedisplayer->setPosition(sf::Vector2f(tab->getPosition().x + 10, tab->getPosition().y + tab->getTitleSize() + 10));
@@ -238,10 +247,12 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 			else
 				*current_entity_file_name = "";
 
-
-
 			spritedisplayer->setEntity(*current_entity);
 		}
+
+		// Set Input position
+		entity_id_inputbar->setSize(sf::Vector2f(tab->getSize().x - 20, entity_id_inputbar->getSize().y));
+		entity_id_inputbar->setPosition(sf::Vector2f(scrollinglist_entities->getPosition().x , scrollinglist_entities->getPosition().y + scrollinglist_entities->getSize().y + 10));
 
 	}
 }

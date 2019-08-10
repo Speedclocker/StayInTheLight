@@ -14,12 +14,19 @@ void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load
 	strcpy(line, raw_line);
 
 	char* buffer=NULL;
-	std::string entity_model_name;
+	std::string id, entity_model_name;
 	int height = 0;
 	sf::Vector2f position = sf::Vector2f(0,0);
 
 	
 	buffer = strtok(line, " :\n");
+	if(buffer != NULL)
+	{
+		id = buffer;
+		std::cout << "ID : " << buffer << std::endl;
+	}
+
+	buffer = strtok(NULL, " (,:\n");
 	if(buffer != NULL)
 	{
 		entity_model_name = buffer;
@@ -58,7 +65,7 @@ void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load
 	{
 		name_not_taken = true;
 		index_str = ((index < 10)?"0":"") + std::to_string(index);
-		name = entity_model_name + "_" + index_str;
+		name = id + "_" + index_str;
 
 		for(std::vector<Entity*>::iterator it = entities->begin(); it != entities->end() && name_not_taken; it++)
 		{
@@ -426,7 +433,7 @@ int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string
 	{
 		if((*ent)!=NULL)
 		{
-			file_to_save << (*ent)->getModelName() << " : (" << (*ent)->getHeight() << "," << (*ent)->getPosition().x << "," << (*ent)->getPosition().y << ")" << std::endl;
+			file_to_save << (*ent)->getID() << " : (" << (*ent)->getModelName() << "," << (*ent)->getHeight() << "," << (*ent)->getPosition().x << "," << (*ent)->getPosition().y << ")" << std::endl;
 		}
 	}
 	file_to_save << "[/Entities]" << std::endl;

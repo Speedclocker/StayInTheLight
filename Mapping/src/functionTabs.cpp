@@ -2,9 +2,9 @@
 #include "saveMap.h"
 
 
-#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/monaco.ttf"
 #define ENTITIES_FOLDER "entities/"
-#define BOXWINDOW_SIZE_CHARACTER 16
+#define BOXWINDOW_SIZE_CHARACTER 26
 
 
 void TilesetTab(Tab* tab, ArgTab* argtab)
@@ -42,14 +42,14 @@ void TilesetTab(Tab* tab, ArgTab* argtab)
 
 
 		//Initialisation InputBar
-		ptr_inputbar1 = new InputBar("inputbar1", 16, 100, InputBar::NUMERICAL, ptr_text_event);
+		ptr_inputbar1 = new InputBar("inputbar1", BOXWINDOW_SIZE_CHARACTER, 100, InputBar::NUMERICAL, ptr_text_event);
 		ptr_inputbar1->setPosition(ptr_slide->getPosition() + sf::Vector2f(0, ptr_slide->getSize().y + 10));
 		
-		ptr_inputbar2 = new InputBar("inputbar2", 16, 100, InputBar::NUMERICAL, ptr_text_event);
+		ptr_inputbar2 = new InputBar("inputbar2", BOXWINDOW_SIZE_CHARACTER, 100, InputBar::NUMERICAL, ptr_text_event);
 		ptr_inputbar2->setPosition(ptr_inputbar1->getPosition() + sf::Vector2f(0, ptr_inputbar1->getSize().y + 10));
 
 		//Initialisation Button
-		ptr_button = new Button("button1", "Change", 16);
+		ptr_button = new Button("button1", "Change", BOXWINDOW_SIZE_CHARACTER);
 		ptr_button->setPosition(ptr_inputbar1->getPosition() + sf::Vector2f(ptr_inputbar1->getSize().x + 30, 0));
 
 
@@ -174,9 +174,9 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 	std::string** ptr_text_event = ((ArgEntitiesTab*)(argtab))->text_event_location;
 
 
-	EntityDisplayer *ptr_spritedisplayer;
-	ScrollingList *ptr_scrollinglist_entities;
-	InputBar *ptr_entity_id_inputbar;
+	EntityDisplayer *ptr_spritedisplayer = NULL;
+	ScrollingList *ptr_scrollinglist_entities = NULL;
+	InputBar *ptr_entity_id_inputbar = NULL;
 
 	static std::string chosen_entity_string;
 
@@ -192,18 +192,18 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 
 
 		//Initialization ScrollingList
-		ptr_scrollinglist_entities = new ScrollingList("scrollinglist_entities", BOXWINDOW_SIZE_CHARACTER, 100, tab->getSize().x - 20);
+		ptr_scrollinglist_entities = new ScrollingList("scrollinglist_entities", BOXWINDOW_SIZE_CHARACTER, 100, tab->getSize().x - 20, "Choose an entity");
 		ptr_scrollinglist_entities->setPosition(sf::Vector2f(ptr_spritedisplayer->getPosition().x , ptr_spritedisplayer->getPosition().y + ptr_spritedisplayer->getSize().y + 10) );
-
-
-		//Initialization EntityIdInputbar
-		ptr_entity_id_inputbar = new InputBar("entity_id_inputbar", 16, tab->getSize().x - 20, InputBar::ALPHANUMERICAL, ptr_text_event);
-
 
 		// Adding all values to the ScrollingList
 		for(std::vector<std::string>::iterator it=list_entities.begin(); it!=list_entities.end(); it++)
 			ptr_scrollinglist_entities->addValue(*it);
 		
+
+
+		//Initialization EntityIdInputbar
+		ptr_entity_id_inputbar = new InputBar("entity_id_inputbar", BOXWINDOW_SIZE_CHARACTER, tab->getSize().x - 20, InputBar::ALPHANUMERICAL, ptr_text_event, "Entity ID");
+
 
 		// Add object to the tab
 		tab->addObject(ptr_spritedisplayer);
@@ -217,7 +217,6 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 
 		tab->initialized = true;
 	}
-
 	else
 	{
 		EntityDisplayer* spritedisplayer = dynamic_cast<EntityDisplayer*>(tab->getObject("spritedisplayer"));
@@ -256,3 +255,81 @@ void EntitiesTab(Tab* tab, ArgTab* argtab)
 
 	}
 }
+
+
+
+
+void SaveTab(Tab* tab, ArgTab* argtab)
+{
+
+	Map** map_to_save = (((ArgSaveTab*)(argtab))->map_to_save); 
+	const std::vector<Entity*>* ptr_entities_to_save = (((ArgSaveTab*)(argtab))->ptr_entities_to_save);
+	const std::string* ptr_texture_name_file = (((ArgSaveTab*)(argtab))->ptr_texture_name_file);
+	Tile** ptr_tileset_to_save = (((ArgSaveTab*)(argtab))->ptr_tileset_to_save);
+	const int* nbr_tiles = (((ArgSaveTab*)(argtab))->nbr_tiles);
+	int* save_state = (((ArgSaveTab*)(argtab))->save_state);
+	std::string** ptr_text_event = ((ArgSaveTab*)(argtab))->text_event_location;
+	
+
+	InputBar* file_name_entry = NULL;
+	Button* save_button = NULL;
+	Button* cancel_button = NULL;
+
+
+	if(!tab->initialized)
+	{
+		// Initialization SaveInputbar
+		file_name_entry = new InputBar("file_name_entry", 30, tab->getSize().x - 20, InputBar::ALPHANUMERICAL, ptr_text_event, "Map name");
+		file_name_entry->setPosition(sf::Vector2f(tab->getPosition().x + 10, tab->getPosition().y + tab->getTitleSize() + 5));
+
+
+		// Initialization Save Button
+		save_button = new Button("save_button", "Save Map", BOXWINDOW_SIZE_CHARACTER);
+
+		// Initialization Cancel Button
+		cancel_button = new Button("cancel_button", "Cancel", BOXWINDOW_SIZE_CHARACTER);
+
+		cancel_button->setPosition(sf::Vector2f(tab->getPosition().x + tab->getSize().x/2 - (cancel_button->getSize().x + save_button->getSize().x + 4)/2, file_name_entry->getPosition().y + file_name_entry->getSize().y + 5));
+		save_button->setPosition(sf::Vector2f(cancel_button->getPosition().x + cancel_button->getSize().x + 2, file_name_entry->getPosition().y + file_name_entry->getSize().y + 5));
+
+	
+		tab->addObject(file_name_entry);
+		tab->addObject(save_button);
+		tab->addObject(cancel_button);
+
+		tab->initialized = true;
+	
+	}
+	else
+	{
+		file_name_entry = dynamic_cast<InputBar*>(tab->getObject("file_name_entry"));
+		save_button = dynamic_cast<Button*>(tab->getObject("save_button"));
+		cancel_button = dynamic_cast<Button*>(tab->getObject("cancel_button"));
+
+		file_name_entry->setPosition(sf::Vector2f(tab->getPosition().x + 10, tab->getPosition().y + tab->getTitleSize() + 5));
+		file_name_entry->setSize(sf::Vector2f(tab->getSize().x - 20, file_name_entry->getSize().y));
+
+		cancel_button->setPosition(sf::Vector2f(tab->getPosition().x + tab->getSize().x/2 - (cancel_button->getSize().x + save_button->getSize().x + 4)/2, file_name_entry->getPosition().y + file_name_entry->getSize().y + 5));
+		save_button->setPosition(sf::Vector2f(cancel_button->getPosition().x + cancel_button->getSize().x + 2, file_name_entry->getPosition().y + file_name_entry->getSize().y + 5));
+
+		if(save_button->isClick())
+		{
+			std::string file_name=file_name_entry->getValue();
+			std::size_t tmp_space;
+
+			while( (tmp_space=file_name.find(" "))!= std::string::npos) // To avoid space in file name 
+				file_name.erase(tmp_space,1);
+
+			file_name=file_name+".map";
+
+			saveMap(*map_to_save, *ptr_entities_to_save, file_name_entry->getValue(), file_name, *ptr_texture_name_file, *ptr_tileset_to_save, *nbr_tiles);
+		}
+		
+		if(save_button->isClick() || cancel_button->isClick())
+		{
+			*save_state = 2;
+		}
+
+	}
+}
+

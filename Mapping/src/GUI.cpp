@@ -6,8 +6,8 @@
 #include "ResourcesManagement.h"
 
 
-#define CHARACTER_SIZE_HEIGHT 20
-#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
+#define CHARACTER_SIZE_HEIGHT 34
+#define FONT_FILE "../data/fonts/monaco.ttf"
 
 #define FULLSCREEN true
 
@@ -144,6 +144,9 @@ MappingGUI::MappingGUI(sf::RenderWindow* window, Map** map, std::vector<Entity*>
 	keyPressed_lower_layer = false;
 	keyPressed_higher_layer = false; 
 	keyPressed_transparency = false;
+
+	//Save state
+	m_save_state = 0;
 }
 
 
@@ -323,7 +326,7 @@ void MappingGUI::setEntity()
 			if(strcmp(id_base.c_str(), "")==0)
 				id_base = m_chosen_entity->getModelName();
 
-			int index = 1;
+			int index = 0;
 			bool name_not_taken = true;
 			std::string name; // = m_chosen_entity->getModelName();
 			std::string index_str;
@@ -332,7 +335,10 @@ void MappingGUI::setEntity()
 			{
 				name_not_taken = true;
 				index_str = ((index < 10)?"0":"") + std::to_string(index);
-				name = id_base + "_" + index_str;
+				if(index == 0)
+					name = id_base;
+				else
+					name = id_base + "_" + index_str;
 
 				for(std::vector<Entity*>::iterator it = m_entities->begin(); it != m_entities->end() && name_not_taken; it++)
 				{
@@ -378,7 +384,7 @@ void MappingGUI::initializeBoxWindows()
 	tmp_boxwindow = m_windows_manager->getBoxWindow("Edition");
 	tmp_boxwindow->setMinSize(sf::Vector2f(200, 400));
 	tmp_boxwindow->setMaxSize(sf::Vector2f(m_tileset_texture->getSize().x + 10, 800));
-	tmp_boxwindow->setPositionWindow(sf::Vector2f(m_windows_manager->getWindow()->getView().getSize().x - tmp_boxwindow->getSize().x - 100, 500));
+	tmp_boxwindow->setPositionWindow(sf::Vector2f(m_windows_manager->getWindow()->getView().getSize().x/2 - tmp_boxwindow->getSize().x/2 + 400, 200));
 
 		// Initialization tab Tileset
 
@@ -396,9 +402,9 @@ void MappingGUI::initializeBoxWindows()
 
 	// -- Initialization Info Window --
 
-	m_windows_manager->newBoxWindow("Info", sf::Vector2f(200, 300));
+	m_windows_manager->newBoxWindow("Info", sf::Vector2f(200, 200));
 	tmp_boxwindow = m_windows_manager->getBoxWindow("Info");
-	tmp_boxwindow->setPositionWindow(sf::Vector2f(m_windows_manager->getWindow()->getView().getSize().x - tmp_boxwindow->getSize().x - 300, 100));
+	tmp_boxwindow->setPositionWindow(sf::Vector2f(m_windows_manager->getWindow()->getView().getSize().x/2 - tmp_boxwindow->getSize().x/2 - 400, 200));
 	tmp_boxwindow->setMinSize(sf::Vector2f(200, 200));
 	tmp_boxwindow->setMaxSize(sf::Vector2f(200, 200));
 
@@ -490,28 +496,71 @@ void MappingGUI::heightLevelCommand()
 
 
 
+
+void MappingGUI::saveMap()
+{
+
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_save_state == 0)
+	{
+		m_save_state = 1;
+
+		BoxWindow* tmp_boxwindow;
+		// -- Initialization Save Window --
+
+		m_windows_manager->newBoxWindow("Save", sf::Vector2f(300, 150));
+		tmp_boxwindow = m_windows_manager->getBoxWindow("Save");
+		tmp_boxwindow->setMinSize(sf::Vector2f(300, 150));
+		tmp_boxwindow->setMaxSize(sf::Vector2f(300, 150));
+		tmp_boxwindow->setPositionWindow(sf::Vector2f(m_window->getView().getSize().x/2 - tmp_boxwindow->getSize().x/2, m_window->getView().getSize().y/2 - tmp_boxwindow->getSize().y/2));
+
+
+		ArgSaveTab arg_save_tab = ArgSaveTab{m_map, m_entities, &m_tileset_texture_file_name, &m_available_tiles, &m_nbr_available_tiles, &m_save_state, &m_ptr_event_txt_entered};
+
+		tmp_boxwindow->newTab("Save", SaveTab, (ArgTab*)&arg_save_tab, sizeof(ArgSaveTab));
+
+		tmp_boxwindow->update();
+
+		m_windows_manager->focusOnBoxWindow(tmp_boxwindow);
+		m_windows_manager->blockOnFocusWindow();
+	}
+	else if(m_save_state == 2)
+	{
+		m_windows_manager->unblockOnFocusWindow();
+		m_windows_manager->deleteBoxWindow("Save");
+		m_save_state = 0;
+	}
+
+
+}
+
+
+
+
 void MappingGUI::interactWithUser()
 {
 	if(m_window->hasFocus())
 	{
-		saveMapCommand((*m_map), *m_entities, m_tileset_texture_file_name, m_available_tiles, m_nbr_available_tiles);
+		this->saveMap();
 		if(loadMapCommand(m_window, m_map, m_entities, &m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, m_resources_manager, FULLSCREEN) > 0)
 			this->setTilesetTexture(m_tileset_texture);
 
-		this->heightLevelCommand(); // To change height level
 		this->controlView();		// To control the view
 		if(m_windows_manager != NULL)
 		{
 			if(m_windows_manager->getFocusBoxWindow()==NULL)
-			{
+			{		
+				this->heightLevelCommand(); // To change height level
 				if( m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && strcmp(m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getTitle().c_str(), "Tileset")==0 )
 					this->setTile(); // To set a tile in the map
 				if( m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && strcmp(m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getTitle().c_str(), "Entities")==0 )
 					this->setEntity(); // To set an entity in the map
 			} 
+
 			m_windows_manager->interactionsManagement(); // To catch interactions between user and the internal box windows
+
 		}
 	} 
+
 }
 
 
@@ -535,9 +584,7 @@ void MappingGUI::update()
 	}
 
 	for(std::vector<Entity*>::iterator it = m_entities->begin(); it != m_entities->end(); it++)
-	{
 		(*it)->update();
-	}
 
 
 	if(m_windows_manager != NULL)
@@ -578,6 +625,7 @@ void MappingGUI::draw()
 	height_text.setFillColor(sf::Color::White);
 	height_text.setOutlineColor(sf::Color::Black);
 	height_text.setOutlineThickness(1);
+	height_text.setOrigin(height_text.getLocalBounds().left, height_text.getLocalBounds().top);
 	height_text.setPosition(m_window->getView().getCenter().x - m_window->getView().getSize().x/2 + 10, m_window->getView().getCenter().y + m_window->getView().getSize().y/2 - 30);
 
 	m_window->draw(height_text);
@@ -616,8 +664,6 @@ void MappingGUI::draw()
 		}
 	}
 
-
-
 	//-------------------------------
 	// Setting Entity
 	if( m_windows_manager->getBoxWindow("Edition")!=NULL && m_windows_manager->getBoxWindow("Edition")->getFocusTab()!=NULL && strcmp(m_windows_manager->getBoxWindow("Edition")->getFocusTab()->getTitle().c_str(), "Entities")==0 )
@@ -648,4 +694,5 @@ void MappingGUI::draw()
 		m_windows_manager->drawWindows();
 
 	//--------------------------------
+
 }

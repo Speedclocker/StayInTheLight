@@ -1,7 +1,7 @@
 #include "InterfaceObject.h"
 #include "Animation.h"
 
-#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/monaco.ttf"
 #define SCROLLINGLIST_HEIGHT_COEFF 1.5
 #define SCROLLINGLIST_WIDTH_COEFF 1.3
 
@@ -83,6 +83,7 @@ void InterfaceObject::interactsWithUser(sf::RenderWindow* window)
 InputBar::InputBar()
 {
 	/* Constructor of the object */
+	//m_buff = new std::string("");;
 }
 
 
@@ -90,7 +91,7 @@ InputBar::~InputBar()
 {
 	/* Destructor of the object */
 	if(m_ptr_event_txt_entered_associated != NULL && *m_ptr_event_txt_entered_associated == m_buff)
-		m_ptr_event_txt_entered_associated = NULL;
+		*m_ptr_event_txt_entered_associated = NULL;
 
 	delete m_buff;
 
@@ -101,6 +102,33 @@ InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type 
 	/* Constructor of the object */
 
 	m_id = id;
+	m_default_text = "";
+	m_size_font = size_font;
+	m_type = type;
+	m_buff = new std::string("");
+	m_size = sf::Vector2f(10,10);
+	m_focus = false;
+	m_time = clock();
+	m_typing_cursor = true;
+
+
+	m_ptr_event_txt_entered_associated = ptr_event_txt_entered_associated;
+	
+
+	m_size = sf::Vector2f(size_long, m_size_font*1.5);
+
+	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
+
+}
+
+
+
+InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated, std::string default_text)
+{
+	/* Constructor of the object */
+
+	m_id = id;
+	m_default_text = default_text;
 	m_size_font = size_font;
 	m_type = type;
 	m_buff = new std::string("");
@@ -111,8 +139,6 @@ InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type 
 
 	m_ptr_event_txt_entered_associated = ptr_event_txt_entered_associated;
 	
-	
-
 
 	m_size = sf::Vector2f(size_long, m_size_font*1.5);
 
@@ -272,10 +298,26 @@ void InputBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(appearance_input, states);
 
 	// Draw the text
-	sf::Text text_input(*m_buff, m_font, m_size_font);
-	text_input.setPosition((int)(m_position.x + m_size.x/2 - text_input.getLocalBounds().width/2), (int)(m_position.y  + m_size.y/2 - m_size_font/2 - 3 ));
+
+	sf::Text text_input;
+	text_input.setCharacterSize(m_size_font);
+	text_input.setFont(m_font);
+
+	if(strcmp(m_buff->c_str(), "")==0 && !m_focus)
+	{
+		text_input.setString(m_default_text);
+		text_input.setFillColor(sf::Color(150,150,150,180));
+	} 	
+	else
+		text_input.setString(*m_buff);
+
+	text_input.setOrigin(text_input.getLocalBounds().left, text_input.getLocalBounds().top);
+	text_input.setPosition((int)(m_position.x + m_size.x/2 - text_input.getLocalBounds().width/2), (int)(m_position.y  + m_size.y/2 - text_input.getLocalBounds().height/2));
+
+	
 	target.draw(text_input, states);
 
+	
 	if(m_focus && m_typing_cursor)
 	{
 		// Draw the typing cursor if it has the cursor
@@ -1005,6 +1047,33 @@ ScrollingList::ScrollingList(std::string id, int font_height, int unrollList_hei
 {
 	/* Constructeur de l'objet */
 	m_id = id;
+	m_default_text = "";
+	m_font_height = font_height;
+	m_unrollList_height = unrollList_height;
+	m_width = width;
+
+	m_nbrValues = 0;
+	m_currentValue = "";
+	m_scrollingBar.setType(SlideBar::VERTICAL);
+	m_scrollingBar.setCurrentValue(0);
+
+
+	m_unroll = false;
+	m_size = sf::Vector2f(m_width, m_font_height * SCROLLINGLIST_HEIGHT_COEFF);
+
+
+	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
+	else
+	{
+		sf::Text tmp_char("ScrollingListInitialisation", m_font, m_font_height);		
+	}
+}
+
+ScrollingList::ScrollingList(std::string id, int font_height, int unrollList_height, int width, std::string default_text)
+{
+	/* Constructeur de l'objet */
+	m_id = id;
+	m_default_text = default_text;
 	m_font_height = font_height;
 	m_unrollList_height = unrollList_height;
 	m_width = width;
@@ -1224,7 +1293,18 @@ void ScrollingList::update()
 
 void ScrollingList::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	sf::Text value_text(m_currentValue, m_font, m_font_height);
+	sf::Text value_text;
+	value_text.setFont(m_font);
+	value_text.setCharacterSize(m_font_height);
+
+	if(strcmp(m_currentValue.c_str(), "")==0)
+	{
+		value_text.setString(m_default_text);
+		value_text.setFillColor(sf::Color(180,180,180,225));
+	} 	
+	else
+		value_text.setString(m_currentValue);
+
 	sf::RectangleShape value_bar(sf::Vector2f(m_width, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)));
 	
 	value_bar.setOutlineThickness(1);

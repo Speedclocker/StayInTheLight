@@ -69,4 +69,34 @@ typedef struct
 
 
 
+
+/////////////// Save Tab ///////////////
+
+// Function
+void SaveTab(Tab* tab, ArgTab* argtab);
+
+// Argument Structure
+
+typedef struct
+{
+	Map** map_to_save; 
+	const std::vector<Entity*>* ptr_entities_to_save;
+	const std::string* ptr_texture_name_file;
+	Tile** ptr_tileset_to_save;
+	const int* nbr_tiles;
+	int* save_state;
+	std::string** text_event_location;
+	uint8_t 					__argtab_offset[ARG_TAB_BUFF_SIZE - sizeof(Map**) - sizeof(const std::vector<Entity*>*) - sizeof(const std::string*) - sizeof(Tile**) - sizeof(const int*) - sizeof(int*) - sizeof(std::string**)] = {0};
+} ArgSaveTab;
+
+
+
+
+
+
+
+
+
+
+
 #endif

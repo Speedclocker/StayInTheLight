@@ -20,52 +20,42 @@ void probeEntity(const char* raw_line, std::vector<Entity*>* entities, Map* load
 
 	
 	buffer = strtok(line, " :\n");
-	if(buffer != NULL)
-	{
-		id = buffer;
-		std::cout << "ID : " << buffer << std::endl;
-	}
+	if(buffer != NULL) id = buffer;
+
 
 	buffer = strtok(NULL, " (,:\n");
-	if(buffer != NULL)
-	{
-		entity_model_name = buffer;
-		std::cout << "Model Name : " << buffer << std::endl;
-	}
+	if(buffer != NULL) entity_model_name = buffer;
+
 
 	buffer = strtok(NULL, " (,:\n");
-	if(buffer != NULL)
-	{
-		height = atoi(buffer);
-		std::cout << "Height : " << buffer << std::endl;
-	}
+	if(buffer != NULL) height = atoi(buffer);
+		
 
 	buffer = strtok(NULL, " (,:\n");
-	if(buffer != NULL)
-	{
-		position.x = atof(buffer);
-		std::cout << "Pos x : " << buffer << std::endl;
-	}
+	if(buffer != NULL) position.x = atof(buffer);
+
 
 	buffer = strtok(NULL, " )(,:\n");
-	if(buffer != NULL)
-	{
-		position.y = atof(buffer);
-		std::cout << "Pos y : " << buffer << std::endl;
-	}
+	if(buffer != NULL) position.y = atof(buffer);
+
 
 	Entity* entity_to_load = NULL;
 
+
 	// Set an id and check if it is already in vector
-	int index = 1;
+	int index = 0;
 	bool name_not_taken = true;
 	std::string name; 
 	std::string index_str;
+	
 	do
 	{
 		name_not_taken = true;
 		index_str = ((index < 10)?"0":"") + std::to_string(index);
-		name = id + "_" + index_str;
+		if(index == 0)
+			name = id;
+		else
+			name = id + "_" + index_str;
 
 		for(std::vector<Entity*>::iterator it = entities->begin(); it != entities->end() && name_not_taken; it++)
 		{
@@ -342,7 +332,7 @@ int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std
 
 
 
-int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size)
+int saveMap(const Map* map_to_save, const std::vector<Entity*> entities_to_save, const std::string name_map, const std::string name_file, const std::string texture_name_file, const Tile* tileset, const int tileset_size)
 {
 	std::ofstream file_to_save;
 
@@ -429,7 +419,7 @@ int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string
 
 	// Entities
 	file_to_save << "[Entities]" << std::endl;
-	for(std::vector<Entity*>::iterator ent = entities_to_save.begin(); ent != entities_to_save.end(); ent++)
+	for(std::vector<Entity*>::const_iterator ent = entities_to_save.begin(); ent != entities_to_save.end(); ent++)
 	{
 		if((*ent)!=NULL)
 		{
@@ -493,14 +483,8 @@ int loadEntity(std::string entity_id, std::string file_name, ResourcesManager* r
 
 	try
 	{
-		if(strcmp(type.c_str(), "Character")==0)
-		{
-			*entity_to_load = new Character(entity_id, file_name, resources_manager, entity_location);
-		}	
-		else if(strcmp(type.c_str(), "Collector")==0)
-		{
-			*entity_to_load = new Collector(entity_id, file_name, resources_manager, entity_location);
-		}
+		if(strcmp(type.c_str(), "Character")==0)			*entity_to_load = new Character(entity_id, file_name, resources_manager, entity_location);
+		else if(strcmp(type.c_str(), "Collector")==0)		*entity_to_load = new Collector(entity_id, file_name, resources_manager, entity_location);
 	}
 	catch(const std::string & e)
 	{

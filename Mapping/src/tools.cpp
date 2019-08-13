@@ -1,9 +1,9 @@
 #include "tools.h"
 
-#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/monaco.ttf"
 
 #define ENTITIES_FOLDER "entities"
-#define CHARACTER_SIZE_HEIGHT 20
+#define CHARACTER_SIZE_HEIGHT 26
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

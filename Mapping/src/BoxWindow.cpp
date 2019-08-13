@@ -1,9 +1,9 @@
 #include "BoxWindow.h"
 #include "functionTabs.h"
 
-#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
+#define FONT_FILE "../data/fonts/monaco.ttf"
 #define WIDTH_TITLETAB_COEFF 1.3
-#define BOXWINDOW_SIZE_CHARACTER 16
+#define BOXWINDOW_SIZE_CHARACTER 26
 
 
 
@@ -707,6 +707,7 @@ BWManager::BWManager(sf::RenderWindow* window)
 {
 	m_window = window;
 	m_focus_window = NULL;
+	m_block_on_focus_window = false;
 }
 
 
@@ -762,6 +763,21 @@ void BWManager::deleteBoxWindow(std::string boxwindow_name)
 	std::map<std::string, BoxWindow*>::iterator tmp_it;
 	if( (tmp_it=m_box_windows.find(boxwindow_name)) != m_box_windows.end())
 	{
+		if(m_focus_window == tmp_it->second)
+			this->unFocusBoxWindow();
+		
+		int i = 0;
+		bool found = false;
+		for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it!=m_order_box_windows.end() && !found; it++)
+		{
+			if(*it == tmp_it->second)
+				found = true;
+			else
+				i++;
+		}
+
+		m_order_box_windows.erase(m_order_box_windows.begin() + i);
+
 		delete tmp_it->second;
 		m_box_windows.erase(tmp_it);
 	}
@@ -782,64 +798,69 @@ void BWManager::interactionsManagement()
 {
 	sf::Vector2f mousePos = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
 
-	bool no_BW_act = true; 
-	bool focus_change = false;
-	for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+	if(!m_block_on_focus_window)
 	{
-		sf::Rect<float> window_rect = sf::Rect<float>((*it)->getPosition() - sf::Vector2f(5,5), (*it)->getSize() + sf::Vector2f(10,10));
-		if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && window_rect.contains(mousePos))
-		{
-			m_window_hover = (*it);
-			no_BW_act = false;
-		}
-		if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_window_hover==(*it))
-		{
-			m_window_click = (*it);
-			(*it)->setInteractable();
-			m_focus_window = (*it);
-			focus_change = true;
-			m_window_hover = NULL;
-			no_BW_act = false;
-		}
-	}
-
-	if(no_BW_act)
-	{
-		// If nothing was done on the box windows
-		if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		{
-			m_window_hover = NULL;
-			m_window_click = NULL;	
-		}
-		else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_window_click == NULL)
-			this->unFocusBoxWindow();
-	}
-
-	if(m_focus_window==NULL)
-	{
+		bool no_BW_act = true; 
+		bool focus_change = false;
 		for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
 		{
-			if(*it != m_focus_window)
+
+			sf::Rect<float> window_rect = sf::Rect<float>((*it)->getPosition() - sf::Vector2f(5,5), (*it)->getSize() + sf::Vector2f(10,10));
+			if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && window_rect.contains(mousePos))
+			{
+				m_window_hover = (*it);
+				no_BW_act = false;
+			}
+			if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_window_hover==(*it))
+			{
+				m_window_click = (*it);
 				(*it)->setInteractable();
+				m_focus_window = (*it);
+				focus_change = true;
+				m_window_hover = NULL;
+				no_BW_act = false;
+			}
+			
 		}
-	}
 
-	if(focus_change)
-	{
-		// If the window is focused, put it at the end of the order vector and unfocus all other windows
-		
-		for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+		if(no_BW_act)
 		{
-			if(*it != m_focus_window)
-				(*it)->unInteractable();
+			// If nothing was done on the box windows
+			if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+				m_window_hover = NULL;
+				m_window_click = NULL;	
+			}
+			else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_window_click == NULL)
+				this->unFocusBoxWindow();
 		}
 
-		std::vector<BoxWindow*>::iterator it = find(m_order_box_windows.begin(), m_order_box_windows.end(), m_focus_window);
-		
-		m_order_box_windows.erase(it);
+		if(m_focus_window==NULL)
+		{
+			for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+			{
+				if(*it != m_focus_window)
+					(*it)->setInteractable();
+			}
+		}
 
-		m_order_box_windows.push_back(m_focus_window);
-	
+		if(focus_change)
+		{
+			// If the window is focused, put it at the end of the order vector and unfocus all other windows
+			
+			for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+			{
+				if(*it != m_focus_window)
+					(*it)->unInteractable();
+			}
+
+			std::vector<BoxWindow*>::iterator it = find(m_order_box_windows.begin(), m_order_box_windows.end(), m_focus_window);
+			
+			m_order_box_windows.erase(it);
+
+			m_order_box_windows.push_back(m_focus_window);
+		
+		}
 	}
 
 
@@ -862,9 +883,52 @@ void BWManager::update()
 }
 
 
+void BWManager::blockOnFocusWindow()
+{
+	m_block_on_focus_window = true;
+}
+
+
+void BWManager::unblockOnFocusWindow()
+{
+	m_block_on_focus_window = false;
+}
+
+
+void BWManager::focusOnBoxWindow(BoxWindow* box_window)
+{
+	bool found = false;
+	for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+	{
+		if(box_window == *it)
+		{
+			m_focus_window = *it;
+			(*it)->setInteractable();
+			found = true;
+		}
+	}
+
+	if(found)
+	{
+		for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
+		{
+			if(*it != m_focus_window)
+				(*it)->unInteractable();
+		}
+
+		std::vector<BoxWindow*>::iterator it = find(m_order_box_windows.begin(), m_order_box_windows.end(), m_focus_window);
+		
+		m_order_box_windows.erase(it);
+
+		m_order_box_windows.push_back(m_focus_window);
+	}
+}
+
+
 void BWManager::unFocusBoxWindow()
 {
 	m_focus_window = NULL;
+	m_block_on_focus_window = false;
 	for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
 		(*it)->unInteractable();
 }
@@ -875,9 +939,17 @@ void BWManager::drawWindows()
 	for(std::vector<BoxWindow*>::iterator it = m_order_box_windows.begin(); it != m_order_box_windows.end(); it++)
 	{
 		// Draw in the focus order
-
 		if(m_focus_window == *it)
 		{
+			// Darken the window behind the focus window if it's blocked on it
+			if(m_block_on_focus_window)
+			{
+				sf::RectangleShape dark_rect(sf::Vector2f(m_window->getSize().x, m_window->getSize().y));
+				dark_rect.setPosition(m_window->getView().getCenter() - sf::Vector2f(m_window->getView().getSize().x/2, m_window->getView().getSize().y/2));
+				dark_rect.setFillColor(sf::Color(0,0,0,180));
+				m_window->draw(dark_rect);
+			}
+
 			// Draw a white rectangle around the focus window
 			sf::RectangleShape focus((*it)->getSize());
 			focus.setPosition((*it)->getPosition());
@@ -887,7 +959,6 @@ void BWManager::drawWindows()
 
 			m_window->draw(focus);
 		}
-
 
 		m_window->draw(**it);
 	}

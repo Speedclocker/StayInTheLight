@@ -64,6 +64,7 @@ public:
 	InputBar();
 	~InputBar();
 	InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated);
+	InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated, std::string default_text);
 
 
 	//Getters
@@ -89,6 +90,7 @@ public:
 
 private:
 	std::string** 	m_ptr_event_txt_entered_associated;
+	std::string 	m_default_text;
 	int 			m_size_font;
 
 	std::string*	m_buff;
@@ -280,6 +282,8 @@ public:
 	ScrollingList();
 	~ScrollingList();
 	ScrollingList(std::string id, int font_height, int unrollList_height, int width);
+	ScrollingList(std::string id, int font_height, int unrollList_height, int width, std::string default_text);
+
 
 
 
@@ -313,6 +317,7 @@ private:
 	int 						m_width;
 	int 						m_unrollList_height;
 	int 						m_font_height;
+	std::string 				m_default_text;
 	int 						m_nbrValues;
 	std::vector<struct Option>	m_values;
 	std::string					m_currentValue;

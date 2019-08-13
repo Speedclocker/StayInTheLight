@@ -32,6 +32,7 @@ public:
 	//Methods
 	void										setTile();
 	void 										setEntity();
+	void 										saveMap();
 	void 										initializeBoxWindows();
 	void 										controlView();
 	void 										heightLevelCommand();
@@ -73,6 +74,9 @@ private:
 
 	// Used for changing current height
 	bool 										keyPressed_lower_layer, keyPressed_higher_layer, keyPressed_transparency;
+
+	// Used for saving map
+	int 										m_save_state;
 };
 
 

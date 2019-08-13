@@ -22,7 +22,7 @@ void probeHeader(const char* raw_line, sf::Vector2f* size_map, int* height_map, 
 
 int loadMap(Map** load_location_map, std::vector<Entity*>* entities_to_load, std::string name_file_map_to_load, std::string* name_texture, sf::Texture** texture, Tile** tileset, int* tileset_size, ResourcesManager* resources_manager);
 
-int saveMap(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string name_map, std::string name_file, std::string texture_name_file, Tile* tileset, int tileset_size);
+int saveMap(const Map* map_to_save, const std::vector<Entity*> entities_to_save, const std::string name_map, const std::string name_file, const std::string texture_name_file, const Tile* tileset, const int tileset_size);
 
 int loadEntity(std::string entity_id, std::string file_name, ResourcesManager* resources_manager, Entity** entity_to_load, Map* entity_location);
 

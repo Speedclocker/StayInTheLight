@@ -167,6 +167,9 @@ public:
 	void 										clearBoxWindows();
 	void 										interactionsManagement();
 	void 										update();
+	void 										blockOnFocusWindow();
+	void 										unblockOnFocusWindow();
+	void 										focusOnBoxWindow(BoxWindow* box_window);
 	void 										unFocusBoxWindow();
 	void 										drawWindows();
 	void 										manage();
@@ -180,6 +183,7 @@ private:
 	const BoxWindow* 							m_window_hover;
 	const BoxWindow* 							m_window_click;
 	BoxWindow* 									m_focus_window;
+	bool 										m_block_on_focus_window;
 
 };
 

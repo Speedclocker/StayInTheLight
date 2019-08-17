@@ -6,8 +6,8 @@
 #include "ResourcesManagement.h"
 
 
-#define CHARACTER_SIZE_HEIGHT 34
-#define FONT_FILE "../data/fonts/monaco.ttf"
+#define CHARACTER_SIZE_HEIGHT 20
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 
 #define FULLSCREEN true
 
@@ -145,8 +145,18 @@ MappingGUI::MappingGUI(sf::RenderWindow* window, Map** map, std::vector<Entity*>
 	keyPressed_higher_layer = false; 
 	keyPressed_transparency = false;
 
+	// Setting Entity
+	set_entity_click = false;
+	set_or_erase_option = true;
+
 	//Save state
 	m_save_state = 0;
+
+	//Load state
+	m_load_state = 0;
+
+	//New map state
+	m_new_map_state = 0;
 }
 
 
@@ -317,7 +327,7 @@ void MappingGUI::setEntity()
 	{
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			set_entity_click = true;
-		else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && set_entity_click)
+		else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && set_entity_click && set_or_erase_option)
 		{
 			// Set an id and check if the id is already taken by an entity
 			std::string id_base = m_chosen_entity->getModelName();
@@ -364,6 +374,31 @@ void MappingGUI::setEntity()
 
 			set_entity_click = false;
 		}
+		else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && set_entity_click && !set_or_erase_option)
+		{
+			Entity* entity_to_erase = NULL;
+			std::vector<Entity*>::iterator it_entity_to_erase = m_entities->end();
+			for(std::vector<Entity*>::iterator it = m_entities->begin(); it != m_entities->end(); it++)
+			{
+				if(sf::Rect<float>((*it)->getPosition(), (*it)->getSize()).contains(mousePos))
+				{
+					if(entity_to_erase==NULL || (*it)->getPosition().y + (*it)->getSize().y > entity_to_erase->getPosition().y + entity_to_erase->getSize().y)
+					{
+						it_entity_to_erase = it;
+						entity_to_erase = *it;
+					}
+				}
+			}
+
+			if(entity_to_erase != NULL && it_entity_to_erase != m_entities->end())
+			{
+				(*m_map)->delEntity(entity_to_erase);
+				delete entity_to_erase;
+				m_entities->erase(it_entity_to_erase);
+			}
+
+			set_entity_click = false;
+		}
 		else
 			set_entity_click = false;
 	}
@@ -388,13 +423,13 @@ void MappingGUI::initializeBoxWindows()
 
 		// Initialization tab Tileset
 
-	ArgTilesetTab arg_tileset_tab = ArgTilesetTab{m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, &m_tile_size, &m_chosen_tile, &m_ptr_event_txt_entered};
+	ArgTilesetTab arg_tileset_tab = ArgTilesetTab{&m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, &m_tile_size, &m_chosen_tile, m_resources_manager, &m_ptr_event_txt_entered};
 	tmp_boxwindow->newTab("Tileset", TilesetTab, (ArgTab*)&arg_tileset_tab, sizeof(ArgTilesetTab));
 
 		// Initialization tab Entities
 
 	list_entities(&entities_file_name_list);
-	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, (*m_map), m_resources_manager, &m_ptr_event_txt_entered};
+	ArgEntitiesTab arg_entities_tab = ArgEntitiesTab{&entities_file_name_list, &m_chosen_entity, &m_chosen_entity_file_name, (*m_map), m_resources_manager, &set_or_erase_option, &m_ptr_event_txt_entered};
 	tmp_boxwindow->newTab("Entities", EntitiesTab, (ArgTab*)&arg_entities_tab, sizeof(ArgEntitiesTab));
 
 	tmp_boxwindow->update();
@@ -500,7 +535,7 @@ void MappingGUI::heightLevelCommand()
 void MappingGUI::saveMap()
 {
 
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_save_state == 0)
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && (m_new_map_state == 0 && m_load_state == 0 && m_save_state == 0) )
 	{
 		m_save_state = 1;
 
@@ -529,19 +564,101 @@ void MappingGUI::saveMap()
 		m_windows_manager->deleteBoxWindow("Save");
 		m_save_state = 0;
 	}
-
-
 }
 
 
 
 
+int MappingGUI::loadMap()
+{
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::L) && (m_new_map_state == 0 && m_load_state == 0 && m_save_state == 0) )
+	{
+		m_load_state = 1;
+
+		BoxWindow* tmp_boxwindow;
+		// -- Initialization Save Window --
+
+		m_windows_manager->newBoxWindow("Load", sf::Vector2f(300, 150));
+		tmp_boxwindow = m_windows_manager->getBoxWindow("Load");
+		tmp_boxwindow->setMinSize(sf::Vector2f(300, 150));
+		tmp_boxwindow->setMaxSize(sf::Vector2f(300, 150));
+		tmp_boxwindow->setPositionWindow(sf::Vector2f(m_window->getView().getSize().x/2 - tmp_boxwindow->getSize().x/2, m_window->getView().getSize().y/2 - tmp_boxwindow->getSize().y/2));
+
+
+		ArgLoadTab arg_load_tab = ArgLoadTab{m_map, m_entities, &m_tileset_texture_file_name, &m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, &m_resources_manager, &m_load_state, &m_ptr_event_txt_entered};
+
+		tmp_boxwindow->newTab("Load", LoadTab, (ArgTab*)&arg_load_tab, sizeof(ArgLoadTab));
+
+		tmp_boxwindow->update();
+
+		m_windows_manager->focusOnBoxWindow(tmp_boxwindow);
+		m_windows_manager->blockOnFocusWindow();
+
+		return 0;
+	}
+	else if(m_load_state == 2)
+	{
+		m_windows_manager->unblockOnFocusWindow();
+		m_windows_manager->deleteBoxWindow("Load");
+		m_load_state = 0;
+
+		return 1;
+	}
+
+	return 0;
+}
+
+
+int MappingGUI::newMap()
+{
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::N) && (m_new_map_state == 0 && m_load_state == 0 && m_save_state == 0) )
+	{
+		m_new_map_state = 1;
+
+		BoxWindow* tmp_boxwindow;
+		// -- Initialization Save Window --
+
+		m_windows_manager->newBoxWindow("NewMap", sf::Vector2f(300, 250));
+		tmp_boxwindow = m_windows_manager->getBoxWindow("NewMap");
+		tmp_boxwindow->setMinSize(sf::Vector2f(300, 250));
+		tmp_boxwindow->setMaxSize(sf::Vector2f(300, 250));
+		tmp_boxwindow->setPositionWindow(sf::Vector2f(m_window->getView().getSize().x/2 - tmp_boxwindow->getSize().x/2, m_window->getView().getSize().y/2 - tmp_boxwindow->getSize().y/2));
+
+
+		ArgNewMapTab arg_new_map_tab = ArgNewMapTab{m_map, m_entities, &m_tileset_texture_file_name, &m_tileset_texture, &m_resources_manager, &m_new_map_state, &m_ptr_event_txt_entered};
+
+		tmp_boxwindow->newTab("NewMap", NewMapTab, (ArgTab*)&arg_new_map_tab, sizeof(ArgNewMapTab));
+
+		tmp_boxwindow->update();
+
+		m_windows_manager->focusOnBoxWindow(tmp_boxwindow);
+		m_windows_manager->blockOnFocusWindow();
+
+		return 0;
+	}
+	else if(m_new_map_state == 2)
+	{
+		m_windows_manager->unblockOnFocusWindow();
+		m_windows_manager->deleteBoxWindow("NewMap");
+		m_new_map_state = 0;
+
+		return 1;
+	}
+
+	return 0;
+}
+
+
+
 void MappingGUI::interactWithUser()
 {
+	sf::Texture* tmp_text = m_tileset_texture;
 	if(m_window->hasFocus())
 	{
 		this->saveMap();
-		if(loadMapCommand(m_window, m_map, m_entities, &m_tileset_texture, &m_available_tiles, &m_nbr_available_tiles, m_resources_manager, FULLSCREEN) > 0)
+		if(this->loadMap() > 0 && m_tileset_texture != NULL)
+			this->setTilesetTexture(m_tileset_texture);
+		if(this->newMap() > 0 && m_tileset_texture != NULL)
 			this->setTilesetTexture(m_tileset_texture);
 
 		this->controlView();		// To control the view
@@ -559,8 +676,10 @@ void MappingGUI::interactWithUser()
 			m_windows_manager->interactionsManagement(); // To catch interactions between user and the internal box windows
 
 		}
-	} 
+	}
 
+	if(m_tileset_texture != tmp_text)
+		this->setTilesetTexture(m_tileset_texture);
 }
 
 
@@ -671,7 +790,7 @@ void MappingGUI::draw()
 		if( mousePos.x >=0 && mousePos.x < (*m_map)->getSize().x*(*m_map)->getTileSize()
 		&& mousePos.y >=0 && mousePos.y < (*m_map)->getSize().y*(*m_map)->getTileSize() )
 		{
-			if(m_chosen_entity!=NULL)
+			if(m_chosen_entity!=NULL && set_or_erase_option)
 			{
 				sf::Text entity_pos_text(std::to_string((int)m_chosen_entity->getPosition().x) + "," + std::to_string((int)m_chosen_entity->getPosition().y),m_font);
 				entity_pos_text.setCharacterSize(10);

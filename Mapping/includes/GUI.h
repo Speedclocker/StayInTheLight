@@ -33,6 +33,8 @@ public:
 	void										setTile();
 	void 										setEntity();
 	void 										saveMap();
+	int 										loadMap();
+	int 										newMap();
 	void 										initializeBoxWindows();
 	void 										controlView();
 	void 										heightLevelCommand();
@@ -67,6 +69,8 @@ private:
 	// Used for setting entity
 	std::vector<std::string>					entities_file_name_list;
 	bool										set_entity_click;
+	bool 										set_or_erase_option; // If its value is true, set an entity when clicking, otherwise, erase an entity such a rubber
+
 
 	// Used for moving view
 	bool 										move_view_click;
@@ -77,6 +81,12 @@ private:
 
 	// Used for saving map
 	int 										m_save_state;
+
+	// Used for loading map
+	int 										m_load_state;
+
+	// Used for new map
+	int 										m_new_map_state;
 };
 
 

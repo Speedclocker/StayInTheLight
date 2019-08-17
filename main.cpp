@@ -6,7 +6,7 @@
 #include "Collector.h"
 #include "collision.h"
 #include "loadContent.h"
-
+#include "ResourcesManagement.h"
 
 int main()
 {
@@ -24,35 +24,38 @@ int main()
 	Map* map=NULL;
 	sf::Texture texture_map;
 	std::string texture_name_file;
+	
+	// Entities
+	std::vector<Entity*> entities;
 
-	if(loadMap(&map, "data/maps/Maison.map", &texture_name_file)<0)
+	// Resources manager
+	ResourcesManager resources_manager;
+
+	if(loadMap(&map, &entities, "data/maps/TestGame.map", &resources_manager)<0)
 	{
 		std::cerr << "Error while loading of map" << std::endl;
 		return -1;
 	}
+
+	for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+		map->addEntity(*it);
 	
-	if(!texture_map.loadFromFile(texture_name_file)){ std::cerr << "Error while loading of texture \"texture_map\"" << std::endl; return -1; }
-
-	map->setTexture(&texture_map);
-
-
 
 	//Texture creation and loading
 	sf::Texture texture_link;
 	texture_link.loadFromFile("data/imgs/linkmv.png");
 
 
-
 	
 	//Character creation
-	Character personnage("hero", "data/entities/Hero.ent", &texture_link, map);
+	Character personnage("hero", "data/entities/hero_01.ent", &texture_link, map);
 	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
 	personnage.setHeight(1);
 	map->addEntity(&personnage);
 
 
 	//Mob creation
-	Character mob("enemy", "data/entities/Hero.ent", &texture_link, map);
+	Character mob("enemy", "data/entities/hero_01.ent", &texture_link, map);
 	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
 	mob.setHeight(1);
 	map->addEntity(&mob);
@@ -63,7 +66,7 @@ int main()
 
 	// Palm creation
 	sf::Texture texture_palm;
-	Collector tmp_coll("palm", "data/entities/Tree.ent",&texture_palm, map);
+	Collector tmp_coll("palm", "data/entities/palm_01.ent",&texture_palm, map);
 	tmp_coll.setPosition(sf::Vector2f(window.getSize().x/2-tmp_coll.getSize().x/2, window.getSize().y/2-tmp_coll.getSize().y/2));
 	tmp_coll.setHeight(1);
 
@@ -109,6 +112,7 @@ int main()
 		personnage.updateAttack();
 		mob.updateAttack();
 
+
 		// We apply physics on the objects associated with the current map
 		map->physics_entities();
 
@@ -116,6 +120,9 @@ int main()
 		personnage.update();
 		mob.update();
 		tmp_coll.update();
+
+		for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+			(*it)->update();
 
 
 		// Drawing the map
@@ -127,6 +134,13 @@ int main()
 	}
 
 	delete map;
+
+	std::vector<Entity*>::iterator it = entities.begin();
+	while(it!=entities.end())
+	{
+		delete(*it);
+		it = entities.erase(it);
+	}
 
 	return 0;
 }

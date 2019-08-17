@@ -58,6 +58,7 @@ private:
 	void 											(*tabFunction)(Tab*, ArgTab*);
 	ArgTab*											m_function_arg;
 
+	InterfaceObject*								m_focus_object;
 	std::map< std::string, InterfaceObject*>		m_objects;
 	sf::Vector2f 									m_size;
 	float											m_title_size;

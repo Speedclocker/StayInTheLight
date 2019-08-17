@@ -1,9 +1,9 @@
 #include "BoxWindow.h"
 #include "functionTabs.h"
 
-#define FONT_FILE "../data/fonts/monaco.ttf"
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 #define WIDTH_TITLETAB_COEFF 1.3
-#define BOXWINDOW_SIZE_CHARACTER 26
+#define BOXWINDOW_SIZE_CHARACTER 16
 
 
 
@@ -43,6 +43,7 @@ Tab::Tab(std::string name_title, sf::RenderWindow* window, void (*function)(Tab*
 	//Pointers association and allocation
 	m_window = window;
 	tabFunction = function;
+	m_focus_object = NULL;
 
 	if(function_arg != NULL)
 	{
@@ -182,8 +183,8 @@ void Tab::interactsWithUser(sf::RenderWindow* window)
 	/* Allow to interact with the user */
 
 	for(std::map<std::string, InterfaceObject*>::iterator it = m_objects.begin(); it != m_objects.end(); it++)
-	{
-		(it->second)->interactsWithUser(window);
+	{			
+		it->second->interactsWithUser(window);	
 	}
 }
 
@@ -226,11 +227,22 @@ void Tab::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	target.draw(appearance, states);
 
+	std::vector<InterfaceObject*> overall_objects;
 
 	for(std::map<std::string, InterfaceObject*>::const_iterator it = m_objects.begin(); it != m_objects.end(); it++)
 	{
-		target.draw(*it->second);
+		//if(m_focus_object==NULL || m_focus_object!=it->second)
+		if(!it->second->isOverall())
+			target.draw(*it->second);
+		else
+			overall_objects.push_back(it->second);
 	}
+
+	for(std::vector<InterfaceObject*>::const_iterator it = overall_objects.begin(); it != overall_objects.end(); it++)
+		target.draw(**it);
+
+	//if(m_focus_object!=NULL)
+	//	target.draw(*m_focus_object);
 }
 
 

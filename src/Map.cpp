@@ -197,6 +197,15 @@ void Map::update()
 
 	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
+	std::vector<Entity*>::iterator ent=m_entities.begin();
+	while(ent != m_entities.end()) 
+	{
+		if(*ent==NULL)
+			ent = m_entities.erase(ent);
+		else
+			ent++;
+	}
+
 	m_time=clock();
 	m_vertex.clear();
 	m_vertex.setPrimitiveType(sf::Quads);
@@ -238,7 +247,17 @@ void Map::update_transparency(int chosen_height)
 
 	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
-	
+	std::vector<Entity*>::iterator ent=m_entities.begin();
+	while(ent != m_entities.end()) 
+	{
+		if(*ent==NULL)
+			ent = m_entities.erase(ent);
+		else
+			ent++;
+	}
+
+	m_time=clock();
+	m_vertex.clear();
 	m_vertex.setPrimitiveType(sf::Quads);
 	m_vertex.resize(this->getSize().x * this->getSize().y * this->getHeight() * 4);
 
@@ -288,22 +307,27 @@ void Map::physics_entities()
 
 	for(std::vector<Entity*>::iterator ent1=m_entities.begin(); ent1!=m_entities.end(); ent1++)
 	{	
-		// Physics of entities with themselves
-		for(std::vector<Entity*>::iterator ent2=ent1+1; ent2!=m_entities.end(); ent2++)
+		if(*ent1!=NULL)
 		{
-			if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Character")==0)
-				physics_characters((Character*)(*ent1), (Character*)(*ent2));
-			else if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Collector")==0)
-				physics_character_collector((Character*)(*ent1), (Collector*)(*ent2));
-			else if((*ent1)->getType().compare("Collector")==0 && (*ent2)->getType().compare("Character")==0)
-				physics_character_collector((Character*)(*ent2), (Collector*)(*ent1));
+			// Physics of entities with themselves
+			for(std::vector<Entity*>::iterator ent2=ent1+1; ent2!=m_entities.end(); ent2++)
+			{
+				if(*ent2!=NULL)
+				{
+					if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Character")==0)
+						physics_characters((Character*)(*ent1), (Character*)(*ent2));
+					else if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Collector")==0)
+						physics_character_collector((Character*)(*ent1), (Collector*)(*ent2));
+					else if((*ent1)->getType().compare("Collector")==0 && (*ent2)->getType().compare("Character")==0)
+						physics_character_collector((Character*)(*ent2), (Collector*)(*ent1));
+				}
+			}
 
-		}
-
-		// Physics of entities with map tiles
-		if((*ent1)->getType().compare("Character")==0)
-		{
-			physics_character_map((Character*)(*ent1), this, (*ent1)->getHeight());
+			// Physics of entities with map tiles
+			if((*ent1)->getType().compare("Character")==0)
+			{
+				physics_character_map((Character*)(*ent1), this, (*ent1)->getHeight());
+			}
 		}
 		
 	}
@@ -316,6 +340,13 @@ void Map::addEntity(Entity* entity)
 	m_entities.push_back(entity);
 
 	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
+}
+
+
+void Map::delEntity(Entity* entity)
+{
+	std::vector<Entity*>::iterator it = std::find(m_entities.begin(), m_entities.end(), entity);
+	if(it!=m_entities.end()) m_entities.erase(it);
 }
 	
 
@@ -341,42 +372,44 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 			// Check for each entity 		
 			for(std::vector<Entity*>::const_iterator it=m_entities.begin(); it!=m_entities.end(); it++)
 			{	
-
-				// If the part of the entity is already drawn
-				bool obj_already_drawn=false;
-
-				for(std::vector<Entity*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
+				if(*it!=NULL)
 				{
-					if( (*it)==(*it2) )
-						obj_already_drawn = true;
-				}
-				
-				// If the entity is not drawn and it's behind tiles line
-				int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
+					// If the part of the entity is already drawn
+					bool obj_already_drawn=false;
 
-				if((*it)->isAffiliatedToMap())
-				{
-					if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
+					for(std::vector<Entity*>::iterator it2=obj_drawn.begin(); it2!=obj_drawn.end(); it2++)
 					{
-						// Draw the part of the entity in the same level of height
-						if(h<this->getHeight()-1)
-							(*it)->drawPart((sf::RenderWindow*)&target, h-(*it)->getHeight());
-						else
-							(*it)->drawPartAndAbove((sf::RenderWindow*)&target, h-(*it)->getHeight());
-
-						//target.draw(*(*it));
-						obj_drawn.push_back(*it);
+						if( (*it)==(*it2) )
+							obj_already_drawn = true;
 					}
-				}
-				else
-				{
-					if(!obj_already_drawn && (*it)->getHeight() == h)
-					{
-						// Draw 
-			
-						target.draw(*(*it));
+					
+					// If the entity is not drawn and it's behind tiles line
+					int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
 
-						obj_drawn.push_back(*it);
+					if((*it)->isAffiliatedToMap())
+					{
+						if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
+						{
+							// Draw the part of the entity in the same level of height
+							if(h<this->getHeight()-1)
+								(*it)->drawPart((sf::RenderWindow*)&target, h-(*it)->getHeight());
+							else
+								(*it)->drawPartAndAbove((sf::RenderWindow*)&target, h-(*it)->getHeight());
+
+							//target.draw(*(*it));
+							obj_drawn.push_back(*it);
+						}
+					}
+					else
+					{
+						if(!obj_already_drawn && (*it)->getHeight() == h)
+						{
+							// Draw 
+				
+							target.draw(*(*it));
+
+							obj_drawn.push_back(*it);
+						}
 					}
 				}
 			}
@@ -404,6 +437,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 bool comparePosY(Entity* ent1, Entity* ent2)
 { 
 	// Compare the entity according to the position_x + size_x
+
 
 	Character* dyn_char1 = dynamic_cast<Character*>(ent1);
 	Character* dyn_char2 = dynamic_cast<Character*>(ent2);

@@ -7,12 +7,10 @@
 #include <dirent.h>
 
 #include "Map.h"
-#include "saveMap.h"
+#include "SaveLoadContent.h"
 
 
 void list_entities(std::vector<std::string>* entities_files);
-void saveMapCommand(Map* map_to_save, std::vector<Entity*> entities_to_save, std::string texture_name, Tile* tileset, int tileset_size);
-int loadMapCommand(sf::RenderWindow* main_window, Map** map_to_load, std::vector<Entity*>* entities_to_load, sf::Texture** texture, Tile** tileset, int* tileset_size, ResourcesManager* resources_manager, bool fullscreen);
 void introText(void);
 
 

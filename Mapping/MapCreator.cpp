@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 			}
 			else if(event.type == sf::Event::TextEntered)
 			{
-				if (event.text.unicode < 128 && mappingGUI->getStringPtrToTextEvent()!=NULL)
+				if (event.text.unicode < 128 && event.text.unicode != 10 && event.text.unicode != 13 && mappingGUI->getStringPtrToTextEvent()!=NULL)
 				{
 					if(event.text.unicode == 8 && mappingGUI->getStringPtrToTextEvent()->length() > 0)
 						mappingGUI->getStringPtrToTextEvent()->erase(mappingGUI->getStringPtrToTextEvent()->end()-1);

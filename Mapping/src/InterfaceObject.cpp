@@ -1,7 +1,7 @@
 #include "InterfaceObject.h"
 #include "Animation.h"
 
-#define FONT_FILE "../data/fonts/monaco.ttf"
+#define FONT_FILE "../data/fonts/AldoTheApache.ttf"
 #define SCROLLINGLIST_HEIGHT_COEFF 1.5
 #define SCROLLINGLIST_WIDTH_COEFF 1.3
 
@@ -36,12 +36,29 @@ sf::Vector2f InterfaceObject::getPosition()
 	return m_position;
 }
 
+
+sf::Rect<float> InterfaceObject::getInteractableZone()
+{
+	return sf::Rect<float>(m_position, m_size);
+}
+
 sf::Vector2f InterfaceObject::getSize()
 {
 	// Return the size of the object
 	return m_size;
 }
 
+InterfaceObject::State InterfaceObject::getState()
+{
+	// Return the size of the object
+	return m_state;
+}
+
+bool InterfaceObject::isOverall()
+{
+	// Return the size of the object
+	return m_overall;
+}
 
 
 
@@ -62,6 +79,12 @@ void InterfaceObject::setPosition(sf::Vector2f position)
 	// Set the position of the object
 	m_position = position;
 }
+
+void InterfaceObject::setState(InterfaceObject::State state)
+{
+	m_state = state;
+}
+
 
 
 void InterfaceObject::update()
@@ -102,6 +125,8 @@ InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type 
 	/* Constructor of the object */
 
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = false;
 	m_default_text = "";
 	m_size_font = size_font;
 	m_type = type;
@@ -126,8 +151,9 @@ InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type 
 InputBar::InputBar(std::string id, int size_font, int size_long, InputBar::Type type, std::string** ptr_event_txt_entered_associated, std::string default_text)
 {
 	/* Constructor of the object */
-
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = false;
 	m_default_text = default_text;
 	m_size_font = size_font;
 	m_type = type;
@@ -164,13 +190,6 @@ sf::Vector2f InputBar::getSize()
 {
 	/* Return the size */
 	return m_size;
-}
-
-
-InputBar::State InputBar::getState()
-{
-	/* Return the mouse state over the bar */
-	return m_state;
 }
 
 
@@ -214,14 +233,38 @@ void InputBar::setType(InputBar::Type type)
 void  InputBar::setValue(std::string buff)
 {
 	/* Set a value (string) to the buffer */
-
 	*m_buff = buff;
 	if(this->getType() == InputBar::NUMERICAL)
 	{
-		for(std::string::iterator it = m_buff->end()-1; it >= m_buff->begin(); it++)
+		std::string::iterator it = m_buff->begin();
+		while(it != m_buff->end())
 		{
-			if(((*m_buff)[it-m_buff->begin()] < 48 || (*m_buff)[it-m_buff->begin()] > 57) ) 
-				m_buff->erase(it);
+			if(((*m_buff)[it-m_buff->begin()] < 48 || (*m_buff)[it-m_buff->begin()] > 57))
+				it = m_buff->erase(it);
+			else
+				it++;
+		}
+	}
+	else if(this->getType() == InputBar::ALPHANUMERICAL)
+	{
+		std::string::iterator it = m_buff->begin();
+		while(it != m_buff->end())
+		{
+			if((*m_buff)[it-m_buff->begin()] < 48 || ( ((*m_buff)[it-m_buff->begin()] > 57) && (*m_buff)[it-m_buff->begin()] < 65 ) || ( ((*m_buff)[it-m_buff->begin()] > 90) && (*m_buff)[it-m_buff->begin()] < 97 ) || ((*m_buff)[it-m_buff->begin()] > 122))
+				it = m_buff->erase(it);
+			else
+				it++;
+		}
+	}
+	else if(this->getType() == InputBar::ALPHANUMERICAL_SPEC_CHARACTERS)
+	{
+		std::string::iterator it = m_buff->begin();
+		while(it != m_buff->end())
+		{
+			if( (*m_buff)[it-m_buff->begin()] < 32 || ( ((*m_buff)[it-m_buff->begin()] > 126)))
+				it = m_buff->erase(it);
+			else
+				it++;
 		}
 	}
 }
@@ -243,18 +286,30 @@ void InputBar::interactsWithUser(sf::RenderWindow* window)
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
 	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos))
-		m_state = HOVER;
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
-	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
 	{
-		m_state = CLICK;
-		m_focus = true;
+		m_state = InterfaceObject::HOVER;
 	}
+	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		m_state = InterfaceObject::NONE;
+	}
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == InterfaceObject::HOVER)
+	{
+		m_state = InterfaceObject::CLICK;
+		m_focus = true;
+
+		if(m_ptr_event_txt_entered_associated != NULL)
+			*m_ptr_event_txt_entered_associated = m_buff;
+	}
+	
 
 	// Set the focus if the user clicks on the bar
+	
 	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos))
+	{
 		m_focus = false;
+	}
+	
 }
 
 
@@ -262,12 +317,20 @@ void InputBar::update()
 {
 	/* Function updating the bar. If the bar has the focus, the buffer is associated to the TextEnter event pointer */
 	
+
+	
 	// Set the TextEnter event pointer
 	if(this->hasFocus())
 	{
-		if(m_ptr_event_txt_entered_associated != NULL)
-			*m_ptr_event_txt_entered_associated = m_buff;
+		if(m_ptr_event_txt_entered_associated != NULL && *m_ptr_event_txt_entered_associated != m_buff)
+			m_focus = false;
 	}
+	else
+	{
+		if(m_ptr_event_txt_entered_associated != NULL && *m_ptr_event_txt_entered_associated == m_buff)
+			*m_ptr_event_txt_entered_associated = NULL;
+	}
+		
 
 
 	// Check the type 
@@ -280,15 +343,13 @@ void InputBar::update()
 	// Blinking the typing cursor
 	if(!m_focus) m_time = clock();
 	else if( clock() - m_time > 0.5 * CLOCKS_PER_SEC ) { m_typing_cursor^=true; m_time = clock(); }
-
-
-
 }
+
 
 void InputBar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	/* Draw the bar*/
-
+//std::cout << m_focus << std::endl;
 	// Draw the appearance of the bar
 	sf::RectangleShape appearance_input(m_size);
 	appearance_input.setOutlineThickness(1);
@@ -349,14 +410,17 @@ Button::~Button()
 
 
 
-Button::Button(std::string id, std::string text, int size_font)
+Button::Button(std::string id, Button::Type type, std::string text, int size_font)
 {
 	/* Constructor of the object */
 
 	m_id = id;
+	m_overall = false;
+	m_type = type;
 	m_text = text;
 	m_size_font = size_font;
-	
+	m_state = InterfaceObject::NONE;
+	m_isClicked = false;
 
 	if(!m_font.loadFromFile(FONT_FILE)) std::cerr << "Erreur lors du chargement de la police" << std::endl;
 	else
@@ -385,16 +449,17 @@ sf::Vector2f Button::getSize()
 }
 
 
-Button::State Button::getState()
+Button::Type Button::getType()
 {
-	/* Return the mouse state over the button */
+	/* Return the type */
 
-	return m_state;
+	return m_type;
 }
 
 
 
-//Modificateurs
+// Setters
+
 void Button::setPosition(sf::Vector2f position)
 {
 	/* Set the position */
@@ -410,13 +475,33 @@ void Button::setSize(sf::Vector2f size)
 }
 
 
+void Button::setType(Button::Type type)
+{
+	m_type = type;
+}
+
+
+void Button::setText(std::string text)
+{
+	m_text = text;
+}
 
 
 
-bool Button::isClick()
+// Methods
+
+void Button::click()
+{
+	if(this->getType() == Button::ONE_STATE) m_isClicked = true;
+	else if(this->getType() == Button::TWO_STATES) m_isClicked^=true;
+}
+
+
+
+bool Button::isClicked()
 {
 	/* Returns true if the button is clicked (rising edge) */
-	return m_isClick;
+	return m_isClicked;
 }
 
 
@@ -425,19 +510,46 @@ void Button::interactsWithUser(sf::RenderWindow* window)
 	/* Function to interact with the user*/
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
-	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos))
-		m_state = HOVER;
-	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
-	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
+	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos) && m_state != InterfaceObject::CLICK)
 	{
-		m_state = CLICK;
-		if(!m_isClick) 	m_isClick = true;
-		else			m_isClick = false;
+		m_state = InterfaceObject::HOVER;
+		if(this->getType() == Button::ONE_STATE)
+			m_isClicked = false;
+	}
+	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == InterfaceObject::CLICK)
+	{
+		m_state = InterfaceObject::NONE;
+		if(this->getType() == Button::ONE_STATE)
+			m_isClicked = true;
+		else if(this->getType() == Button::TWO_STATES)
+			m_isClicked^=true;
+	}
+	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		m_state = InterfaceObject::NONE;
+		if(this->getType() == Button::ONE_STATE)
+			m_isClicked = false;
+	}
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos) && m_state == InterfaceObject::HOVER)
+	{
+		m_state = InterfaceObject::CLICK;
+		if(this->getType() == Button::ONE_STATE)
+			m_isClicked = false;
+	}
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !sf::Rect<float>(this->getPosition(), this->getSize()).contains(mousePos) && m_state == InterfaceObject::CLICK)
+	{
+		m_state = InterfaceObject::NONE;
+		if(this->getType() == Button::ONE_STATE)
+			m_isClicked = false;
 	}
 
-	if(m_state!=CLICK)
-		m_isClick = false;
+		
+
+
+	//if(m_state!=CLICK)
+	//	m_isClick = false;
+	
+	
 
 }
 
@@ -456,9 +568,9 @@ void Button::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	// Draw the appearance depending on the state
 	sf::RectangleShape appearance_button(m_size);
-	if(m_state==HOVER)
+	if(m_state == InterfaceObject::HOVER)
 		appearance_button.setFillColor(sf::Color(180, 180, 180, 225));
-	else if(m_state==CLICK)
+	else if(m_state == InterfaceObject::CLICK || m_isClicked)
 		appearance_button.setFillColor(sf::Color(225, 225, 225, 225));
 	else
 		appearance_button.setFillColor(sf::Color(140, 140, 140, 225));
@@ -498,6 +610,7 @@ TilesetSelect::TilesetSelect(const std::string id, const sf::Texture* texture, s
 {
 	/* Constructor of the object */
 	m_id = id;
+	m_overall = false;
 	m_zone = zone;
 
 	// Association pointers
@@ -506,6 +619,7 @@ TilesetSelect::TilesetSelect(const std::string id, const sf::Texture* texture, s
 	m_nbr_tiles = nbr_available_tiles;
 	m_ptr_tiles = tiles;
 	m_target_tile = target_tile;
+	m_state = InterfaceObject::NONE;
 
 
 	//Initialize values
@@ -572,6 +686,14 @@ void TilesetSelect::setPosition(sf::Vector2f position)
 }
 
 
+void TilesetSelect::setTexture(const sf::Texture* texture)
+{
+	/* Set the texture */
+	m_texture = texture;
+}
+
+
+
 void TilesetSelect::setSize(sf::Vector2f size)
 {
 	/* Set the size */
@@ -632,14 +754,14 @@ void TilesetSelect::collision_settings(sf::RenderWindow* window)
 	 	mousePos.x >= this->getPosition().x && mousePos.x < this->getPosition().x + this->getSize().x && 
 		mousePos.y >= this->getPosition().y && mousePos.y < this->getPosition().y + this->getSize().y )
 	{
-		m_state = HOVER;
+		m_state = InterfaceObject::HOVER;
 	}
 	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
+		m_state = InterfaceObject::NONE;
 	
-	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
+	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == InterfaceObject::HOVER)
 	{
-		m_state = CLICK;
+		m_state = InterfaceObject::CLICK;
 		int index=(int)(positionTile.x/this->getTileSize()) + (int)(positionTile.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize()) ;
 
 		if(index < *m_nbr_tiles)
@@ -665,15 +787,15 @@ void TilesetSelect::choice_tile(sf::RenderWindow* window)
 		mousePos.x >= this->getPosition().x && mousePos.x < this->getPosition().x + this->getSize().x && 
 		mousePos.y >= this->getPosition().y && mousePos.y < this->getPosition().y + this->getSize().y )
 	{
-		m_state = HOVER;
+		m_state = InterfaceObject::HOVER;
 	}
 	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
+		m_state = InterfaceObject::NONE;
 
 
-	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
+	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == InterfaceObject::HOVER)
 	{
-		m_state = CLICK;
+		m_state = InterfaceObject::CLICK;
 		int index=(int)(positionTile.x/this->getTileSize()) + (int)(positionTile.y/this->getTileSize()) * (int)(m_texture->getSize().x/this->getTileSize()) ; // Calculate the index of the tile depending on the click position
 
 		if(index < *m_nbr_tiles)
@@ -837,8 +959,10 @@ SlideBar::SlideBar(std::string id, float minValue, float maxValue)
 	/* Constructeur de l'objet */
 
 	m_id = id;
+	m_overall = false;
 	m_minValue = minValue;
 	m_maxValue = maxValue;
+	m_state = InterfaceObject::NONE;
 	if(m_maxValue <= m_minValue)
 		m_maxValue = m_minValue + 1;
 
@@ -955,13 +1079,13 @@ void SlideBar::interactsWithUser(sf::RenderWindow* window)
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
 	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::IntRect((sf::Vector2i)this->getPosition(), (sf::Vector2i)this->getSize()).contains(mousePos.x, mousePos.y))
-		m_state = HOVER;
-	else if(m_state==HOVER && sf::Mouse::isButtonPressed(sf::Mouse::Left)) 
-		m_state = CLICK;
+		m_state = InterfaceObject::HOVER;
+	else if(m_state == InterfaceObject::HOVER && sf::Mouse::isButtonPressed(sf::Mouse::Left)) 
+		m_state = InterfaceObject::CLICK;
 	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
+		m_state = InterfaceObject::NONE;
 
-	if(m_state == CLICK)
+	if(m_state == InterfaceObject::CLICK)
 	{
 		this->setCurrentValueFromPos(mousePos);
 	}
@@ -1047,6 +1171,8 @@ ScrollingList::ScrollingList(std::string id, int font_height, int unrollList_hei
 {
 	/* Constructeur de l'objet */
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = true;
 	m_default_text = "";
 	m_font_height = font_height;
 	m_unrollList_height = unrollList_height;
@@ -1073,6 +1199,8 @@ ScrollingList::ScrollingList(std::string id, int font_height, int unrollList_hei
 {
 	/* Constructeur de l'objet */
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = true;
 	m_default_text = default_text;
 	m_font_height = font_height;
 	m_unrollList_height = unrollList_height;
@@ -1106,6 +1234,26 @@ ScrollingList::~ScrollingList()
 
 
 // Getters
+
+
+sf::Rect<float> ScrollingList::getInteractableZone()
+{
+	sf::Vector2f tmpsize;
+
+	if(!m_unroll)
+		tmpsize = m_size;
+	else
+	{
+		if(m_unrollList_height >= (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF) * m_nbrValues)
+			tmpsize = sf::Vector2f(m_width, (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF) * m_nbrValues);
+		else
+			tmpsize = sf::Vector2f(m_width, m_unrollList_height);
+	}
+
+	return sf::Rect<float>(m_position, tmpsize);
+
+}
+
 
 int ScrollingList::getWidth()
 {
@@ -1195,14 +1343,17 @@ void ScrollingList::interactsWithUser(sf::RenderWindow* window)
 	sf::Vector2f mousePos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
 	if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Rect<float>(this->getPosition(), sf::Vector2f(m_width, m_font_height * SCROLLINGLIST_HEIGHT_COEFF)).contains(mousePos))
-		m_state = HOVER;
+		m_state = InterfaceObject::HOVER;
 	else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_state = NONE;
-	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == HOVER)
+		m_state = InterfaceObject::NONE;
+	else if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_state == InterfaceObject::HOVER)
 	{
-		m_state = CLICK;
+		m_state = InterfaceObject::CLICK;
 		m_unroll^=true;
 	}
+
+	if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !this->getInteractableZone().contains(mousePos))
+		m_unroll=false;
 
 	//if(m_state!=CLICK)
 	//	m_isClick = false;
@@ -1256,6 +1407,8 @@ void ScrollingList::interactsWithUser(sf::RenderWindow* window)
 
 void ScrollingList::update()
 {
+	m_size = sf::Vector2f(m_width,  (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF));
+
 	m_texture.clear(sf::Color(0,0,0,0));
 
 	int pos_value_bar=0;
@@ -1265,11 +1418,11 @@ void ScrollingList::update()
 		sf::RectangleShape value_bar(sf::Vector2f(m_width,  (int)(m_font_height * SCROLLINGLIST_HEIGHT_COEFF)));
 		
 		if(it->state==ScrollingList::CLICK)
-			value_bar.setFillColor(sf::Color(80, 80, 80, 80));
+			value_bar.setFillColor(sf::Color(80, 80, 80, 225));
 		else if(it->state==ScrollingList::HOVER)
-			value_bar.setFillColor(sf::Color(110, 110, 110, 150));
+			value_bar.setFillColor(sf::Color(110, 110, 110, 225));
 		else
-			value_bar.setFillColor(sf::Color(150, 150, 150, 150));
+			value_bar.setFillColor(sf::Color(150, 150, 150, 225));
 
 
 		value_text.setOrigin(value_text.getLocalBounds().left, value_text.getLocalBounds().top);
@@ -1369,6 +1522,9 @@ TextZone::~TextZone()
 TextZone::TextZone(std::string id, int font_size, std::string text, bool background)
 {
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = false;
+	m_color = sf::Color(255,255,255,255);
 	m_font_size = font_size;
 	m_text_string = text;
 	m_background = background;
@@ -1405,9 +1561,16 @@ bool TextZone::hasBackground()
 }
 
 
+sf::Color TextZone::getColor()
+{
+	return m_color;
+}
+
 
 
 //Setters
+
+
 
 void TextZone::setFontSize(int font_size)
 {
@@ -1427,15 +1590,26 @@ void TextZone::setBackground(bool background)
 }
 
 
+void TextZone::setColor(sf::Color color)
+{
+	m_color = color;
+}
 
 
 //Methods
 
+void TextZone::setSizeToText()
+{
+	m_size = sf::Vector2f(m_text.getLocalBounds().width, m_text.getLocalBounds().height);
+}
+
 void TextZone::update()
 {
 	m_text.setPosition(m_position + sf::Vector2f(5,5));
+	m_text.setOrigin(sf::Vector2f(m_text.getLocalBounds().left, m_text.getLocalBounds().top));
 	m_text.setString(m_text_string);
 	m_text.setCharacterSize(m_font_size);
+	m_text.setFillColor(m_color);
 }
 
 
@@ -1488,6 +1662,8 @@ EntityDisplayer::~EntityDisplayer()
 EntityDisplayer::EntityDisplayer(std::string id, bool background)
 {
 	m_id = id;
+	m_state = InterfaceObject::NONE;
+	m_overall = false;
 	m_background = background;
 
 	m_entity = NULL;

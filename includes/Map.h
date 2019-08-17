@@ -43,6 +43,7 @@ public:
 	void update_transparency(int chosen_height);
 	void physics_entities();
 	void addEntity(Entity* entity);
+	void delEntity(Entity* entity);
 	
 
 private:

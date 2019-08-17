@@ -23,28 +23,40 @@ extern std::string* PTR_EVENT_TEXT_ENTERED;
 class InterfaceObject : public sf::Drawable
 {
 public:
+	enum State 		{NONE, HOVER, CLICK};
+
 	//Constructors/Destructors
 	InterfaceObject();
 	~InterfaceObject();
 
 
 	//Getters
-	std::string			getID();
-	sf::Vector2f 		getSize();
-	sf::Vector2f 		getPosition();
+	std::string					getID();
+	sf::Vector2f 				getSize();
+	sf::Vector2f 				getPosition();
+	virtual sf::Rect<float> 	getInteractableZone();
+	State 						getState();
+	bool 						isOverall();
+
 
 
 	//Setters
-	void				setID(std::string id);
-	void 				setSize(sf::Vector2f size);
-	void 				setPosition(sf::Vector2f position);
+	void						setID(std::string id);
+	void 						setSize(sf::Vector2f size);
+	void 						setPosition(sf::Vector2f position);
+	void 						setState(State state);
 
-	virtual void		update();
-	virtual void 		interactsWithUser(sf::RenderWindow* window);
+	//Methods 			
+	virtual void				update();
+	virtual void 				interactsWithUser(sf::RenderWindow* window);
+
 protected:
-	std::string			m_id;
-	sf::Vector2f		m_position;
-	sf::Vector2f		m_size;
+	std::string					m_id;
+	sf::Vector2f				m_position;
+	sf::Vector2f				m_size;
+	State 						m_state;
+	bool 						m_overall;
+
 };
 
 
@@ -57,8 +69,7 @@ protected:
 class InputBar : public InterfaceObject
 {
 public:
-	enum Type 		{NUMERICAL, ALPHANUMERICAL};
-	enum State 		{NONE, HOVER, CLICK};
+	enum Type 		{NUMERICAL, ALPHANUMERICAL, ALPHANUMERICAL_SPEC_CHARACTERS};
 
 	//Constructors/Destructors
 	InputBar();
@@ -70,7 +81,6 @@ public:
 	//Getters
 	sf::Vector2f	getPosition();
 	sf::Vector2f	getSize();
-	State 			getState();
 	std::string		getValue();
 	Type 			getType();
 
@@ -99,7 +109,6 @@ private:
 	clock_t 		m_time;
 	bool 			m_typing_cursor;
 
-	State			m_state;
 	Type 			m_type;
 
 	bool			m_keyboard_pressed;
@@ -120,41 +129,43 @@ private:
 class Button : public InterfaceObject
 {
 public:
-	enum State {NONE, HOVER, CLICK};
+	enum Type {ONE_STATE, TWO_STATES};
 
 	//Constructors/Destructors
 	Button();
 	~Button();
-	Button(std::string id, std::string text, int size_font);
+	Button(std::string id, Button::Type type, std::string text, int size_font);
 
 
 	//Getters
 	sf::Vector2f	getPosition();
 	sf::Vector2f	getSize();
-	State 			getState();
+	Type 			getType();
 
 
 	//Setters
 	void			setPosition(sf::Vector2f position);
 	void 			setSize(sf::Vector2f size);
+	void 			setType(Type type);
+	void 			setText(std::string text);
+
 
 
 	//Methods
-	bool 			isClick();
+	void 			click();
+	bool 			isClicked();
 	void			interactsWithUser(sf::RenderWindow* window);
 	void 			update();
 	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 
 private:
-	int 			m_size_font;
-
 	std::string		m_text;
+	int 			m_size_font;
 	sf::Font		m_font;
+	Type 			m_type;
 
-
-	State			m_state;
-	bool			m_isClick;
+	bool			m_isClicked;
 
 };
 
@@ -183,6 +194,7 @@ public:
 
 	//Setters
 	void 				setPosition(sf::Vector2f position);
+	void 				setTexture(const sf::Texture* texture);
 	void				setZone(sf::Rect<float> zone);
 	void				setSize(sf::Vector2f size);
 	void				setSizeTile(int* size_tile);
@@ -210,11 +222,6 @@ private:
 	const int* 				m_nbr_tiles;
 	const int*	 			m_size_tile;
 	Tile*			 		m_target_tile;
-
-
-
-	enum State {NONE, HOVER, CLICK};
-	State 				m_state;
 };
 
 
@@ -263,8 +270,6 @@ private:
 	float				m_ratio_cursor_bar;
 	Type				m_type;
 
-	enum State {NONE, HOVER, CLICK};
-	State 				m_state;
 };
 
 
@@ -288,6 +293,7 @@ public:
 
 
 	//Getters
+	sf::Rect<float> getInteractableZone();
 	int 			getWidth();
 	int 			getFontHeight();
 	std::string		getCurrentValue();	
@@ -310,10 +316,8 @@ public:
 
 
 private:
-	enum State {NONE, HOVER, CLICK};
 	struct Option {std::string value; ScrollingList::State state;};
 
-	State 						m_state;
 	int 						m_width;
 	int 						m_unrollList_height;
 	int 						m_font_height;
@@ -348,15 +352,19 @@ public:
 	int 			getFontSize();
 	std::string 	getText();
 	bool 			hasBackground();
+	sf::Color 		getColor();
 
 
 	//Setters
 	void 			setFontSize(int font_size);
 	void 			setText(std::string text);
 	void 			setBackground(bool background);
+	void 			setColor(sf::Color color);
+
 
 
 	//Methods
+	void 			setSizeToText();
 	void 			update();
 	void 			draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
@@ -367,6 +375,7 @@ private:
 	bool 							m_background;
 	sf::Text 						m_text;
 	sf::Font 						m_font;
+	sf::Color 						m_color;
 };
 
 

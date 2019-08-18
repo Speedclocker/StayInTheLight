@@ -1,0 +1,49 @@
+[Header]
+Name : hero_01
+Type : Character
+Texture : data/imgs/linkmv.png
+Size : (22,28)
+GroundZone : 14
+[/Header]
+
+[Features]
+Hitbox : (3,15,16,14)
+Speed : 2
+Health : 10
+[/Features]
+
+[Animations]
+default : {(22, 28),1,(0,0),0}	
+moving_up : {(22, 28),8,(0,29),0}	
+standing_up : {(22, 28),1,(0,29),0}	
+attacking_up : {(30, 38),4,(0,160),0}	
+
+moving_upright : {(22, 28),8,(0,29),0}	
+standing_upright : {(22, 28),1,(0,29),0}	
+attacking_upright : {(30, 38),4,(0,160),0}	
+
+moving_upleft : {(22, 28),8,(0,29),0}	
+standing_upleft : {(22, 28),1,(0,29),0}	
+attacking_upleft : {(30, 38),4,(0,160),0}	
+
+moving_down : {(22, 28),8,(0,0),0}
+standing_down : {(22, 28),1,(0,0),0}
+attacking_down : {(30, 34),4,(0,122),0}
+
+moving_downright : {(22, 28),8,(0,0),0}
+standing_downright : {(22, 28),1,(0,0),0}
+attacking_downright : {(30, 34),4,(0,122),0}
+
+moving_downleft : {(22, 28),8,(0,0),0}
+standing_downleft : {(22, 28),1,(0,0),0}
+attacking_downleft : {(30, 34),4,(0,122),0}
+
+moving_right :	{(22, 28),8,(0,88),0}
+standing_right : {(22, 28),1,(0,88),0}
+attacking_right : {(22, 28),1,(0,88),0}
+
+moving_left : {(22, 28),8,(0,58),0}
+standing_left : {(22, 28),1,(0,58),0}
+attacking_left : {(22, 28),1,(0,58),0}
+[/Animations]
+

@@ -1,33 +1,49 @@
 CC=g++
 CFLAGS=-W -Wall -Wextra -g 
-EXEC= Rogue
-SFMLDIR=/usr/lib/x86_64-linux-gnu/ 
-IDIR=-Iincludes/
+EXECGAME= Rogue
+EXECMAP= MapCreator
+SFMLDIR=-I/usr/lib/x86_64-linux-gnu/ 
+IGAMEDIR=-Iincludes/game/
+IMAPDIR=-Iincludes/mapcreator/
 LFLAGS= -lsfml-graphics -lsfml-window -lsfml-system -lm
-SDIR= src/
-ODIR= obj/
+SGAMEDIR= src/game/
+OGAMEDIR= obj/game/
+SMAPDIR= src/mapcreator/
+OMAPDIR= obj/mapcreator/
 
-SOURCES:=$(wildcard $(SDIR)*.cpp)
-OBJECTS:=$(SOURCES:$(SDIR)%.cpp=$(ODIR)%.o)
+SOURCES_GAME:=$(wildcard $(SGAMEDIR)*.cpp)
+OBJECTS_GAME:=$(SOURCES_GAME:$(SGAMEDIR)%.cpp=$(OGAMEDIR)%.o)
 
-
-all : $(EXEC)
-
-$(EXEC): $(OBJECTS) main.o	
-	$(CC) -o $@ $^ $(IDIR) $(LFLAGS) $(CFLAGS)
-
-main.o : main.cpp
-	$(CC) -c $< -o $@ $(IDIR) $(LFLAGS) $(CFLAGS)
+SOURCES_MAP:=$(wildcard $(SMAPDIR)*.cpp)
+OBJECTS_MAP:=$(SOURCES_MAP:$(SMAPDIR)%.cpp=$(OMAPDIR)%.o)
 
 
 
-$(OBJECTS): $(ODIR)%.o : $(SDIR)%.cpp
-	@if [ ! -d $(ODIR) ]; then mkdir $(ODIR); fi
-	$(CC) -c $< -o $@ -I$(SFMLDIR) $(IDIR) $(CFLAGS)
+all : $(EXECGAME)
 
+
+
+$(EXECGAME): $(OBJECTS_GAME)	
+	$(CC) -o $@ $^ $(IGAMEDIR) $(LFLAGS) $(CFLAGS)
+
+$(EXECMAP): $(filter-out $(OGAMEDIR)loadContent.o $(OGAMEDIR)main_Rogue.o, $(OBJECTS_GAME)) $(OBJECTS_MAP)
+	g++ -o $@ $^ $(IGAMEDIR) $(IMAPDIR) $(LFLAGS) $(LDIR) $(CFLAGS)
+
+
+
+
+$(OBJECTS_GAME): $(OGAMEDIR)%.o : $(SGAMEDIR)%.cpp
+	@if [ ! -d $(OGAMEDIR) ]; then mkdir $(OGAMEDIR); fi
+	$(CC) -c $< -o $@ $(SFMLDIR) $(IGAMEDIR) $(CFLAGS)
+
+
+$(OBJECTS_MAP): $(OMAPDIR)%.o : $(SMAPDIR)%.cpp
+	@if [ ! -d $(OMAPDIR) ]; then mkdir $(OMAPDIR); fi
+	$(CC) -c $< -o $@ $(SFMLDIR) $(IGAMEDIR) $(IMAPDIR) $(CFLAGS)
 
 
 
 .PHONY: clean
 clean:
-	rm -f $(ODIR)*.o Rogue *.o
+	rm -f $(OGAMEDIR)*.o Rogue *.o
+	rm -f $(OMAPDIR)*.o MapCreator *.o

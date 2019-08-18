@@ -9,9 +9,7 @@ Launch Rogue.
 
 # Mapping
 
-*make MapCreator* command in Mapping folder to create the binaries used by the map editor program.
-To create new maps, launch :
-./MapCreator [Number of height layers] [Size in dimension X] [Size in dimension Y] [Size of a map tile] [Image file containing the tileset]
+*make MapCreator* command to create the binaries for the map editor.
 
-ex : 
-./MapCreator 2 30 30 16 ../data/imgs/tileset.png
+To create new maps, launch :
+./MapCreator

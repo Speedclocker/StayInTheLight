@@ -1,4 +1,4 @@
-# StayInTheLight : an SFML Rogue-Like Project
+# StayInTheLight : a SFML Rogue-Like Project
 
 Let's try to develop a little game...
 

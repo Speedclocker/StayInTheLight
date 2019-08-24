@@ -1,15 +1,16 @@
-# Game
+# StayInTheLight : an SFML Rogue-Like Project
 
 Let's try to develop a little game...
 
-A simple *make* command to create the binaries.
+## Game
 
-Launch Rogue.
+A simple *make* command to create the binaries for the game.
+
+Execute : ./Rogue.
 
 
-# Mapping
+## Mapping
 
-*make MapCreator* command to create the binaries for the map editor.
+A *make MapCreator* command to create the binaries for the map editor.
 
-To create new maps, launch :
-./MapCreator
+Execute : ./MapCreator

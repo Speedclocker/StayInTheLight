@@ -379,7 +379,8 @@ void Map::updateEntities()
 		val_y = (dyn_char != nullptr) ? dyn_char->getAbsHitbox().top + dyn_char->getAbsHitbox().height : (*it)->getPosition().y + (*it)->getSize().y;
 
 		index_y = val_y/this->getTileSize();
-		index_y = (index_y < this->getSize().y)? index_y : this->getSize().y-1;
+		if(index_y >= this->getSize().y) index_y = this->getSize().y-1;
+		else if(index_y < 0) index_y = 0;
 
 		m_entities_to_draw[index_y].push_back(*it);
 
@@ -524,7 +525,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 					if((*it)->isAffiliatedToMap())
 					{
 						
-						if(!obj_already_drawn && (*it)->getHeight() <= h && tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize())
+						if(!obj_already_drawn && (*it)->getHeight() <= h && (tmp_val-(h-(*it)->getHeight())*this->getTileSize() < (j+1)*this->getTileSize() || j==this->getSize().y-1))
 						{
 							
 							// Draw the part of the entity in the same level of height

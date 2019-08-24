@@ -3,10 +3,14 @@
 
 #include "Interactions.h"
 #include "Character.h"
-#include "Collector.h"
 #include "collision.h"
 #include "loadContent.h"
 #include "ResourcesManagement.h"
+#include "Camera.h"
+
+
+
+
 
 int main()
 {
@@ -19,18 +23,23 @@ int main()
 	bool space=false;	// State variable of attack key
 
 
+
 	//Map creation
 	Map* map=NULL;
-	sf::Texture texture_map;
-	std::string texture_name_file;
+
+
 	
 	// Entities
 	std::vector<Entity*> entities;
 
+
+
 	// Resources manager
 	ResourcesManager resources_manager;
 
-	// Loading map and entities
+
+
+	// Loading map and Entities
 	if(loadMap(&map, &entities, "data/maps/Bigmap.map", &resources_manager)<0)
 	{
 		std::cerr << "Error while loading of map" << std::endl;
@@ -40,16 +49,26 @@ int main()
 		map->addEntity(*it);
 	
 
-	//Hero creation
+
+	// Light
+	sf::Texture* light = resources_manager.getOrAddTexture("data/imgs/light.png");
+	sf::Sprite light_sprite(*light);
+
+
+
+	// Hero creation
 	Character* hero = NULL;
 	bool hero_allocated = false;
 	
 
-	//Enemy creation
+
+	// Enemy creation
 	Character* enemy = NULL;
 	bool enemy_allocated = false;
 
 
+
+	// Entities
 	for (std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 	{
 		if((*it)->getID() == "hero" && (*it)->getType()=="Character") 				hero = (Character*)(*it);
@@ -74,21 +93,35 @@ int main()
 		enemy_allocated = true;
 	}
 
-	//Add a potential attack target for hero
-	if(hero!=NULL)	hero->addAvTarget(enemy); 
 
+	// Camera
+	Camera camera(&window, true, 2, hero->getPosition(), window.getView().getSize()*0.4f);
+
+
+
+	//Add a potential attack target for hero
+	hero->addAvTarget(enemy); 
+
+
+
+	// Time DEBUG
 	//sf::Clock clock_e;
 	//sf::Time time_e = clock_e.getElapsedTime();
 
 	
+
+
 	//Main loop
 	while(window.isOpen())
 	{
 		//std::cout << "Elapsed time : " << (clock_e.getElapsedTime() - time_e).asMicroseconds() << std::endl;
 		//time_e = clock_e.getElapsedTime();
 
+
+		// Refresh Window
 		window.clear();
-			
+
+
 
         // Waiting for events
 		sf::Event event;
@@ -110,9 +143,11 @@ int main()
 			}
 		}
 		
-		
+	
+
 		// Keyboard input are associated to the hero
 		character_key_input(hero, &space);
+
 
 
 		// Update attack state of the hero
@@ -120,39 +155,60 @@ int main()
 		enemy->updateAttack();
 
 
+
 		// We apply physics on the objects associated with the current map
 		map->physics_entities();
 
-        // Characters updating
-		//personnage.update();
-		//mob.update();
 
 
+		//Update all entities
 		for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 			(*it)->update();
 
 
+
+		// Update map
 		map->update(); // Update map
+
+
 
 		// Drawing the map
 		window.draw(*map);
+
+
+
+		// Set and draw light
+		light_sprite.setPosition(hero->getPosition() + sf::Vector2f(hero->getSize().x/2, hero->getSize().y/2) - sf::Vector2f(light->getSize().x/2, light->getSize().y/2));
+		window.draw(light_sprite);
+
+
+
+		// Set and update camera
+		camera.setFocusPoint(hero->getPosition());
+		camera.update();
+
 
 
 		// Displaying the window
 		window.display();
 	}
 
+
+	// Delete Map
 	delete map;
 
+
+
+	// Delete Entities
 	std::vector<Entity*>::iterator it = entities.begin();
 	while(it!=entities.end())
 	{
 		delete(*it);
 		it = entities.erase(it);
 	}
-
 	if(hero_allocated) delete hero;
 	if(enemy_allocated) delete enemy;
+
 
 	return 0;
 }

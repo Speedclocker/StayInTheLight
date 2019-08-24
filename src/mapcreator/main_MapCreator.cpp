@@ -10,7 +10,7 @@
 
 #define FULLSCREEN true
 
-	#define DEFAULT_SIZE_H 2
+	#define DEFAULT_SIZE_H 3
 	#define DEFAULT_SIZE_X 30
 	#define DEFAULT_SIZE_Y 30
 	#define DEFAULT_SIZE_TILE 16
@@ -104,7 +104,6 @@ int main(void)
 		mappingGUI->draw();
 
 		window.display();
-
 	}
 	
 

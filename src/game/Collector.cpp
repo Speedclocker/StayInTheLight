@@ -139,19 +139,6 @@ int Collector::getSpeed()
 	return m_speed;
 }
 
-sf::IntRect Collector::getHitbox()
-{
-	// Renvoie la hitbox (dont la taille diffère de celle du personnage) relative au personnage (la position est relative à celle du personnage)
-	return m_hitbox;
-}
-
-sf::IntRect Collector::getAbsHitbox()
-{
-	// Renvoie la hitbox absolue (la position est absolue)
-	return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
-
-}
-
 Collector::State Collector::getState() const
 {
 	// Renvoie l'état du personnage
@@ -188,13 +175,6 @@ void Collector::setSpeed(int speed)
 {
 	// Modifie la vitesse de déplacement du personnage
 	m_speed = speed;
-}
-
-
-void Collector::setHitbox(sf::IntRect hitbox)
-{
-	// Modifie la hitbox du personnage (la position est relative à celle du personnage)
-	m_hitbox = hitbox;
 }
 
 

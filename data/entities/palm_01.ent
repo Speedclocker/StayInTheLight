@@ -1,16 +1,16 @@
 [Header]
 Name : palm_01
 Type : Collector
-Texture : data/imgs/palm.png
-Size : (81,122)
-GroundZone : 14
+Texture : data/imgs/palm_01.png
+Size : (75,160)
+GroundZone : 12
 [/Header]
 
 [Features]
-Collectible : 10
-Hitbox : (37,112,10,10)
+Collectible : 1
+Hitbox : (31,140,13,10)
 [/Features]
 
 [Animations]
-default : {(81,122),1,(0,0),0}
+default : {(75,160),1,(0,0),0}
 [/Animations]

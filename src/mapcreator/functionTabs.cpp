@@ -612,6 +612,7 @@ void NewMapTab(Tab* tab, ArgTab* argtab)
 
 	if(create_button->isClicked())
 	{
+		sf::Texture* tmp_texture = ptr_resources_manager->getOrAddTexture(tileset_texture_file_entry->getValue());
 		if(height * size_x * size_y * size_tile == 0)
 		{
 			error_text_zone->setText("No component equal to 0 !");
@@ -626,17 +627,16 @@ void NewMapTab(Tab* tab, ArgTab* argtab)
 			error_text_zone->update();
 			error_text_zone->setSizeToText();
 		}
-		else if(((*new_texture)=ptr_resources_manager->getOrAddTexture(tileset_texture_file_entry->getValue())) == NULL)
+		else if((tmp_texture) == NULL)
 		{
 			error_text_zone->setText("Texture was not loaded !");
 			error_text_zone->setColor(sf::Color(255,25,25,255));
 			error_text_zone->update();
 			error_text_zone->setSizeToText();
-
-			map_created = true;
 		}
 		else
 		{
+			*new_texture = tmp_texture;
 			// Set string
 			*ptr_texture_name_file = tileset_texture_file_entry->getValue();
 
@@ -647,6 +647,7 @@ void NewMapTab(Tab* tab, ArgTab* argtab)
 
 			// Creation of the map
 			*new_map = new Map(sf::Vector2f(size_x, size_y), height, size_tile);
+			(*new_map)->setTexture(*new_texture);
 
 
 			error_text_zone->setText("Map Created !");

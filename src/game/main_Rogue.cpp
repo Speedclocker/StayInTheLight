@@ -12,12 +12,11 @@ int main()
 {
 
 	//Window creation and setting
-	sf::RenderWindow window(sf::VideoMode(640,480), "Comment");	
+	sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width,sf::VideoMode::getDesktopMode().height), "Comment", sf::Style::Fullscreen);	
 	window.setFramerateLimit(60);	// Framerate limit
 	window.setKeyRepeatEnabled(false);	// No repetition of key-event
 
 	bool space=false;	// State variable of attack key
-
 
 
 	//Map creation
@@ -31,48 +30,65 @@ int main()
 	// Resources manager
 	ResourcesManager resources_manager;
 
-	if(loadMap(&map, &entities, "data/maps/TestGame.map", &resources_manager)<0)
+	// Loading map and entities
+	if(loadMap(&map, &entities, "data/maps/Bigmap.map", &resources_manager)<0)
 	{
 		std::cerr << "Error while loading of map" << std::endl;
 		return -1;
 	}
-
 	for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 		map->addEntity(*it);
 	
 
-	//Texture creation and loading
-	sf::Texture texture_link;
-	texture_link.loadFromFile("data/imgs/linkmv.png");
-
-
+	//Hero creation
+	Character* hero = NULL;
+	bool hero_allocated = false;
 	
-	//Character creation
-	Character personnage("hero", "data/entities/hero_01.ent", &texture_link, map);
-	personnage.setPosition(sf::Vector2f(window.getSize().x/2-personnage.getSize().x/2, window.getSize().y/2-personnage.getSize().y/2));
-	personnage.setHeight(1);
-	map->addEntity(&personnage);
+
+	//Enemy creation
+	Character* enemy = NULL;
+	bool enemy_allocated = false;
 
 
+	for (std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	{
+		if((*it)->getID() == "hero" && (*it)->getType()=="Character") 				hero = (Character*)(*it);
+		else if((*it)->getID() == "enemy" && (*it)->getType()=="Character") 		enemy = (Character*)(*it);
+	}
 
-	//Mob creation
-	Character mob("enemy", "data/entities/hero_01.ent", &texture_link, map);
-	mob.setPosition(sf::Vector2f(window.getSize().x/2-mob.getSize().x/2, window.getSize().y/2-100-mob.getSize().y/2));
-	mob.setHeight(1);
-	map->addEntity(&mob);
+	if(hero == NULL)
+	{
+		hero = new Character("hero", "data/entities/hero_01.ent", &resources_manager, map);
+		hero->setPosition(sf::Vector2f(map->getSize().x*map->getTileSize()/2 - hero->getSize().x/2, map->getSize().y*map->getTileSize()/2 - hero->getSize().y/2));
+		hero->setHeight(1);
+		map->addEntity(hero);
+		hero_allocated = true;
+	}
+
+	if(enemy == NULL)
+	{
+		enemy = new Character("enemy", "data/entities/hero_01.ent", &resources_manager, map);
+		enemy->setPosition(sf::Vector2f(map->getSize().x*map->getTileSize()/2 - enemy->getSize().x/2,  map->getSize().y*map->getTileSize()/2 - 100 - enemy->getSize().y/2));
+		enemy->setHeight(1);
+		map->addEntity(enemy);
+		enemy_allocated = true;
+	}
 
 	//Add a potential attack target for hero
-	personnage.addAvTarget(&mob); 
+	if(hero!=NULL)	hero->addAvTarget(enemy); 
 
+	//sf::Clock clock_e;
+	//sf::Time time_e = clock_e.getElapsedTime();
 
 	
 	//Main loop
 	while(window.isOpen())
 	{
+		//std::cout << "Elapsed time : " << (clock_e.getElapsedTime() - time_e).asMicroseconds() << std::endl;
+		//time_e = clock_e.getElapsedTime();
+
 		window.clear();
 			
-		map->update(); // Update map
-
 
         // Waiting for events
 		sf::Event event;
@@ -96,25 +112,27 @@ int main()
 		
 		
 		// Keyboard input are associated to the hero
-		character_key_input(&personnage, &space);
+		character_key_input(hero, &space);
 
 
 		// Update attack state of the hero
-		personnage.updateAttack();
-		mob.updateAttack();
+		hero->updateAttack();
+		enemy->updateAttack();
 
 
 		// We apply physics on the objects associated with the current map
 		map->physics_entities();
 
         // Characters updating
-		personnage.update();
-		mob.update();
+		//personnage.update();
+		//mob.update();
 
 
 		for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 			(*it)->update();
 
+
+		map->update(); // Update map
 
 		// Drawing the map
 		window.draw(*map);
@@ -132,6 +150,9 @@ int main()
 		delete(*it);
 		it = entities.erase(it);
 	}
+
+	if(hero_allocated) delete hero;
+	if(enemy_allocated) delete enemy;
 
 	return 0;
 }

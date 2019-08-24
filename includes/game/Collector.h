@@ -16,7 +16,7 @@
 
 
 
-class Collector : public Entity
+class Collector : public CollisionableEntity
 {
 public:
 	enum State { MOVING, STANDING, DEFAULT_STATE };
@@ -34,18 +34,14 @@ public:
 	// Getters
 	int 					getHealth();
 	int 					getSpeed();
-	sf::IntRect 			getHitbox();
-	sf::IntRect 			getAbsHitbox();
 	State 					getState() const;
 	sf::Clock 				getClock();
-	//bool 					isAffiliatedToMap();
 
 
 	// Setters 
 	void 					setTexture(sf::Texture* texture);
 	void 					setHealth(int health);
 	void 					setSpeed(int speed);
-	void 					setHitbox(sf::IntRect hitbox);
 	void 					setState(State state);
 
 
@@ -71,9 +67,7 @@ private:
 	int 																		m_collectible; 				// What kind of collectible can leave the collector
 	int 																		m_health;					// Health of an entity collector
 	int 																		m_speed;					// Speed of an entity collector
-	//bool 																		m_affiliated_to_map; 		// If the sprite is affiliated to a map, return true;
 	std::map< std::pair<Collector::State, Sense> , AnimationParameters > 		m_animation_parameters;		// Animation parameters of an enitity collectors identified with the state and the sense of entity
-	sf::IntRect 																m_hitbox;					// Hitbox of the entity
 	Collector::State 															m_state;					// State of the entity
 	sf::Clock 																	m_clock;					// Clock associated to the entity, to evaluate its time;
 };

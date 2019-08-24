@@ -62,7 +62,7 @@ private:
 
 // Class Character
 
-class Character : public Entity
+class Character : public CollisionableEntity
 {
 public:
 	enum State { ATTACKING, MOVING, STANDING, DEFAULT_STATE };
@@ -78,19 +78,15 @@ public:
 	//Getters
 	int 						getHealth();
 	int 						getSpeed();
-	sf::IntRect 				getHitbox();
-	sf::IntRect 				getAbsHitbox();
 	State 						getState() const;
 	sf::Clock 					getClock();
 	sf::Time 					getLastTimeAttack();
 	std::vector< Character* > 	getAvTargets();
-	//bool 						isAffiliatedToMap();
 
 	// Setters
 	void 						setTexture(sf::Texture* texture);
 	void 						setHealth(int health);
 	void 						setSpeed(int speed);
-	void 						setHitbox(sf::IntRect hitbox);
 	void 						setState(State state);
 	void 						setLastTimeAttack(sf::Time last_time_attack);
 	void 						addAvTarget(Character* target);
@@ -119,9 +115,7 @@ private:
 	
 	int 																		m_health;					// Health of a character entity
 	int 																		m_speed;					// Speed of a character entity
-	//bool 																		m_affiliated_to_map; 		// If the sprite is affiliated to a map, return true;
 	std::map< std::pair<Character::State, Sense> , AnimationParameters > 		m_animation_parameters;		// Animation parameters of a character entity identified with the state and the sense of entity
-	sf::IntRect 																m_hitbox;
 	State 																		m_state;
 	sf::Clock 																	m_clock;
 	sf::Time 																	m_last_time_attack;

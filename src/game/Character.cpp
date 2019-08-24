@@ -341,20 +341,6 @@ int Character::getSpeed()
 }
 
 
-sf::IntRect Character::getHitbox()
-{
-	/* Return hitbox relativly to the character (origin is the character) */
-	return m_hitbox;
-}
-
-
-sf::IntRect Character::getAbsHitbox()
-{
-	/* Return hitbox in absolute coords */
-	return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
-}
-
-
 Character::State Character::getState() const
 {
 	/* Return state of the character */
@@ -404,12 +390,6 @@ void Character::setSpeed(int speed)
 {
 	// Modifie la vitesse de déplacement du personnage
 	m_speed = speed;
-}
-
-void Character::setHitbox(sf::IntRect hitbox)
-{
-	// Modifie la hitbox du personnage (la position est relative à celle du personnage)
-	m_hitbox = hitbox;
 }
 
 void Character::setState(State state)

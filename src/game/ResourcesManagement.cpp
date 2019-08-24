@@ -27,7 +27,7 @@ sf::Texture* ResourcesManager::getTexture(std::string texture_name)
 
 	for(std::map<std::string, sf::Texture*>::iterator it = m_textures.begin(); it != m_textures.end(); it++)
 	{
-		if(strstr(("/"+it->first).c_str(), texture_name.c_str())!=NULL)
+		if(strstr(("/"+it->first+"\0").c_str(), texture_name.c_str())!=NULL)
 			return it->second;
 	}
 
@@ -60,6 +60,7 @@ sf::Texture* ResourcesManager::getOrAddTexture(std::string texture_name)
 		if(this->newTexture(texture_name) < 0) { std::cerr << "Error while loading of texture " << texture_name << std::endl; return NULL; }
 		else if((texture = this->getTexture(texture_name)) == NULL) { std::cerr << "Error while loading of texture " << texture_name << std::endl; return NULL; }
 	}
+
 	return texture;
 }
 

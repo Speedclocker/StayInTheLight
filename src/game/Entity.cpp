@@ -369,3 +369,33 @@ void Entity::readAnimationFromString(std::string string)
 {
 	(void)string;
 }
+
+
+
+
+
+
+// Getters
+
+sf::IntRect CollisionableEntity::getHitbox()
+{
+	// Renvoie la hitbox (dont la taille diffère de celle du personnage) relative au personnage (la position est relative à celle du personnage)
+	return m_hitbox;
+}
+
+sf::IntRect CollisionableEntity::getAbsHitbox()
+{
+	// Renvoie la hitbox absolue (la position est absolue)
+	return sf::IntRect(m_hitbox.left + m_position.x, m_hitbox.top + m_position.y, m_hitbox.width, m_hitbox.height);
+
+}
+
+
+// Setters
+
+void CollisionableEntity::setHitbox(sf::IntRect hitbox)
+{
+	// Modifie la hitbox du personnage (la position est relative à celle du personnage)
+	m_hitbox = hitbox;
+}
+

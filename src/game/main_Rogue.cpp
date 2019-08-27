@@ -95,8 +95,8 @@ int main()
 
 
 	// Camera
-	Camera camera(&window, true, 2, hero->getPosition(), window.getView().getSize()*0.4f);
-
+	Camera camera(&window, true, 2, hero->getPosition(), sf::Vector2f((int)(window.getSize().x*0.4f), (int)(window.getSize().y*0.4f)));
+	camera.setFocusPoint(hero->getPosition());
 
 
 	//Add a potential attack target for hero
@@ -105,8 +105,8 @@ int main()
 
 
 	// Time DEBUG
-	//sf::Clock clock_e;
-	//sf::Time time_e = clock_e.getElapsedTime();
+	sf::Clock clock_e;
+	sf::Time time_e = clock_e.getElapsedTime();
 
 	
 
@@ -114,9 +114,8 @@ int main()
 	//Main loop
 	while(window.isOpen())
 	{
-		//std::cout << "Elapsed time : " << (clock_e.getElapsedTime() - time_e).asMicroseconds() << std::endl;
-		//time_e = clock_e.getElapsedTime();
-
+		std::cout << "Elapsed time : " << (clock_e.getElapsedTime() - time_e).asMicroseconds() << std::endl;
+		time_e = clock_e.getElapsedTime();
 
 		// Refresh Window
 		window.clear();
@@ -139,11 +138,12 @@ int main()
 				// Adapt the view if window has been resized
 				main_view.setSize(event.size.width, event.size.height);
 				main_view.setCenter(sf::Vector2f(map->getTileSize() * map->getSize().x/2, map->getTileSize() * map->getSize().y/2));
+				camera.setSizeView(sf::Vector2f((int)(window.getSize().x*0.4f), (int)(window.getSize().y*0.4f)));
 				window.setView(main_view);
 			}
 		}
 		
-	
+		
 
 		// Keyboard input are associated to the hero
 		character_key_input(hero, &space);
@@ -174,7 +174,6 @@ int main()
 
 		// Drawing the map
 		window.draw(*map);
-
 
 
 		// Set and draw light

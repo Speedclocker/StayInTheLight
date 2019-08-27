@@ -46,6 +46,11 @@ AnimationParameters animationParametersFromString(std::string string)
 
 
 
+bool operator==(AnimationParameters const& a, AnimationParameters const& b) { return (a.size == b.size && a.nbr_frames == b.nbr_frames && a.init_text_pos == b.init_text_pos && a.spacing == b.spacing); }
+bool operator!=(AnimationParameters const& a, AnimationParameters const& b) { return !(a.size == b.size && a.nbr_frames == b.nbr_frames && a.init_text_pos == b.init_text_pos && a.spacing == b.spacing); }
+
+
+
 
 //---------------------------------------------------- Animation -----------------------------------------------//
 
@@ -173,14 +178,17 @@ void AnimatedSprite::setInitTxtPos(sf::Vector2f init_text_pos)
 	m_init_txt_pos = init_text_pos;
 }
 
-void AnimatedSprite::setParameters(sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing)
+void AnimatedSprite::setParameters(AnimationParameters parameters)
 {
 	//Modifie les paramètres de capture dans la texture
-	m_size = size;
-	m_nbr_frames = nbr_frames;
-	m_init_txt_pos = init_text_pos;
-	m_spacing = spacing;
-
+	if(parameters != AnimationParameters{m_size, m_nbr_frames, m_init_txt_pos, m_spacing})
+	{
+		m_size = parameters.size;
+		m_nbr_frames = parameters.nbr_frames;
+		m_init_txt_pos = parameters.init_text_pos;
+		m_spacing = parameters.spacing;
+		m_actual_frame = 0;
+	}
 }
 
 

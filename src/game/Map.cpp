@@ -422,9 +422,12 @@ void Map::physics_entities()
 							for(std::vector<CollisionableEntity*>::iterator it2=m_entities_bis[index_h][i][j].begin(); it2!=m_entities_bis[index_h][i][j].end(); it2++)
 							{
 								CollisionableEntity* ent2 = *it2;
+
+								if(ent1 == ent2) continue;
+								
 								if(ent1->getType().compare("Character")==0 && ent2->getType().compare("Character")==0)
 									physics_characters( (Character*)ent1, (Character*)ent2 );
-								else if(ent1->getType().compare("Character")==0 && ent2->getType().compare("Collector")==0)
+								if(ent1->getType().compare("Character")==0 && ent2->getType().compare("Collector")==0)
 									physics_character_collector( (Character*)ent1, (Collector*)ent2 );
 								else if(ent1->getType().compare("Collector")==0 && ent2->getType().compare("Character")==0)
 									physics_character_collector( (Character*)ent2, (Collector*)ent1 );

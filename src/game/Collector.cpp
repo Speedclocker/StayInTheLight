@@ -200,13 +200,13 @@ void Collector::update()
 		{
 			// Change the sprite animation of the Collector entity depending on its sense and state
 			AnimationParameters parameter = ptr_animation_parameters->second;
-			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+			m_sprite->setParameters(parameter);
 		}
 		else if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Collector::State, Sense>(Collector::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 		{
 			// Set the default animation if there is one
 			AnimationParameters parameter = ptr_animation_parameters->second;
-			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+			m_sprite->setParameters(parameter);
 		}
 
 		// Update the sprite position

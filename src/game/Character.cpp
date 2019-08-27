@@ -435,13 +435,13 @@ void Character::update()
 		{
 			// Change the sprite animation of the Collector entity depending on its sense and state
 			AnimationParameters parameter = ptr_animation_parameters->second;
-			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+			m_sprite->setParameters(parameter);
 		}
 		else if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 		{
 			// Set the default animation if there is one
 			AnimationParameters parameter = ptr_animation_parameters->second;
-			m_sprite->setParameters(parameter.size, parameter.nbr_frames, parameter.init_text_pos, parameter.spacing);
+			m_sprite->setParameters(parameter);
 		}
 
 		
@@ -570,10 +570,16 @@ void Character::readFeaturesFromString(std::string string)
 
 		tag=tag+1;
 		hitbox.left = atoi(tag=strtok(tag, " ,"));	
+
+		std::cout << hitbox.left << std::endl;
 		hitbox.top = atoi(tag=strtok(NULL, " ,"));
+		std::cout << hitbox.top << std::endl;
 		hitbox.width = atoi(tag=strtok(NULL, " ,"));	
+
+		std::cout << hitbox.width << std::endl;
 		hitbox.height = atoi(tag=strtok(NULL, " )"));
 
+		std::cout << hitbox.height << std::endl;
 		if(hitbox.left!=-1 && hitbox.top!=-1 && hitbox.width!=-1 && hitbox.height!=-1) this->setHitbox(hitbox);
 	}
 	else if(strstr(string.c_str(), "Speed : ")!=NULL && tag!=NULL) this->setSpeed(atoi(tag));

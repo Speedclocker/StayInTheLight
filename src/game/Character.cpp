@@ -222,7 +222,7 @@ Character::Character(std::string id, sf::Texture* texture, Map* map)
 
 	m_affiliated_to_map = true;
 
-	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
+	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), true, this->getGroundZone(), map);
 	m_sprite->setFPSQuotient(4);
 
 	this->setSize(sf::Vector2f(22, 28));
@@ -253,10 +253,10 @@ Character::Character(std::string id, std::string file_name, sf::Texture* texture
 	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 	{
 		AnimationParameters def_param = ptr_animation_parameters->second;
-		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, def_param.loop, this->getGroundZone(), map);
 	}
 	else
-		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), true, this->getGroundZone(), map);
 
 
 	m_affiliated_to_map = true;
@@ -289,10 +289,10 @@ Character::Character(std::string id, std::string file_name, ResourcesManager* re
 	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Character::State, Sense>(Character::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 	{
 		AnimationParameters def_param = ptr_animation_parameters->second;
-		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, def_param.loop, this->getGroundZone(), map);
 	}
 	else
-		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), true, this->getGroundZone(), map);
 
 
 	m_affiliated_to_map = true;
@@ -497,11 +497,11 @@ void Character::move(int mov_x, int mov_y)
 void Character::attack()
 {
 	/* Launch an attack if the character doesn't attack */
-	if(m_state!=ATTACKING && m_actual_attack==NULL && (m_clock.getElapsedTime().asMilliseconds() - m_last_time_attack.asMilliseconds() > 250 ) )
+	if(m_state!=ATTACKING && m_actual_attack==NULL && (m_clock.getElapsedTime().asMilliseconds() - m_last_time_attack.asMilliseconds() > 500 ) )
 	{
 		//Exemple with a linear attack
 		std::vector< sf::IntRect > test_rect;
-		for(int i=0; i<this->getSize().x; i+=4)
+		for(int i=0; i<this->getSize().x; i++)
 		{
 			test_rect.push_back(sf::IntRect(i-this->getSize().x/2,this->getSize().y/2+5,10,10));
 		}
@@ -571,15 +571,12 @@ void Character::readFeaturesFromString(std::string string)
 		tag=tag+1;
 		hitbox.left = atoi(tag=strtok(tag, " ,"));	
 
-		std::cout << hitbox.left << std::endl;
 		hitbox.top = atoi(tag=strtok(NULL, " ,"));
-		std::cout << hitbox.top << std::endl;
+		
 		hitbox.width = atoi(tag=strtok(NULL, " ,"));	
 
-		std::cout << hitbox.width << std::endl;
 		hitbox.height = atoi(tag=strtok(NULL, " )"));
 
-		std::cout << hitbox.height << std::endl;
 		if(hitbox.left!=-1 && hitbox.top!=-1 && hitbox.width!=-1 && hitbox.height!=-1) this->setHitbox(hitbox);
 	}
 	else if(strstr(string.c_str(), "Speed : ")!=NULL && tag!=NULL) this->setSpeed(atoi(tag));

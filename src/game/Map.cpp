@@ -22,29 +22,29 @@ Map::Map(sf::Vector2f size, int height, int tile_sz)
 	
 	//Allocation memory for the map
 	m_tiles 	= (Tile***)malloc( m_height * sizeof(Tile**));
-	m_entities_bis.resize(m_height, std::vector< std::vector< std::vector<CollisionableEntity*> > >());
+	m_entities_coll.resize(m_height, std::vector< std::vector< std::vector<CollisionableEntity*> > >());
 	m_entities_to_draw.resize(m_size.y, std::vector<Entity*>());
 
 	for(int h=0; h<m_height; h++)
 	{
 		m_tiles[h] = (Tile**)malloc( (int)m_size.x * sizeof(Tile*) );
-		m_entities_bis[h].resize((int)m_size.x, std::vector< std::vector<CollisionableEntity*> >());
+		m_entities_coll[h].resize((int)m_size.x, std::vector< std::vector<CollisionableEntity*> >());
 
 		for(int i=0; i<m_size.x; i++)
 		{
 			m_tiles[h][i] = (Tile*)malloc( (int)m_size.y * sizeof(Tile));
-			m_entities_bis[h][i].resize((int)m_size.y, std::vector<CollisionableEntity*>());
+			m_entities_coll[h][i].resize((int)m_size.y, std::vector<CollisionableEntity*>());
 
 			for(int j=0; j<m_size.y; j++)
 			{
 				m_tiles[h][i][j].m_pos_text=sf::Vector2f(0,0);
 				m_tiles[h][i][j].m_collisionable=false;
-				m_entities_bis[h][i].push_back( std::vector <CollisionableEntity*> ());
+				m_entities_coll[h][i].push_back( std::vector <CollisionableEntity*> ());
 			}
 		}
 	}	
 
-
+	m_camera = NULL;
 
 	this->update();
 }
@@ -137,7 +137,7 @@ void Map::setSize(unsigned int size_x, unsigned int size_y)
 	for(int h=0; h<m_height; h++)
 	{
 		m_tiles[h] = (Tile**)realloc( m_tiles[h] , size_x * sizeof(Tile*) );
-		m_entities_bis[h].resize(size_x, std::vector< std::vector<CollisionableEntity*> >());
+		m_entities_coll[h].resize(size_x, std::vector< std::vector<CollisionableEntity*> >());
 		for(unsigned int i=0; i<size_x; i++)
 		{
 			if(i < m_size.x)
@@ -145,7 +145,7 @@ void Map::setSize(unsigned int size_x, unsigned int size_y)
 			else
 				m_tiles[h][i] = (Tile*)malloc( size_y * sizeof(Tile));
 
-			m_entities_bis[h][i].resize(size_y, std::vector<CollisionableEntity*>());
+			m_entities_coll[h][i].resize(size_y, std::vector<CollisionableEntity*>());
 
 			for(unsigned int j=0; j<size_y; j++)
 			{
@@ -174,17 +174,17 @@ void Map::setHeight(unsigned int height)
 		return;
 
 	m_tiles = (Tile***)realloc( m_tiles , height * sizeof(Tile**));
-	m_entities_bis.resize(height, std::vector< std::vector< std::vector<CollisionableEntity*> > >());
+	m_entities_coll.resize(height, std::vector< std::vector< std::vector<CollisionableEntity*> > >());
 
 	for(unsigned int h=m_height; h<height; h++)
 	{
 		m_tiles[h] = (Tile**)malloc( m_size.x * sizeof(Tile*) );
-		m_entities_bis[h].resize((int)m_size.x, std::vector< std::vector<CollisionableEntity*> >());
+		m_entities_coll[h].resize((int)m_size.x, std::vector< std::vector<CollisionableEntity*> >());
 
 		for(int i=0; i<m_size.x; i++)
 		{
 			m_tiles[h][i] = (Tile*)malloc( (int)m_size.y * sizeof(Tile));
-			m_entities_bis[h][i].resize((int)m_size.y, std::vector<CollisionableEntity*>());
+			m_entities_coll[h][i].resize((int)m_size.y, std::vector<CollisionableEntity*>());
 
 			for(int j=0; j<m_size.y; j++)
 			{
@@ -212,6 +212,11 @@ void Map::setTexture(sf::Texture* texture)
 }
 
 
+void Map::setCamera(Camera* camera)
+{
+	/* Set a Camera to the map */
+	m_camera = camera;
+}
 
 // Methods
 
@@ -219,7 +224,7 @@ void Map::update()
 {
 	/* Update the map by updating the map vertex and the time. The entities are sorted in pos_y + size_y order */
 
-	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
+	//std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
 	updateEntities();
 
@@ -228,12 +233,28 @@ void Map::update()
 	m_vertex.setPrimitiveType(sf::Quads);
 	m_vertex.resize(this->getSize().x * this->getSize().y * this->getHeight() * 4);
 
-	int index=0;	
+	int index=0;
+
+	sf::Vector2i init_tile_draw(0,0);
+	sf::Vector2i end_tile_draw(this->getSize().x-1, this->getSize().y-1);
+
+	if(m_camera!=NULL)
+	{
+		sf::FloatRect camera_zone(m_camera->getView().getCenter() - sf::Vector2f(m_camera->getView().getSize().x/2, m_camera->getView().getSize().y/2), m_camera->getView().getSize());
+		init_tile_draw = sf::Vector2i(camera_zone.left/this->getTileSize(), camera_zone.top/this->getTileSize());
+		end_tile_draw = sf::Vector2i((camera_zone.left + camera_zone.width)/this->getTileSize(), (camera_zone.top + camera_zone.height)/this->getTileSize());
+		if(init_tile_draw.x < 0) init_tile_draw.x = 0;
+		if(init_tile_draw.y < 0) init_tile_draw.y = 0;
+		if(end_tile_draw.x >= this->getSize().x) end_tile_draw.x = this->getSize().x-1;
+		if(end_tile_draw.y >= this->getSize().y) end_tile_draw.y = this->getSize().y-1;
+	}
+
+
 	for(int h=0; h<this->getHeight(); h++)
 	{
-		for(int i=0; i<this->getSize().x; i++)
+		for(int i = init_tile_draw.x; i<end_tile_draw.x+1; i++)
 		{
-			for(int j=0; j<this->getSize().y; j++)
+			for(int j = init_tile_draw.y; j<end_tile_draw.y+1; j++)
 			{
 				index = h*this->getSize().x * this->getSize().y * 4 + i*this->getSize().y * 4 + j*4;
 
@@ -254,6 +275,7 @@ void Map::update()
 			}
 		}	
 	}
+
 }
 
 
@@ -262,7 +284,7 @@ void Map::update_transparency(int chosen_height)
 	/* 	Update such as the normal update except that tiles outside the chosen height are transparent 
 	 *	Useful for MapCreator */
 
-	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
+	//std::sort(m_entities.begin(), m_entities.end(), comparePosY);
 
 	updateEntities();
 
@@ -316,7 +338,7 @@ void Map::update_transparency(int chosen_height)
 void Map::updateEntities()
 {
 	// For collisions
-	for(std::vector< std::vector< std::vector< std::vector<CollisionableEntity*> > > >::iterator it_h = m_entities_bis.begin(); it_h != m_entities_bis.end(); it_h++)
+	for(std::vector< std::vector< std::vector< std::vector<CollisionableEntity*> > > >::iterator it_h = m_entities_coll.begin(); it_h != m_entities_coll.end(); it_h++)
 	{
 		for(std::vector < std::vector< std::vector<CollisionableEntity*> > >::iterator it_x = it_h->begin(); it_x != it_h->end(); it_x++)
 		{
@@ -352,7 +374,7 @@ void Map::updateEntities()
 						{
 							index_h = (coll_ent->getHeight() < this->getHeight())?coll_ent->getHeight():this->getHeight()-1;
 
-							m_entities_bis[index_h][i][j].push_back(coll_ent);
+							m_entities_coll[index_h][i][j].push_back(coll_ent);
 						}
 					}
 				}
@@ -367,13 +389,16 @@ void Map::updateEntities()
 	{
 		it->clear();
 	}
-	
 
 	int val_y, index_y;
 
-
 	for(std::vector<Entity*>::iterator it = m_entities.begin(); it != m_entities.end(); it++)
 	{
+		
+		if( m_camera!=NULL && !m_camera->getCameraRect().intersects(sf::FloatRect((*it)->getPosition(), (*it)->getSize())) )
+			continue;
+
+
 		Character* dyn_char = dynamic_cast<Character*>(*it);
 
 		val_y = (dyn_char != nullptr) ? dyn_char->getAbsHitbox().top + dyn_char->getAbsHitbox().height : (*it)->getPosition().y + (*it)->getSize().y;
@@ -419,7 +444,7 @@ void Map::physics_entities()
 						{
 							index_h = (ent1->getHeight() < this->getHeight())?ent1->getHeight():this->getHeight()-1;
 						
-							for(std::vector<CollisionableEntity*>::iterator it2=m_entities_bis[index_h][i][j].begin(); it2!=m_entities_bis[index_h][i][j].end(); it2++)
+							for(std::vector<CollisionableEntity*>::iterator it2=m_entities_coll[index_h][i][j].begin(); it2!=m_entities_coll[index_h][i][j].end(); it2++)
 							{
 								CollisionableEntity* ent2 = *it2;
 
@@ -441,33 +466,6 @@ void Map::physics_entities()
 			
 		}
 	}
-/*
-	for(std::vector<Entity*>::iterator ent1=m_entities.begin(); ent1!=m_entities.end(); ent1++)
-	{	
-		if(*ent1!=NULL)
-		{
-			// Physics of entities with themselves
-			for(std::vector<Entity*>::iterator ent2=ent1+1; ent2!=m_entities.end(); ent2++)
-			{
-				if(*ent2!=NULL)
-				{
-					if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Character")==0)
-						physics_characters((Character*)(*ent1), (Character*)(*ent2));
-					else if((*ent1)->getType().compare("Character")==0 && (*ent2)->getType().compare("Collector")==0)
-						physics_character_collector((Character*)(*ent1), (Collector*)(*ent2));
-					else if((*ent1)->getType().compare("Collector")==0 && (*ent2)->getType().compare("Character")==0)
-						physics_character_collector((Character*)(*ent2), (Collector*)(*ent1));
-				}
-			}
-
-			// Physics of entities with map tiles
-			if((*ent1)->getType().compare("Character")==0)
-			{
-				physics_character_map((Character*)(*ent1), this, (*ent1)->getHeight());
-			}
-		}
-	}
-	*/
 }
 
 
@@ -477,8 +475,6 @@ void Map::addEntity(Entity* entity)
 	m_entities.push_back(entity);
 
 	std::sort(m_entities.begin(), m_entities.end(), comparePosY);
-
-
 }
 
 
@@ -508,9 +504,10 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		for(int j=0; j<this->getSize().y; j++)
 		{
 
-			// Check for each entity 		
+			// Check for each entity
 			for(std::vector<Entity*>::const_iterator it=m_entities_to_draw[j].begin(); it!=m_entities_to_draw[j].end(); it++)
 			{	
+				
 				if(*it!=NULL)
 				{
 					// If the part of the entity is already drawn
@@ -524,6 +521,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 					
 					// If the entity is not drawn and it's behind tiles line
 					int tmp_val = (*it)->getPosition().y + (*it)->getSize().y;
+
 
 					if((*it)->isAffiliatedToMap())
 					{

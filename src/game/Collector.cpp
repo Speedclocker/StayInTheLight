@@ -30,7 +30,7 @@ Collector::Collector(std::string id, sf::Texture* texture, Map* map)
 
 	m_ground_zone = 14;
 
-	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), this->getGroundZone(), map);
+	m_sprite = new AnimatedSpriteInMap(texture, sf::Vector2f(22, 28), 6, sf::Vector2f(0,30), true, this->getGroundZone(), map);
 
 	m_affiliated_to_map = true;
 
@@ -62,10 +62,10 @@ Collector::Collector(std::string id, std::string file_name, sf::Texture* texture
 	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Collector::State, Sense>(Collector::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 	{
 		AnimationParameters def_param = ptr_animation_parameters->second;
-		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, def_param.loop, this->getGroundZone(), map);
 	}
 	else
-		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(texture, this->getSize(), 1, sf::Vector2f(0,0), true, this->getGroundZone(), map);
 
 	m_affiliated_to_map = true;
 
@@ -96,10 +96,10 @@ Collector::Collector(std::string id, std::string file_name, ResourcesManager* re
 	if( (ptr_animation_parameters = m_animation_parameters.find(std::pair<Collector::State, Sense>(Collector::DEFAULT_STATE, DEFAULT_SENSE))) != m_animation_parameters.end() )
 	{
 		AnimationParameters def_param = ptr_animation_parameters->second;
-		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), def_param.nbr_frames, def_param.init_text_pos, def_param.loop, this->getGroundZone(), map);
 	}
 	else
-		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), this->getGroundZone(), map);
+		m_sprite = new AnimatedSpriteInMap(m_texture, this->getSize(), 1, sf::Vector2f(0,0), true, this->getGroundZone(), map);
 
 	m_affiliated_to_map = true;
 

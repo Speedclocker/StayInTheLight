@@ -14,6 +14,7 @@ AnimationParameters animationParametersFromString(std::string string)
 	int nbr_frames(-1); 
 	sf::Vector2f init_text_pos(-1, -1); 
 	int spacing(-1);
+	bool loop = 0;
 
 	char string_chr[STR_SIZE];
 	if(string.c_str()[0]=='(') 	strcpy(string_chr, string.c_str()+1);
@@ -39,15 +40,18 @@ AnimationParameters animationParametersFromString(std::string string)
 	if((tmp_buffer = strtok(NULL, ",()\n\0"))!=NULL)
 		spacing = atoi(tmp_buffer);
 
-	AnimationParameters animation_parameters = { size, nbr_frames, init_text_pos, spacing };
+	if((tmp_buffer = strtok(NULL, ",()\n\0"))!=NULL)
+		loop = atoi(tmp_buffer);
+
+	AnimationParameters animation_parameters = { size, nbr_frames, init_text_pos, spacing, loop };
 
 	return animation_parameters;
 }
 
 
 
-bool operator==(AnimationParameters const& a, AnimationParameters const& b) { return (a.size == b.size && a.nbr_frames == b.nbr_frames && a.init_text_pos == b.init_text_pos && a.spacing == b.spacing); }
-bool operator!=(AnimationParameters const& a, AnimationParameters const& b) { return !(a.size == b.size && a.nbr_frames == b.nbr_frames && a.init_text_pos == b.init_text_pos && a.spacing == b.spacing); }
+bool operator==(AnimationParameters const& a, AnimationParameters const& b) { return (a.size == b.size && a.nbr_frames == b.nbr_frames && a.init_text_pos == b.init_text_pos && a.spacing == b.spacing && a.loop == b.loop); }
+bool operator!=(AnimationParameters const& a, AnimationParameters const& b) { return !(a==b); }
 
 
 
@@ -60,7 +64,7 @@ AnimatedSprite::AnimatedSprite()
 }
 
 
-AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos)
+AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, bool loop)
 {
 	m_texture = texture;
 	m_size = size;
@@ -68,6 +72,7 @@ AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_
 	m_nbr_frames = nbr_frames;
 	m_init_txt_pos = init_text_pos;
 	m_spacing = 0;
+	m_loop = loop;
 
 	m_fps_quotient = 1;
 	m_phase_f_to_f = 0;
@@ -77,7 +82,7 @@ AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_
 }
 
 
-AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing)
+AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, bool loop)
 {
 	m_texture = texture;
 	m_size = size;
@@ -85,6 +90,7 @@ AnimatedSprite::AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_
 	m_nbr_frames = nbr_frames;
 	m_init_txt_pos = init_text_pos;
 	m_spacing = spacing;
+	m_loop = loop;
 
 	m_fps_quotient = 1;
 	m_phase_f_to_f = 0;
@@ -181,12 +187,13 @@ void AnimatedSprite::setInitTxtPos(sf::Vector2f init_text_pos)
 void AnimatedSprite::setParameters(AnimationParameters parameters)
 {
 	//Modifie les paramètres de capture dans la texture
-	if(parameters != AnimationParameters{m_size, m_nbr_frames, m_init_txt_pos, m_spacing})
+	if(parameters != AnimationParameters{m_size, m_nbr_frames, m_init_txt_pos, m_spacing, m_loop})
 	{
 		m_size = parameters.size;
 		m_nbr_frames = parameters.nbr_frames;
 		m_init_txt_pos = parameters.init_text_pos;
 		m_spacing = parameters.spacing;
+		m_loop = parameters.loop;
 		m_actual_frame = 0;
 	}
 }
@@ -213,7 +220,7 @@ void AnimatedSprite::update()
 	// Met à jour en incrémentant la phase frame à frame, ou en incrémentant la frame actuelle
 	m_phase_f_to_f = (m_phase_f_to_f+1)%m_fps_quotient;
 
-	if(m_phase_f_to_f == 0) 
+	if((m_phase_f_to_f == 0 && m_loop) || (m_phase_f_to_f == 0 && !m_loop && m_actual_frame < m_nbr_frames-1))
 		m_actual_frame = (m_actual_frame+1)%m_nbr_frames;
 
 	m_sprite.setTextureRect( sf::IntRect(m_init_txt_pos.x + m_actual_frame*(m_size.x + m_spacing), m_init_txt_pos.y, m_size.x, m_size.y) );
@@ -241,8 +248,8 @@ AnimatedSpriteInMap::AnimatedSpriteInMap() : AnimatedSprite()
 }
 
 
-AnimatedSpriteInMap::AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, float ground_zone_y, Map* map) :
-AnimatedSprite(texture, size, nbr_frames, init_text_pos)
+AnimatedSpriteInMap::AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, bool loop, float ground_zone_y, Map* map) :
+AnimatedSprite(texture, size, nbr_frames, init_text_pos, loop)
 {
 	m_ground_zone_y = ground_zone_y;
 	m_map = map;
@@ -253,8 +260,8 @@ AnimatedSprite(texture, size, nbr_frames, init_text_pos)
 
 
 
-AnimatedSpriteInMap::AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, float ground_zone_y, Map* map) :
-AnimatedSprite(texture, size, nbr_frames, init_text_pos, spacing)
+AnimatedSpriteInMap::AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, bool loop, float ground_zone_y, Map* map) :
+AnimatedSprite(texture, size, nbr_frames, init_text_pos, spacing, loop)
 {
 	ground_zone_y = ground_zone_y;
 	m_map = map;
@@ -279,7 +286,7 @@ void AnimatedSpriteInMap::update()
 	// Met à jour en incrémentant la phase frame à frame, ou en incrémentant la frame actuelle
 	m_phase_f_to_f = (m_phase_f_to_f+1)%m_fps_quotient;
 
-	if(m_phase_f_to_f == 0) 
+	if((m_phase_f_to_f == 0 && m_loop) || (m_phase_f_to_f == 0 && !m_loop && m_actual_frame < m_nbr_frames-1)) 
 		m_actual_frame = (m_actual_frame+1)%m_nbr_frames;
 
 

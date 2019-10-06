@@ -16,7 +16,7 @@ typedef struct
 	int nbr_frames; 
 	sf::Vector2f init_text_pos;
 	int spacing;
-
+	bool loop;
 } AnimationParameters;
 
 
@@ -31,8 +31,8 @@ class AnimatedSprite : public sf::Drawable
 {
 public:
 	AnimatedSprite();
-	AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos);
-	AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing);
+	AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, bool loop);
+	AnimatedSprite(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, bool loop);
 	~AnimatedSprite();
 
 	
@@ -67,21 +67,21 @@ protected:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 
-	sf::Texture* m_texture;
-	sf::Vector2f m_size;
-	sf::Vector2f m_position;
+	sf::Texture* 		m_texture;
+	sf::Vector2f 		m_size;
+	sf::Vector2f 		m_position;
 
-	int m_spacing;
-	sf::Vector2f m_init_txt_pos;
-
+	int 				m_spacing;
+	sf::Vector2f 		m_init_txt_pos;
+	bool				m_loop;
 	
-	sf::Sprite m_sprite;
+	sf::Sprite 			m_sprite;
 
-	int m_nbr_frames;
-	int m_actual_frame;
+	int 				m_nbr_frames;
+	int 				m_actual_frame;
 	
-	int m_fps_quotient;	
-	int m_phase_f_to_f;
+	int 				m_fps_quotient;	
+	int 				m_phase_f_to_f;
 };
 
 
@@ -92,8 +92,8 @@ class AnimatedSpriteInMap : public AnimatedSprite
 {
 public:
 	AnimatedSpriteInMap();
-	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, float ground_zone_y, Map* map);
-	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, float ground_zone_y, Map* map);
+	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, bool loop, float ground_zone_y, Map* map);
+	AnimatedSpriteInMap(sf::Texture* texture, sf::Vector2f size, int nbr_frames, sf::Vector2f init_text_pos, int spacing, bool loop, float ground_zone_y, Map* map);
 
 	int getHeightLevels();
 

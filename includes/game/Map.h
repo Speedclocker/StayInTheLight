@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "Entity.h"
-
+#include "Camera.h"
 
 typedef struct
 {
@@ -36,6 +36,7 @@ public:
 	void setHeight(unsigned int height);
 	void setTile(Tile tile, sf::Vector2i position, int height);
 	void setTexture(sf::Texture* texture);
+	void setCamera(Camera* Camera);
 
 
 	//Methods
@@ -50,16 +51,17 @@ private:
 	void updateEntities();
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-	clock_t																	m_time;			
-	Tile*** 																m_tiles;		// Tiles of the map
-	std::vector< std::vector<Entity*> >										m_entities_to_draw;
-	std::vector< std::vector< std::vector< std::vector <CollisionableEntity*> > > >		m_entities_bis;	// All entities in map
-	std::vector<Entity*>													m_entities;		// All entities in map
-	sf::VertexArray 														m_vertex;		// Vertex used to draw the map tiles
-	sf::Texture* 															m_texture;		// Texture associated to the map
-	int 																	m_height;		// Number of levels of height
-	sf::Vector2f 															m_size;			// Size of the map in number of tiles
-	int																		m_tile_sz;		// Size of a tile in pixel
+	clock_t																				m_time;			
+	Tile*** 																			m_tiles;			// Tiles of the map
+	std::vector< std::vector<Entity*> >													m_entities_to_draw;
+	std::vector< std::vector< std::vector< std::vector <CollisionableEntity*> > > >		m_entities_coll;	// All entities in map
+	std::vector<Entity*>																m_entities;			// All entities in map
+	sf::VertexArray 																	m_vertex;			// Vertex used to draw the map tiles
+	sf::Texture* 																		m_texture;			// Texture associated to the map
+	int 																				m_height;			// Number of levels of height
+	sf::Vector2f 																		m_size;				// Size of the map in number of tiles
+	int																					m_tile_sz;			// Size of a tile in pixel
+	Camera* 																			m_camera; 			// Camera on map (if there is one, else NULL)
 };
 
 

@@ -13,7 +13,7 @@
 
 
 int main()
-{
+{	
 
 	//Window creation and setting
 	sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width,sf::VideoMode::getDesktopMode().height), "Comment", sf::Style::Fullscreen);	
@@ -40,14 +40,12 @@ int main()
 
 
 	// Loading map and Entities
+	
 	if(loadMap(&map, &entities, "data/maps/Bigmap.map", &resources_manager)<0)
 	{
 		std::cerr << "Error while loading of map" << std::endl;
 		return -1;
-	}
-	for(std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
-		map->addEntity(*it);
-	
+	}	
 
 
 	// Light
@@ -69,6 +67,7 @@ int main()
 
 
 	// Entities
+	
 	for (std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 	{
 		if((*it)->getID() == "hero" && (*it)->getType()=="Character") 				hero = (Character*)(*it);
@@ -97,7 +96,7 @@ int main()
 	// Camera
 	Camera camera(&window, true, 2, hero->getPosition(), sf::Vector2f((int)(window.getSize().x*0.4f), (int)(window.getSize().y*0.4f)));
 	camera.setFocusPoint(hero->getPosition());
-
+	if(map!=NULL) map->setCamera(&camera);
 
 	//Add a potential attack target for hero
 	hero->addAvTarget(enemy); 
@@ -105,17 +104,20 @@ int main()
 
 
 	// Time DEBUG
+	/*
 	sf::Clock clock_e;
 	sf::Time time_e = clock_e.getElapsedTime();
 
-	
-
+	long total_times = 0;
+	long nbr_fram = 0;
+	long time_diff = 0;
+*/
 
 	//Main loop
 	while(window.isOpen())
 	{
-		std::cout << "Elapsed time : " << (clock_e.getElapsedTime() - time_e).asMicroseconds() << std::endl;
-		time_e = clock_e.getElapsedTime();
+		//time_e = clock_e.getElapsedTime();
+		
 
 		// Refresh Window
 		window.clear();
@@ -136,6 +138,7 @@ int main()
 				sf::View main_view;
 
 				// Adapt the view if window has been resized
+				
 				main_view.setSize(event.size.width, event.size.height);
 				main_view.setCenter(sf::Vector2f(map->getTileSize() * map->getSize().x/2, map->getTileSize() * map->getSize().y/2));
 				camera.setSizeView(sf::Vector2f((int)(window.getSize().x*0.4f), (int)(window.getSize().y*0.4f)));
@@ -190,8 +193,14 @@ int main()
 
 		// Displaying the window
 		window.display();
+/*
+		time_diff = (clock_e.getElapsedTime() - time_e).asMicroseconds();
+		//std::cout << "Elapsed time : " << time_diff << std::endl;
+		nbr_fram++;
+		total_times += time_diff;*/
 	}
 
+	//total_times -= time_diff;
 
 	// Delete Map
 	delete map;
@@ -199,6 +208,7 @@ int main()
 
 
 	// Delete Entities
+	
 	std::vector<Entity*>::iterator it = entities.begin();
 	while(it!=entities.end())
 	{
@@ -208,6 +218,8 @@ int main()
 	if(hero_allocated) delete hero;
 	if(enemy_allocated) delete enemy;
 
+	//std::cout << "Mean time : " << total_times/nbr_fram << std::endl;
 
 	return 0;
 }
+		

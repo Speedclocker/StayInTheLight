@@ -12,5 +12,5 @@ Hitbox : (31,140,13,10)
 [/Features]
 
 [Animations]
-default : {(75,160),1,(0,0),0}
+default : {(75,160),1,(0,0),0,1}
 [/Animations]

@@ -142,4 +142,17 @@ typedef struct
 
 
 
+/////////// EntityCreator Tab ///////////////
+
+
+// Function
+void EntityCreatorTab(Tab* tab, ArgTab* argtab)
+
+// Argument Structure
+
+typedef struct
+{
+	uint8_t __argtab_offset[ARG_TAB_BUFF_SIZE] = {0};
+} ArgEntityCreatorTab;
+
 #endif

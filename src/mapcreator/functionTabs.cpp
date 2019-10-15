@@ -479,12 +479,6 @@ void LoadTab(Tab* tab, ArgTab* argtab)
 
 
 
-
-
-
-
-
-
 void NewMapTab(Tab* tab, ArgTab* argtab)
 {
 	Map** new_map = (((ArgNewMapTab*)(argtab))->new_map); 
@@ -666,4 +660,13 @@ void NewMapTab(Tab* tab, ArgTab* argtab)
 	{
 		*new_map_state = 2;
 	}
+}
+
+
+
+void EntityCreatorTab(Tab* tab, ArgTab* argtab)
+{
+	ResourcesManager* resources_manager = (((ArgEntitiesTab*)(argtab))->resources_manager);
+	std::string** ptr_text_event = ((ArgEntitiesTab*)(argtab))->text_event_location;
+
 }

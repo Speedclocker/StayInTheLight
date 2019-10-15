@@ -1,0 +1,49 @@
+[Header]
+Name : hero_02
+Type : Character
+Texture : data/imgs/newhero.png
+Size : (25,35)
+GroundZone : 8
+[/Header]
+
+[Features]
+Hitbox : (6,25,13,10)
+Speed : 2
+Health : 10
+[/Features]
+
+[Animations]
+default : {(25, 35),1,(0,0),0,1}	
+moving_up : {(25, 35),6,(0,35),0,1}	
+standing_up : {(25, 35),10,(0,0),0,1}	
+attacking_up : {(25, 35),6,(0,70),0,0}	
+
+moving_upright : {(25, 35),6,(0,35),0,1}	
+standing_upright : {(25, 35),10,(0,0),0,1}	
+attacking_upright : {(25, 35),6,(0,70),0,0}
+
+moving_upleft : {(25, 35),6,(0,35),0,1}	
+standing_upleft : {(25, 35),10,(0,0),0,1}	
+attacking_upleft : {(25, 35),6,(0,70),0,0}	
+
+moving_down : {(25, 35),6,(0,35),0,1}
+standing_down : {(25, 35),10,(0,0),0,1}
+attacking_down : {(25, 35),6,(0,70),0,0}
+
+moving_downright : {(25, 35),6,(0,35),0,1}
+standing_downright : {(25, 35),10,(0,0),0,1}
+attacking_downright : {(25, 35),6,(0,70),0,0}
+
+moving_downleft : {(25, 35),6,(0,35),0,1}
+standing_downleft : {(25, 35),10,(0,0),0,1}
+attacking_downleft : {(25, 35),6,(0,70),0,0}
+
+moving_right : {(25, 35),6,(0,35),0,1}
+standing_right : {(25, 35),10,(0,0),0,1}
+attacking_right : {(25, 35),6,(0,70),0,0}
+
+moving_left : {(25, 35),6,(0,35),0,1}
+standing_left : {(25, 35),10,(0,0),0,1}
+attacking_left : {(25, 35),6,(0,70),0,0}
+[/Animations]
+
